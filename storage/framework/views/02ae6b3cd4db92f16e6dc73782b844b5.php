@@ -3,7 +3,7 @@
 
 <?php $__env->startSection('page-content'); ?>
 <div class="max-w-3xl mx-auto">
-    <form action="<?php echo e(route('mitra.kerjasama.store')); ?>" method="POST" enctype="multipart/form-data" class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-6">
+    <form action="<?php echo e(route('mitra.kerjasama.store')); ?>" method="POST" enctype="multipart/form-data" class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-6" id="createForm">
         <?php echo csrf_field(); ?>
 
         <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($errors->any()): ?>
@@ -83,6 +83,24 @@
 
         
         <div id="nkFields" class="hidden">
+            <div class="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <h3 class="text-base font-semibold text-navy mb-1">Upload Dokumen Nota Kesepakatan</h3>
+                <p class="text-xs text-gray-500 mb-4">Upload dua dokumen yang diperlukan: Surat Permohonan dan Draft Nota Kesepakatan.</p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">1. Surat Permohonan <span class="text-red-500">*</span></label>
+                        <input type="file" name="surat_permohonan" accept=".pdf,.docx,.zip" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                        <p class="text-xs text-gray-400 mt-1">Surat dari Kepala Daerah ke Sekjen Kemendikdasmen</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">2. Draft Nota Kesepakatan <span class="text-red-500">*</span></label>
+                        <input type="file" name="draft_nk" accept=".pdf,.docx,.zip" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                        <p class="text-xs text-gray-400 mt-1">Draft NK yang akan dibahas bersama</p>
+                    </div>
+                </div>
+                <p class="text-xs text-gray-400 mt-3">Format: PDF, DOCX, ZIP — Maks 20MB per file</p>
+            </div>
+
             <div>
                 <h3 class="text-base font-semibold text-navy mb-4 mt-6">Kontak</h3>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">

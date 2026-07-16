@@ -45,7 +45,7 @@ class WorkflowService
         'SELESAI' => ['EXPIRED'],
     ];
 
-    const EDITABLE_STATUSES = ['DRAFT', 'DITOLAK'];
+    const EDITABLE_STATUSES = ['DRAFT', 'UPLOAD_DOKUMEN', 'DITOLAK'];
 
     public function canTransition(string $current, string $next): bool
     {

@@ -123,7 +123,7 @@ class Kerjasama extends Model
             $url = Storage::disk('public')->exists($f)
                 ? Storage::disk('public')->url($f)
                 : $f;
-            return "<a href='{$url}' target='_blank' class='text-primary-600 underline'>{$name}</a>";
+            return "<a href='{$url}' target='_blank' style='color:#2563eb;text-decoration:underline;font-size:0.875rem'>{$name}</a>";
         })->implode(' | ');
     }
 

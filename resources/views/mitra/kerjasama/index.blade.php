@@ -50,8 +50,14 @@
                         <x-status-badge :status="$ks->status_pengajuan" :label="$ks->status_label" />
                     </td>
                     <td class="px-4 py-3 text-gray-500">{{ $ks->last_update?->format('d M Y') }}</td>
-                    <td class="px-4 py-3 text-right">
+                    <td class="px-4 py-3 text-right space-x-2">
                         <a href="{{ route('mitra.kerjasama.show', $ks->kerjasama_id) }}" class="text-blue-600 hover:text-blue-800 text-sm">Detail</a>
+                        @if(in_array($ks->status_pengajuan, ['DRAFT', 'DITOLAK']))
+                        <form action="{{ route('mitra.kerjasama.destroy', $ks->kerjasama_id) }}" method="POST" class="inline" onsubmit="return confirm('Hapus?')">
+                            @csrf @method('DELETE')
+                            <button type="submit" class="text-red-600 hover:text-red-800 text-sm">Hapus</button>
+                        </form>
+                        @endif
                     </td>
                 </tr>
                 @empty

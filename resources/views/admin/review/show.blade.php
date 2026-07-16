@@ -70,40 +70,57 @@
 
         <!-- DIAJUKAN: Approve / Reject -->
         @if($kerjasama->status_pengajuan === 'DIAJUKAN')
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6" x-data="{ confirmApprove: false, rejectOpen: false }">
             <h3 class="text-base font-semibold text-navy mb-4">Tindakan Admin</h3>
             <div class="flex gap-4">
-                <form action="{{ route('admin.review.approve', $kerjasama->kerjasama_id) }}" method="POST">
-                    @csrf
-                    <button type="submit" class="bg-green-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-green-700" onclick="return confirm('Setujui pengajuan ini?')">
-                        Setujui
-                    </button>
-                </form>
-                <button onclick="openRejectModal()" class="bg-red-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-red-700">
+                <button type="button" @click="confirmApprove = true" class="bg-green-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-green-700">
+                    Setujui
+                </button>
+                <button @click="rejectOpen = true" class="bg-red-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-red-700">
                     Tolak
                 </button>
             </div>
-        </div>
 
-        <!-- Reject Modal -->
-        <div id="rejectModal" class="fixed inset-0 bg-black/50 z-50 hidden items-center justify-center">
-            <div class="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4 p-6">
-                <h3 class="text-lg font-semibold text-navy mb-4">Tolak Pengajuan</h3>
-                <form action="{{ route('admin.review.reject', $kerjasama->kerjasama_id) }}" method="POST">
-                    @csrf
-                    <textarea name="alasan" rows="3" required placeholder="Alasan penolakan..." class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm mb-3"></textarea>
-                    <textarea name="catatan_perbaikan" rows="3" placeholder="Catatan perbaikan (opsional)" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm mb-4"></textarea>
-                    <div class="flex gap-3">
-                        <button type="submit" class="flex-1 bg-red-600 text-white py-2.5 rounded-lg text-sm hover:bg-red-700">Tolak</button>
-                        <button type="button" onclick="closeRejectModal()" class="flex-1 border border-gray-300 text-gray-700 py-2.5 rounded-lg text-sm hover:bg-gray-50">Batal</button>
+            <!-- Modal Setujui -->
+            <div x-show="confirmApprove" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4" style="background: rgba(0,0,0,0.5)">
+                <div class="bg-white rounded-xl shadow-2xl w-full max-w-md p-6" @click.outside="confirmApprove = false">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+                            <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-800">Setujui Pengajuan?</h3>
+                            <p class="text-sm text-gray-500">Pengajuan akan dilanjutkan ke tahap penjadwalan pembahasan.</p>
+                        </div>
                     </div>
-                </form>
+                    <div class="flex gap-3 justify-end">
+                        <button @click="confirmApprove = false" class="border border-gray-300 text-gray-700 px-4 py-2 rounded-lg text-sm hover:bg-gray-50">Batal</button>
+                        <form action="{{ route('admin.review.approve', $kerjasama->kerjasama_id) }}" method="POST">
+                            @csrf
+                            <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-green-700">Ya, Setujui</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Tolak -->
+            <div x-show="rejectOpen" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4" style="background: rgba(0,0,0,0.5)">
+                <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-6" @click.outside="rejectOpen = false">
+                    <h3 class="text-lg font-semibold text-navy mb-4">Tolak Pengajuan</h3>
+                    <form action="{{ route('admin.review.reject', $kerjasama->kerjasama_id) }}" method="POST">
+                        @csrf
+                        <textarea name="alasan" rows="3" required placeholder="Alasan penolakan..." class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm mb-3"></textarea>
+                        <textarea name="catatan_perbaikan" rows="3" placeholder="Catatan perbaikan (opsional)" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm mb-4"></textarea>
+                        <div class="flex gap-3">
+                            <button type="submit" class="flex-1 bg-red-600 text-white py-2.5 rounded-lg text-sm hover:bg-red-700">Tolak</button>
+                            <button type="button" @click="rejectOpen = false" class="flex-1 border border-gray-300 text-gray-700 py-2.5 rounded-lg text-sm hover:bg-gray-50">Batal</button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
-        <script>
-            function openRejectModal(){document.getElementById('rejectModal').classList.remove('hidden');document.getElementById('rejectModal').classList.add('flex');}
-            function closeRejectModal(){document.getElementById('rejectModal').classList.add('hidden');document.getElementById('rejectModal').classList.remove('flex');}
-        </script>
         @endif
 
         <!-- DISETUJUI: Jadwalkan -->
@@ -137,10 +154,10 @@
 
         <!-- SELESAI_PEMBAHASAN: Upload Dokumen Bertanda Tangan -->
         @if($kerjasama->status_pengajuan === 'SELESAI_PEMBAHASAN')
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6" x-data="{ confirmTtd: false }">
             <h3 class="text-base font-semibold text-navy mb-1">Selesaikan Penandatanganan</h3>
             <p class="text-xs text-gray-500 mb-4">Upload dokumen NK final yang sudah ditandatangani oleh kedua pihak, lalu lengkapi informasi penandatanganan.</p>
-            <form action="{{ route('admin.pembahasan.complete-ttd', $kerjasama->kerjasama_id) }}" method="POST" enctype="multipart/form-data" class="space-y-4">
+            <form action="{{ route('admin.pembahasan.complete-ttd', $kerjasama->kerjasama_id) }}" method="POST" enctype="multipart/form-data" class="space-y-4" id="ttdForm">
                 @csrf
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Dokumen Bertanda Tangan <span class="text-red-500">*</span></label>
@@ -161,10 +178,31 @@
                         <input type="text" name="ttd_pihak2" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" placeholder="Nama penandatangan">
                     </div>
                 </div>
-                <button type="submit" class="bg-green-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-green-700" onclick="return confirm('Selesaikan penandatanganan? Status akan berubah menjadi Selesai.')">
+                <button type="button" @click="confirmTtd = true" class="bg-green-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-green-700">
                     Selesai Penandatanganan
                 </button>
             </form>
+
+            <!-- Modal Konfirmasi TTD -->
+            <div x-show="confirmTtd" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4" style="background: rgba(0,0,0,0.5)">
+                <div class="bg-white rounded-xl shadow-2xl w-full max-w-md p-6" @click.outside="confirmTtd = false">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+                            <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-800">Selesaikan TTD?</h3>
+                            <p class="text-sm text-gray-500">Status akan berubah menjadi Selesai.</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-3 justify-end">
+                        <button @click="confirmTtd = false" class="border border-gray-300 text-gray-700 px-4 py-2 rounded-lg text-sm hover:bg-gray-50">Batal</button>
+                        <button type="submit" form="ttdForm" class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-green-700">Ya, Selesaikan</button>
+                    </div>
+                </div>
+            </div>
         </div>
         @endif
 

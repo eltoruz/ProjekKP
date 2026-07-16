@@ -10,6 +10,7 @@ use App\Models\KsMetode;
 use App\Models\KsImplementasi;
 use App\Services\WorkflowService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class KerjasamaController extends Controller
 {
@@ -64,12 +65,24 @@ class KerjasamaController extends Controller
             'nomor_cp_teknis' => 'nullable|string|max:50',
             'dokumen_pendukung' => 'nullable|string',
         ]);
-        // NK (jenis_id=3): pakai workflow DRAFT
+        // NK (jenis_id=3): pakai workflow DRAFT, upload dokumen langsung
         if ($validated['ks_jenis'] == 3) {
-            $validated['status_pengajuan'] = 'DRAFT';
+            $request->validate([
+                'surat_permohonan' => 'required|file|mimes:pdf,docx,zip|max:20480',
+                'draft_nk' => 'required|file|mimes:pdf,docx,zip|max:20480',
+            ]);
+            $validated['status_pengajuan'] = 'UPLOAD_DOKUMEN';
             $validated['ks_status_dok'] = 1;
         }
         $ks = Kerjasama::create($validated);
+
+        if ($ks->ks_jenis == 3) {
+            $paths = [];
+            if ($request->hasFile('surat_permohonan')) $paths[] = $request->file('surat_permohonan')->store('dokumen/' . $ks->kerjasama_id, 'public');
+            if ($request->hasFile('draft_nk')) $paths[] = $request->file('draft_nk')->store('dokumen/' . $ks->kerjasama_id, 'public');
+            $ks->update(['dokumen_ks' => json_encode($paths)]);
+        }
+
         return redirect()->route('mitra.kerjasama.show', $ks->kerjasama_id)->with('success', 'Kerja Sama berhasil dibuat.');
     }
 
@@ -92,7 +105,7 @@ class KerjasamaController extends Controller
         if (!$wf->canEdit($ks)) return redirect()->route('mitra.kerjasama.show', $id)->with('error', 'Data tidak dapat diedit.');
         $jenisList = KsJenis::all();
         $tingkatList = KsTingkat::all();
-        return view('mitra.kerjasama.edit', compact('ks', 'jenisList', 'tingkatList'));
+        return view('mitra.kerjasama.edit', ['kerjasama' => $ks, 'jenisList' => $jenisList, 'tingkatList' => $tingkatList]);
     }
 
     public function update(Request $request, $id)
@@ -100,7 +113,8 @@ class KerjasamaController extends Controller
         $ks = Kerjasama::where('kerjasama_id', $id)->notDeleted()->firstOrFail();
         $wf = new WorkflowService;
         if (!$wf->canEdit($ks)) return redirect()->route('mitra.kerjasama.show', $id)->with('error', 'Data tidak dapat diedit.');
-        $ks->update($request->validate([
+
+        $validated = $request->validate([
             'ks_jenis' => 'required|exists:ks_jenis,id',
             'ks_tingkat' => 'required|exists:ks_tingkat,id',
             'kode_wilayah' => 'nullable|string|max:20',
@@ -118,7 +132,23 @@ class KerjasamaController extends Controller
             'narahubung_teknis' => 'nullable|string|max:200',
             'nomor_cp_teknis' => 'nullable|string|max:50',
             'dokumen_pendukung' => 'nullable|string',
-        ]));
+        ]);
+        $ks->update($validated);
+
+        // Handle document re-upload for NK
+        if ($ks->ks_jenis == 3) {
+            $paths = $ks->dokumen_ks ? json_decode($ks->dokumen_ks, true) ?: [] : [];
+            if ($request->hasFile('surat_permohonan')) {
+                $paths[0] = $request->file('surat_permohonan')->store('dokumen/' . $id, 'public');
+            }
+            if ($request->hasFile('draft_nk')) {
+                $paths[1] = $request->file('draft_nk')->store('dokumen/' . $id, 'public');
+            }
+            if ($request->hasFile('surat_permohonan') || $request->hasFile('draft_nk')) {
+                $ks->update(['dokumen_ks' => json_encode(array_values($paths))]);
+            }
+        }
+
         return redirect()->route('mitra.kerjasama.show', $id)->with('success', 'Data diperbarui.');
     }
 

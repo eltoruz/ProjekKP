@@ -1,13 +1,11 @@
-@extends('layouts.mitra')
+<?php $__env->startSection('title', 'Edit Kerja Sama'); ?>
+<?php $__env->startSection('page-title', 'Edit Kerja Sama'); ?>
 
-@section('title', 'Edit Kerja Sama')
-@section('page-title', 'Edit Kerja Sama')
-
-@section('page-content')
+<?php $__env->startSection('page-content'); ?>
 <div class="max-w-3xl mx-auto">
-    <form action="{{ route('mitra.kerjasama.update', $kerjasama->kerjasama_id) }}" method="POST" enctype="multipart/form-data" class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 space-y-6">
-        @csrf
-        @method('PUT')
+    <form action="<?php echo e(route('mitra.kerjasama.update', $kerjasama->kerjasama_id)); ?>" method="POST" enctype="multipart/form-data" class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 space-y-6">
+        <?php echo csrf_field(); ?>
+        <?php echo method_field('PUT'); ?>
 
         <div class="border-b border-gray-100 pb-4 mb-4">
             <h3 class="text-base font-semibold text-navy">Informasi Dasar</h3>
@@ -17,34 +15,34 @@
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Jenis Kerja Sama <span class="text-red-500">*</span></label>
                 <select name="ks_jenis" id="jenisSelect" required class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-primary focus:border-primary">
-                    @foreach($jenisList as $j)
-                        <option value="{{ $j->id }}" {{ $kerjasama->ks_jenis == $j->id ? 'selected' : '' }}>{{ $j->nama_jenis }}</option>
-                    @endforeach
+                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__currentLoopData = $jenisList; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $j): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                        <option value="<?php echo e($j->id); ?>" <?php echo e($kerjasama->ks_jenis == $j->id ? 'selected' : ''); ?>><?php echo e($j->nama_jenis); ?></option>
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                 </select>
             </div>
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Tingkat Kerja Sama <span class="text-red-500">*</span></label>
                 <select name="ks_tingkat" id="tingkatSelect" required class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-primary focus:border-primary">
-                    @foreach($tingkatList as $t)
-                        <option value="{{ $t->id }}" {{ $kerjasama->ks_tingkat == $t->id ? 'selected' : '' }}>{{ $t->nama_tingkat }}</option>
-                    @endforeach
+                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__currentLoopData = $tingkatList; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $t): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                        <option value="<?php echo e($t->id); ?>" <?php echo e($kerjasama->ks_tingkat == $t->id ? 'selected' : ''); ?>><?php echo e($t->nama_tingkat); ?></option>
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                 </select>
             </div>
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Kode Wilayah</label>
-                <input type="text" name="kode_wilayah" value="{{ $kerjasama->kode_wilayah }}" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                <input type="text" name="kode_wilayah" value="<?php echo e($kerjasama->kode_wilayah); ?>" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
             </div>
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Provinsi</label>
-                <input type="text" name="provinsi" value="{{ $kerjasama->provinsi }}" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                <input type="text" name="provinsi" value="<?php echo e($kerjasama->provinsi); ?>" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
             </div>
             <div class="sm:col-span-2">
                 <label class="block text-sm font-medium text-gray-700 mb-1">Nama K/L / Instansi</label>
-                <input type="text" name="nama_kl" value="{{ $kerjasama->nama_kl }}" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                <input type="text" name="nama_kl" value="<?php echo e($kerjasama->nama_kl); ?>" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
             </div>
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Jumlah K/L Terlibat</label>
-                <input type="number" name="jumlah_kl_terlibat" value="{{ $kerjasama->jumlah_kl_terlibat }}" min="1" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                <input type="number" name="jumlah_kl_terlibat" value="<?php echo e($kerjasama->jumlah_kl_terlibat); ?>" min="1" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
             </div>
         </div>
 
@@ -53,17 +51,17 @@
                 <h3 class="text-base font-semibold text-navy">Dokumen Nota Kesepakatan</h3>
             </div>
 
-            @php $existingFiles = $kerjasama->dokumen_ks ? (json_decode($kerjasama->dokumen_ks, true) ?: []) : []; @endphp
-            @if(count($existingFiles))
+            <?php $existingFiles = $kerjasama->dokumen_ks ? (json_decode($kerjasama->dokumen_ks, true) ?: []) : []; ?>
+            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(count($existingFiles)): ?>
             <div class="bg-gray-50 rounded-lg p-3 text-sm">
                 <p class="text-gray-500 mb-2">Dokumen saat ini:</p>
                 <ul class="space-y-1">
-                    @foreach($existingFiles as $idx => $f)
-                    <li class="text-gray-700">📄 {{ basename($f) }}</li>
-                    @endforeach
+                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__currentLoopData = $existingFiles; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $idx => $f): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                    <li class="text-gray-700">📄 <?php echo e(basename($f)); ?></li>
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                 </ul>
             </div>
-            @endif
+            <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 
             <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
                 <p class="text-xs text-gray-500 mb-3">Upload ulang untuk mengganti dokumen. Kosongkan jika tidak ingin mengganti.</p>
@@ -87,15 +85,15 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Pihak Pertama</label>
-                    <input type="text" name="pihak1" value="{{ $kerjasama->pihak1 }}" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                    <input type="text" name="pihak1" value="<?php echo e($kerjasama->pihak1); ?>" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Pihak Kedua</label>
-                    <input type="text" name="pihak2" value="{{ $kerjasama->pihak2 }}" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                    <input type="text" name="pihak2" value="<?php echo e($kerjasama->pihak2); ?>" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
                 </div>
                 <div class="sm:col-span-2">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Tentang</label>
-                    <textarea name="tentang" rows="3" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">{{ $kerjasama->tentang }}</textarea>
+                    <textarea name="tentang" rows="3" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"><?php echo e($kerjasama->tentang); ?></textarea>
                 </div>
             </div>
 
@@ -106,19 +104,19 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Narahubung Administrasi</label>
-                    <input type="text" name="narahubung_adm" value="{{ $kerjasama->narahubung_adm }}" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                    <input type="text" name="narahubung_adm" value="<?php echo e($kerjasama->narahubung_adm); ?>" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Nomor Kontak Administrasi</label>
-                    <input type="text" name="nomor_cp_adm" value="{{ $kerjasama->nomor_cp_adm }}" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                    <input type="text" name="nomor_cp_adm" value="<?php echo e($kerjasama->nomor_cp_adm); ?>" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Narahubung Teknis</label>
-                    <input type="text" name="narahubung_teknis" value="{{ $kerjasama->narahubung_teknis }}" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                    <input type="text" name="narahubung_teknis" value="<?php echo e($kerjasama->narahubung_teknis); ?>" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Nomor Kontak Teknis</label>
-                    <input type="text" name="nomor_cp_teknis" value="{{ $kerjasama->nomor_cp_teknis }}" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                    <input type="text" name="nomor_cp_teknis" value="<?php echo e($kerjasama->nomor_cp_teknis); ?>" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
                 </div>
             </div>
 
@@ -129,15 +127,15 @@
             <div class="grid grid-cols-1 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Unit Utama Terlibat <span class="text-xs text-gray-400 font-normal">(opsional)</span></label>
-                    <input type="text" name="unit_utama_terlibat" value="{{ $kerjasama->unit_utama_terlibat }}" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                    <input type="text" name="unit_utama_terlibat" value="<?php echo e($kerjasama->unit_utama_terlibat); ?>" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Dokumen Pendukung <span class="text-xs text-gray-400 font-normal">(opsional)</span></label>
-                    <input type="text" name="dokumen_pendukung" value="{{ $kerjasama->dokumen_pendukung }}" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" placeholder="Link/ref dokumen pendukung">
+                    <input type="text" name="dokumen_pendukung" value="<?php echo e($kerjasama->dokumen_pendukung); ?>" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" placeholder="Link/ref dokumen pendukung">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Folder Kerja Sama <span class="text-xs text-gray-400 font-normal">(opsional)</span></label>
-                    <input type="text" name="folder_ks" value="{{ $kerjasama->folder_ks }}" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" placeholder="Link folder">
+                    <input type="text" name="folder_ks" value="<?php echo e($kerjasama->folder_ks); ?>" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" placeholder="Link folder">
                 </div>
             </div>
         </div>
@@ -152,7 +150,7 @@
             <button type="submit" id="submitBtn" class="bg-primary text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-blue-600 transition-colors">
                 Simpan Perubahan
             </button>
-            <a href="{{ route('mitra.kerjasama.show', $kerjasama->kerjasama_id) }}" class="border border-gray-300 text-gray-700 px-6 py-2.5 rounded-lg text-sm hover:bg-gray-50 transition-colors">
+            <a href="<?php echo e(route('mitra.kerjasama.show', $kerjasama->kerjasama_id)); ?>" class="border border-gray-300 text-gray-700 px-6 py-2.5 rounded-lg text-sm hover:bg-gray-50 transition-colors">
                 Batal
             </a>
         </div>
@@ -184,4 +182,6 @@
     jenisSelect.addEventListener('change', toggleForm);
     toggleForm();
 </script>
-@endsection
+<?php $__env->stopSection(); ?>
+
+<?php echo $__env->make('layouts.mitra', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH /home/eltoruz/ProjekKP/resources/views/mitra/kerjasama/edit.blade.php ENDPATH**/ ?>

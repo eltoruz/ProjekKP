@@ -11,7 +11,7 @@
 <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4 text-sm">{{ session('error') }}</div>
 @endif
 
-<div class="space-y-6">
+<div class="space-y-6" x-data="{ confirmAjukan: false, confirmHapus: false }">
     <!-- Status Bar -->
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
         <div class="flex flex-wrap items-center justify-between gap-3">
@@ -27,17 +27,65 @@
                 @if($canEdit && $kerjasama->status_pengajuan !== 'DITOLAK')
                     <a href="{{ route('mitra.kerjasama.edit', $kerjasama->kerjasama_id) }}" class="border border-gray-300 text-gray-700 px-4 py-2 rounded-lg text-sm hover:bg-gray-50">Edit</a>
                 @endif
+                @if($canEdit)
+                    <button type="button" @click="confirmHapus = true" class="border border-red-300 text-red-600 px-4 py-2 rounded-lg text-sm hover:bg-red-50">Hapus</button>
+                @endif
                 @if($kerjasama->status_pengajuan === 'UPLOAD_DOKUMEN')
-                    <form action="{{ route('mitra.kerjasama.ajukan', $kerjasama->kerjasama_id) }}" method="POST" onsubmit="return confirm('Setelah diajukan, data tidak dapat diubah. Lanjutkan?')">
-                        @csrf
-                        <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-green-700">Ajukan ke Admin</button>
-                    </form>
+                    <button type="button" @click="confirmAjukan = true" class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-green-700">Ajukan ke Admin</button>
                 @endif
                 @if($kerjasama->status_pengajuan === 'DITOLAK')
                     <a href="{{ route('mitra.kerjasama.upload-ulang', $kerjasama->kerjasama_id) }}" class="bg-orange-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-orange-700">Upload Ulang</a>
                 @endif
             </div>
             @endif
+        </div>
+    </div>
+
+    <!-- Modal Konfirmasi Ajukan -->
+    <div x-show="confirmAjukan" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4" style="background: rgba(0,0,0,0.5)">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md p-6" @click.outside="confirmAjukan = false">
+            <div class="flex items-center gap-3 mb-4">
+                <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                    <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-800">Ajukan ke Admin?</h3>
+                    <p class="text-sm text-gray-500">Setelah diajukan, data tidak dapat diubah lagi.</p>
+                </div>
+            </div>
+            <div class="flex gap-3 justify-end">
+                <button @click="confirmAjukan = false" class="border border-gray-300 text-gray-700 px-4 py-2 rounded-lg text-sm hover:bg-gray-50">Batal</button>
+                <form action="{{ route('mitra.kerjasama.ajukan', $kerjasama->kerjasama_id) }}" method="POST">
+                    @csrf
+                    <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-green-700">Ya, Ajukan</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Konfirmasi Hapus -->
+    <div x-show="confirmHapus" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4" style="background: rgba(0,0,0,0.5)">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md p-6" @click.outside="confirmHapus = false">
+            <div class="flex items-center gap-3 mb-4">
+                <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
+                    <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-800">Hapus Draft?</h3>
+                    <p class="text-sm text-gray-500">Data yang dihapus tidak dapat dikembalikan.</p>
+                </div>
+            </div>
+            <div class="flex gap-3 justify-end">
+                <button @click="confirmHapus = false" class="border border-gray-300 text-gray-700 px-4 py-2 rounded-lg text-sm hover:bg-gray-50">Batal</button>
+                <form action="{{ route('mitra.kerjasama.destroy', $kerjasama->kerjasama_id) }}" method="POST">
+                    @csrf @method('DELETE')
+                    <button type="submit" class="bg-red-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-red-700">Ya, Hapus</button>
+                </form>
+            </div>
         </div>
     </div>
 
@@ -137,7 +185,7 @@
     <!-- Dokumen -->
     @php $files = $kerjasama->dokumen_ks ? (json_decode($kerjasama->dokumen_ks, true) ?: []) : []; @endphp
     @if(count($files))
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200" x-data="{ open: false, src: '' }">
         <div class="px-6 py-4 border-b border-gray-100">
             <h3 class="text-base font-semibold text-gray-800">Dokumen</h3>
         </div>
@@ -151,10 +199,21 @@
                 <li class="flex items-center gap-2 py-2">
                     <span class="text-sm">{{ $label }}</span>
                     <span class="text-gray-300">—</span>
-                    <a href="{{ Storage::disk('public')->url($file) }}" class="text-primary text-xs hover:underline" target="_blank">Lihat</a>
+                    <button type="button" @click="open = true; src = '{{ Storage::disk('public')->url($file) }}'" class="text-primary text-xs hover:underline">Lihat</button>
                 </li>
                 @endforeach
             </ul>
+        </div>
+
+        <!-- Modal -->
+        <div x-show="open" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4" style="background: rgba(0,0,0,0.6)">
+            <div class="bg-white rounded-xl shadow-2xl w-full max-w-4xl h-[85vh] flex flex-col" @click.outside="open = false">
+                <div class="flex justify-between items-center px-6 py-3 border-b">
+                    <span class="font-semibold text-gray-700">Pratinjau Dokumen</span>
+                    <button @click="open = false" class="text-gray-400 hover:text-gray-600 text-xl leading-none">&times;</button>
+                </div>
+                <iframe :src="src" class="flex-1 w-full rounded-b-xl" frameborder="0"></iframe>
+            </div>
         </div>
     </div>
     @endif
@@ -191,7 +250,7 @@
 </div>
 
     <!-- Upload Dokumen (langsung tampil, bukan modal) -->
-    @if($kerjasama->ks_jenis == 3 && in_array($kerjasama->status_pengajuan, ['DRAFT', 'UPLOAD_DOKUMEN']))
+    @if($kerjasama->ks_jenis == 3 && $kerjasama->status_pengajuan === 'DRAFT')
     <div class="bg-white rounded-lg shadow-sm border-2 border-dashed border-primary/30 p-6">
         <div class="flex items-center gap-2 mb-4">
             <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
