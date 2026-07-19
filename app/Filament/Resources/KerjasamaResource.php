@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\KerjasamaResource\Pages;
 use App\Models\Kerjasama;
+use App\Models\KsStatusDok;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -18,6 +19,8 @@ use Filament\Tables\Table;
 class KerjasamaResource extends Resource
 {
     protected static ?string $model = Kerjasama::class;
+    protected static ?string $navigationGroup = 'Data Kerja Sama';
+    protected static ?string $navigationIcon = 'heroicon-o-document-text';
     protected static ?string $navigationLabel = 'Kerja Sama';
     protected static ?string $modelLabel = 'Kerja Sama';
     protected static ?string $pluralModelLabel = 'Kerja Sama';
@@ -28,7 +31,6 @@ class KerjasamaResource extends Resource
             Select::make('ks_jenis')->label('Jenis')->relationship('jenis', 'nama_jenis')->required(),
             Select::make('ks_tingkat')->label('Tingkat')->relationship('tingkat', 'nama_tingkat')->required(),
             TextInput::make('kode_wilayah')->maxLength(20),
-            TextInput::make('provinsi')->maxLength(100),
             TextInput::make('nama_kl')->label('Instansi')->maxLength(200),
             TextInput::make('jumlah_kl_terlibat')->label('Jumlah K/L')->numeric()->default(1),
             TextInput::make('pihak1')->label('Pihak 1')->maxLength(200),
@@ -51,36 +53,52 @@ class KerjasamaResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->modifyQueryUsing(fn ($query) => $query->where('soft_delete', false)->whereNotNull('ks_status_dok')->orderBy('last_update', 'desc'))
             ->columns([
                 TextColumn::make('nama_kl')->label('Mitra')->searchable()->sortable(),
                 TextColumn::make('jenis.nama_jenis')->label('Jenis')->sortable(),
                 TextColumn::make('tingkat.nama_tingkat')->label('Tingkat'),
-                TextColumn::make('status_pengajuan')->label('Status')->badge()->color(function ($state) {
-                    return match($state) {
-                        'DRAFT' => 'gray', 'DIAJUKAN' => 'blue', 'DITOLAK' => 'red',
-                        'DISETUJUI' => 'warning', 'SELESAI' => 'success', 'EXPIRED' => 'gray',
-                        default => 'primary',
-                    };
+                TextColumn::make('statusDok.nama_status')->label('Status')->badge()->color(fn ($state) => match($state) {
+                    'Mengirimkan surat permohonan' => 'info',
+                    'Pemohon menyampaikan undangan pembahasan NK/PKS/NDA' => 'warning',
+                    'Dokumen dalam proses pembahasan' => 'warning',
+                    'Dokumen dalam proses penandatanganan' => 'primary',
+                    'Dokumen telah ditandatangani dan diterima oleh masing-masing Pihak' => 'success',
+                    'masa berlaku selesai' => 'gray',
+                    default => 'gray',
                 }),
-                TextColumn::make('tanggal_mulai_ks')->label('Tgl Mulai')->date(),
+                TextColumn::make('tanggal_pembahasan')->label('Jadwal Pembahasan')->dateTime()->sortable(),
                 TextColumn::make('last_update')->label('Update')->dateTime(),
             ])
             ->filters([
-                SelectFilter::make('status_pengajuan')->options(\App\Services\WorkflowService::STATUS),
+                SelectFilter::make('ks_status_dok')
+                    ->label('Status')
+                    ->options(KsStatusDok::pluck('nama_status', 'id')->toArray()),
                 SelectFilter::make('ks_jenis')->relationship('jenis', 'nama_jenis'),
             ])
             ->actions([
-                Tables\Actions\Action::make('review')->label('Review')->color('blue')
-                    ->icon('heroicon-m-document-magnifying-glass')
-                    ->visible(function (Kerjasama $r) { return $r->status_pengajuan === 'DIAJUKAN'; })
-                    ->url(function (Kerjasama $r) { return KerjasamaResource::getUrl('review', ['record' => $r->kerjasama_id]); }),
                 Tables\Actions\Action::make('kelola')->label('Kelola')->color('warning')
                     ->icon('heroicon-m-cog-6-tooth')
-                    ->visible(function (Kerjasama $r) { return !in_array($r->status_pengajuan, ['DIAJUKAN','DRAFT']); })
                     ->url(function (Kerjasama $r) { return KerjasamaResource::getUrl('review', ['record' => $r->kerjasama_id]); }),
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\Action::make('hapus')
+                    ->label('Hapus')->color('danger')
+                    ->icon('heroicon-m-trash')
+                    ->requiresConfirmation()
+                    ->action(function (Kerjasama $record) {
+                        $record->update(['soft_delete' => true]);
+                    }),
             ])
-            ->bulkActions([Tables\Actions\BulkActionGroup::make([Tables\Actions\DeleteBulkAction::make()])]);
+            ->bulkActions([Tables\Actions\BulkActionGroup::make([
+                Tables\Actions\BulkAction::make('hapus_bulk')
+                    ->label('Hapus')->color('danger')
+                    ->icon('heroicon-m-trash')
+                    ->requiresConfirmation()
+                    ->action(function ($records) {
+                        Kerjasama::whereIn('kerjasama_id', $records->pluck('kerjasama_id'))
+                            ->update(['soft_delete' => true]);
+                    }),
+            ])]);
     }
 
     public static function canCreate(): bool { return false; }

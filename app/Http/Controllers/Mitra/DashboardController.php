@@ -10,15 +10,14 @@ class DashboardController extends Controller
     public function index()
     {
         $total = Kerjasama::notDeleted()->count();
-        $draft = Kerjasama::notDeleted()->byStatus('DRAFT')->count();
-        $diajukan = Kerjasama::notDeleted()->whereIn('status_pengajuan', ['DIAJUKAN','REVIEW_ADMIN'])->count();
-        $ditolak = Kerjasama::notDeleted()->byStatus('DITOLAK')->count();
-        $disetujui = Kerjasama::notDeleted()->whereIn('status_pengajuan', ['DISETUJUI','MENUNGGU_PEMBAHASAN','SELESAI_PEMBAHASAN','PROSES_TTD'])->count();
-        $selesai = Kerjasama::notDeleted()->byStatus('SELESAI')->count();
-        $expired = Kerjasama::notDeleted()->byStatus('EXPIRED')->count();
-        $upcoming = Kerjasama::notDeleted()->where('status_pengajuan', 'MENUNGGU_PEMBAHASAN')->whereNotNull('tanggal_pembahasan_ks')->orderBy('tanggal_pembahasan_ks')->limit(5)->get();
+        $belum = Kerjasama::notDeleted()->whereNull('ks_status_dok')->count();
+        $dibahas = Kerjasama::notDeleted()->byStatus(2)->count();
+        $disetujui = Kerjasama::notDeleted()->whereIn('ks_status_dok', [3, 4])->count();
+        $selesai = Kerjasama::notDeleted()->byStatus(5)->count();
+        $expired = Kerjasama::notDeleted()->byStatus(6)->count();
+        $upcoming = Kerjasama::notDeleted()->where('ks_status_dok', 2)->whereNotNull('tanggal_pembahasan')->orderBy('tanggal_pembahasan')->limit(5)->get();
         $recent = Kerjasama::notDeleted()->with(['jenis', 'tingkat'])->orderBy('last_update', 'desc')->limit(5)->get();
 
-        return view('mitra.dashboard', compact('total','draft','diajukan','ditolak','disetujui','selesai','expired','upcoming','recent'));
+        return view('mitra.dashboard', compact('total','belum','dibahas','disetujui','selesai','expired','upcoming','recent'));
     }
 }

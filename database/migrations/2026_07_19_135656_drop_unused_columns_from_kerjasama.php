@@ -1,0 +1,25 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::table('kerjasama', function (Blueprint $table) {
+            $table->dropColumn(['provinsi', 'tahun_mulai', 'expired_date', 'tanggal_ttd']);
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::table('kerjasama', function (Blueprint $table) {
+            $table->string('provinsi', 100)->nullable();
+            $table->integer('tahun_mulai')->nullable();
+            $table->date('expired_date')->nullable();
+            $table->date('tanggal_ttd')->nullable();
+        });
+    }
+};

@@ -23,10 +23,23 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->path('admin')
+            ->brandLogo('https://pelayanan.data.kemendikdasmen.go.id/assets/imge/tutwuri.png')
+            ->brandLogoHeight('2.5rem')
+            ->favicon('https://pelayanan.data.kemendikdasmen.go.id/assets/imge/tutwuri.png')
             ->colors([
-                'primary' => Color::Blue,
+                'primary' => Color::hex('#1998ff'),
+                'success' => Color::Green,
+                'danger' => Color::Red,
+                'warning' => Color::Amber,
             ])
             ->brandName('Pusdatin Admin')
+            ->sidebarCollapsibleOnDesktop()
+            ->collapsibleNavigationGroups(false)
+            ->navigationGroups([
+                \Filament\Navigation\NavigationGroup::make()
+                    ->label('Data Kerja Sama')
+                    ->icon('heroicon-o-document-text'),
+            ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->pages([

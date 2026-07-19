@@ -12,11 +12,10 @@ class KerjasamaStatsWidget extends BaseWidget
     {
         return [
             Stat::make('Total Kerja Sama', Kerjasama::notDeleted()->count())->color('blue'),
-            Stat::make('Menunggu Review', Kerjasama::notDeleted()->byStatus('DIAJUKAN')->count())->color('warning'),
-            Stat::make('Ditolak', Kerjasama::notDeleted()->byStatus('DITOLAK')->count())->color('danger'),
-            Stat::make('Disetujui', Kerjasama::notDeleted()->whereIn('status_pengajuan', ['DISETUJUI','MENUNGGU_PEMBAHASAN','SELESAI_PEMBAHASAN'])->count())->color('success'),
-            Stat::make('Selesai', Kerjasama::notDeleted()->byStatus('SELESAI')->count())->color('green'),
-            Stat::make('Berakhir', Kerjasama::notDeleted()->byStatus('EXPIRED')->count())->color('gray'),
+            Stat::make('Belum Lengkap', Kerjasama::notDeleted()->byStatus(1)->count())->color('warning'),
+            Stat::make('Dalam Pembahasan', Kerjasama::notDeleted()->byStatus(2)->count())->color('orange'),
+            Stat::make('Selesai', Kerjasama::notDeleted()->byStatus(5)->count())->color('success'),
+            Stat::make('Berakhir', Kerjasama::notDeleted()->byStatus(6)->count())->color('gray'),
         ];
     }
 }

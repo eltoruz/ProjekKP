@@ -41,7 +41,6 @@ class SuratController extends Controller
             'dokumen_ks' => 'nullable|file|mimes:pdf,docx,zip|max:20480',
         ]);
 
-        $validated['status_pengajuan'] = 'SELESAI';
         $validated['ks_status_dok'] = 5;
         $validated['ks_tingkat'] = 1;
 

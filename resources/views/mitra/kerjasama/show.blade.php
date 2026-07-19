@@ -12,29 +12,45 @@
 @endif
 
 <div class="space-y-6" x-data="{ confirmAjukan: false, confirmHapus: false }">
+    @php
+        $reviewLogs = $kerjasama->review_log;
+        $lastReject = collect($reviewLogs)->filter(fn($l) => ($l['label'] ?? '') === 'Ditolak')->last();
+        $isRejected = $lastReject && !$kerjasama->ks_status_dok;
+    @endphp
+
+    @if($isRejected)
+    <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+        <div class="flex items-start gap-3">
+            <svg class="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <div class="flex-1">
+                <h4 class="text-sm font-semibold text-red-700">Pengajuan Ditolak</h4>
+                <p class="text-sm text-red-600 mt-1">{{ $lastReject['alasan'] ?? 'Tanpa alasan' }}</p>
+                @if($lastReject['catatan'] ?? null)
+                <p class="text-xs text-red-500 mt-1">Catatan: {{ $lastReject['catatan'] }}</p>
+                @endif
+                @if($lastReject['waktu'] ?? null)
+                <p class="text-xs text-red-400 mt-1">{{ \Carbon\Carbon::parse($lastReject['waktu'])->format('d M Y, H:i') }}</p>
+                @endif
+            </div>
+        </div>
+    </div>
+    @endif
+
     <!-- Status Bar -->
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
         <div class="flex flex-wrap items-center justify-between gap-3">
+            @if($kerjasama->ks_status_dok)
             <div class="flex items-center gap-3">
                 <span class="text-sm text-gray-500">Status:</span>
-                <x-status-badge :status="$kerjasama->status_pengajuan" :label="$kerjasama->status_label" />
-                @if($kerjasama->statusDok)
-                    <span class="text-xs text-gray-400">({{ $kerjasama->statusDok->nama_status }})</span>
-                @endif
+                <x-status-badge :status="$kerjasama->ks_status_dok" :label="$kerjasama->status_label" />
             </div>
+            @endif
             @if($kerjasama->ks_jenis == 3)
             <div class="flex gap-2">
-                @if($canEdit && $kerjasama->status_pengajuan !== 'DITOLAK')
+                @if(!$kerjasama->ks_status_dok)
                     <a href="{{ route('mitra.kerjasama.edit', $kerjasama->kerjasama_id) }}" class="border border-gray-300 text-gray-700 px-4 py-2 rounded-lg text-sm hover:bg-gray-50">Edit</a>
-                @endif
-                @if($canEdit)
                     <button type="button" @click="confirmHapus = true" class="border border-red-300 text-red-600 px-4 py-2 rounded-lg text-sm hover:bg-red-50">Hapus</button>
-                @endif
-                @if($kerjasama->status_pengajuan === 'UPLOAD_DOKUMEN')
                     <button type="button" @click="confirmAjukan = true" class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-green-700">Ajukan ke Admin</button>
-                @endif
-                @if($kerjasama->status_pengajuan === 'DITOLAK')
-                    <a href="{{ route('mitra.kerjasama.upload-ulang', $kerjasama->kerjasama_id) }}" class="bg-orange-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-orange-700">Upload Ulang</a>
                 @endif
             </div>
             @endif
@@ -89,38 +105,56 @@
         </div>
     </div>
 
-    <!-- Workflow Timeline (hanya untuk NK) -->
-    @if($kerjasama->ks_jenis == 3)
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-        <h3 class="text-sm font-semibold text-gray-700 mb-3">Progress Workflow</h3>
-        <x-workflow-stepper :current="$kerjasama->status_pengajuan" />
+    <!-- Upload Surat Undangan (Status 2 = Disetujui, menunggu undangan) -->
+    @if($kerjasama->ks_status_dok == 2 && !$kerjasama->surat_undangan)
+    <div class="bg-white rounded-lg shadow-sm border-2 border-dashed border-primary/30 p-6">
+        <div class="flex items-center gap-2 mb-4">
+            <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+            </svg>
+            <h3 class="text-base font-semibold text-navy">Upload Surat Undangan</h3>
+        </div>
+        <p class="text-sm text-gray-500 mb-4">Pengajuan telah disetujui. Silakan upload surat undangan pembahasan NK untuk melanjutkan ke tahap penjadwalan.</p>
+        <form action="{{ route('mitra.kerjasama.upload-undangan', $kerjasama->kerjasama_id) }}" method="POST" enctype="multipart/form-data">
+            @csrf
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Surat Undangan <span class="text-red-500">*</span></label>
+                <input type="file" name="surat_undangan" accept=".pdf,.docx,.zip" required class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                <p class="text-xs text-gray-400 mt-1">Format: PDF, DOCX, ZIP — Maks 20MB</p>
+            </div>
+            <button type="submit" class="bg-primary text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-blue-600">
+                Upload Surat Undangan
+            </button>
+        </form>
+    </div>
+    @endif
+
+    @if($kerjasama->ks_status_dok == 2 && $kerjasama->surat_undangan && !$kerjasama->tanggal_pembahasan)
+    <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+        <div class="flex items-center gap-3">
+            <svg class="w-5 h-5 text-green-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <div>
+                <p class="text-sm font-medium text-green-700">Surat Undangan Terupload</p>
+                <p class="text-xs text-green-600 mt-0.5">Menunggu admin menjadwalkan pembahasan.</p>
+            </div>
+        </div>
     </div>
     @endif
 
     <!-- Jadwal Pembahasan -->
-    @if($kerjasama->tanggal_pembahasan_ks)
+    @if($kerjasama->tanggal_pembahasan)
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <h3 class="text-base font-semibold text-navy mb-3">Jadwal Pembahasan</h3>
-        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm">
-            <div><span class="text-gray-500">Tanggal:</span> <span class="font-medium">{{ \Carbon\Carbon::parse($kerjasama->tanggal_pembahasan_ks)->format('d M Y') }}</span></div>
-            <div><span class="text-gray-500">Jam:</span> <span class="font-medium">{{ substr($kerjasama->jam_pembahasan, 0, 5) }}</span></div>
-            <div><span class="text-gray-500">Lokasi:</span> <span class="font-medium">{{ $kerjasama->lokasi_pembahasan ?? '-' }}</span></div>
-            @if($kerjasama->link_meeting)
-            <div class="col-span-2"><span class="text-gray-500">Link Meeting:</span> <a href="{{ $kerjasama->link_meeting }}" target="_blank" class="text-primary font-medium hover:underline">{{ $kerjasama->link_meeting }}</a></div>
-            @endif
-            @if($kerjasama->pic_pembahasan)
-            <div><span class="text-gray-500">PIC:</span> <span class="font-medium">{{ $kerjasama->pic_pembahasan }}</span></div>
-            @endif
-            @if($kerjasama->nomor_pihak1 || $kerjasama->nomor_pihak2)
-            <div><span class="text-gray-500">Nomor Pihak 1:</span> <span class="font-medium">{{ $kerjasama->nomor_pihak1 ?? '-' }}</span></div>
-            <div><span class="text-gray-500">Nomor Pihak 2:</span> <span class="font-medium">{{ $kerjasama->nomor_pihak2 ?? '-' }}</span></div>
-            @endif
+        <div class="text-sm">
+            <div><span class="text-gray-500">Tanggal & Waktu:</span> <span class="font-medium">{{ \Carbon\Carbon::parse($kerjasama->tanggal_pembahasan)->format('d M Y, H:i') }}</span></div>
         </div>
     </div>
     @endif
 
     <!-- Data Final (setelah TTD) -->
-    @if($kerjasama->status_pengajuan === 'SELESAI')
+    @if($kerjasama->ks_status_dok == 5)
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <h3 class="text-base font-semibold text-navy mb-3">Data Final Kerja Sama</h3>
         <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm">
@@ -152,7 +186,6 @@
         <div class="p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
             <div><span class="text-gray-500">Jenis:</span> <span class="font-medium">{{ $kerjasama->jenis?->nama_jenis }}</span></div>
             <div><span class="text-gray-500">Tingkat:</span> <span class="font-medium">{{ $kerjasama->tingkat?->nama_tingkat }}</span></div>
-            <div><span class="text-gray-500">Provinsi:</span> <span class="font-medium">{{ $kerjasama->provinsi ?? '-' }}</span></div>
             <div><span class="text-gray-500">Kode Wilayah:</span> <span class="font-medium">{{ $kerjasama->kode_wilayah ?? '-' }}</span></div>
             <div><span class="text-gray-500">Instansi:</span> <span class="font-medium">{{ $kerjasama->nama_kl ?? '-' }}</span></div>
             <div><span class="text-gray-500">Jml K/L:</span> <span class="font-medium">{{ $kerjasama->jumlah_kl_terlibat }}</span></div>
@@ -164,9 +197,7 @@
             <div><span class="text-gray-500">Jangka Waktu:</span> <span class="font-medium">{{ $kerjasama->jangka_waktu_thn ? $kerjasama->jangka_waktu_thn.' tahun' : '-' }}</span></div>
             <div><span class="text-gray-500">Tgl Mulai:</span> <span class="font-medium">{{ $kerjasama->tanggal_mulai_ks?->format('d M Y') ?? '-' }}</span></div>
             <div><span class="text-gray-500">Tgl Berakhir:</span> <span class="font-medium">{{ $kerjasama->tanggal_selesai_ks?->format('d M Y') ?? '-' }}</span></div>
-            @if($kerjasama->sisa_masa_berlaku)
-                <div><span class="text-gray-500">Sisa Masa Berlaku:</span> <span class="font-medium">{{ $kerjasama->sisa_masa_berlaku }}</span></div>
-            @elseif($kerjasama->sisa_masa_berlaku_hari !== null)
+            @if($kerjasama->sisa_masa_berlaku_hari !== null)
                 <div><span class="text-gray-500">Sisa Masa Berlaku:</span> <span class="font-medium {{ $kerjasama->sisa_masa_berlaku_hari < 30 ? 'text-red-600' : '' }}">{{ $kerjasama->sisa_masa_berlaku_hari }} hari</span></div>
             @endif
             <div><span class="text-gray-500">Narahubung Adm:</span> <span class="font-medium">{{ $kerjasama->narahubung_adm ?? '-' }}</span></div>
@@ -184,7 +215,7 @@
 
     <!-- Dokumen -->
     @php $files = $kerjasama->dokumen_ks ? (json_decode($kerjasama->dokumen_ks, true) ?: []) : []; @endphp
-    @if(count($files))
+    @if(count($files) || $kerjasama->surat_undangan)
     <div class="bg-white rounded-lg shadow-sm border border-gray-200" x-data="{ open: false, src: '' }">
         <div class="px-6 py-4 border-b border-gray-100">
             <h3 class="text-base font-semibold text-gray-800">Dokumen</h3>
@@ -202,6 +233,13 @@
                     <button type="button" @click="open = true; src = '{{ Storage::disk('public')->url($file) }}'" class="text-primary text-xs hover:underline">Lihat</button>
                 </li>
                 @endforeach
+                @if($kerjasama->surat_undangan)
+                <li class="flex items-center gap-2 py-2">
+                    <span class="text-sm">Surat Undangan</span>
+                    <span class="text-gray-300">—</span>
+                    <button type="button" @click="open = true; src = '{{ Storage::disk('public')->url($kerjasama->surat_undangan) }}'" class="text-primary text-xs hover:underline">Lihat</button>
+                </li>
+                @endif
             </ul>
         </div>
 
@@ -219,7 +257,6 @@
     @endif
 
     <!-- Review Logs -->
-    @php $reviewLogs = $kerjasama->review_log; @endphp
     @if(count($reviewLogs))
     <div class="bg-white rounded-lg shadow-sm border border-gray-200">
         <div class="px-5 py-3 border-b border-gray-100">
@@ -228,10 +265,9 @@
         <div class="px-5 py-3 space-y-2">
             @foreach($reviewLogs as $log)
             @php
-                $status = $log['status'] ?? '';
-                $label = \App\Services\WorkflowService::STATUS[$status] ?? $status;
+                $label = $log['label'] ?? $log['status'] ?? '';
                 $waktu = \Carbon\Carbon::parse($log['waktu'] ?? '')->format('d M Y, H:i');
-                $isReject = $status === 'DITOLAK';
+                $isReject = ($log['label'] ?? '') === 'Ditolak';
             @endphp
             <div class="flex gap-2 text-xs">
                 <span class="{{ $isReject ? 'text-red-600' : 'text-green-600' }} font-medium flex-shrink-0">{{ $label }}</span>
@@ -250,7 +286,7 @@
 </div>
 
     <!-- Upload Dokumen (langsung tampil, bukan modal) -->
-    @if($kerjasama->ks_jenis == 3 && $kerjasama->status_pengajuan === 'DRAFT')
+    @if($kerjasama->ks_jenis == 3 && !$kerjasama->ks_status_dok && !$kerjasama->dokumen_ks)
     <div class="bg-white rounded-lg shadow-sm border-2 border-dashed border-primary/30 p-6">
         <div class="flex items-center gap-2 mb-4">
             <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
