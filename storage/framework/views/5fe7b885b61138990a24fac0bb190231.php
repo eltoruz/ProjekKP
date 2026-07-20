@@ -49,7 +49,7 @@
             <div class="flex gap-2">
                 <button type="submit" class="bg-indigo-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-600">Filter</button>
                 <a href="<?php echo e(route('admin.kerjasama.index')); ?>" class="border border-gray-300 text-gray-600 px-4 py-2 rounded-lg text-sm hover:bg-gray-50">Reset</a>
-                <a href="<?php echo e(route('admin.kerjasama.create')); ?>" class="bg-green-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-600 ml-auto">+ Tambah</a>
+                <a href="<?php echo e(route('admin.kerjasama.create')); ?>" class="bg-green-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-600 ml-auto">+ Input Data</a>
             </div>
         </form>
     </div>

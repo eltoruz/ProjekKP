@@ -55,7 +55,7 @@
     </aside>
 
     <main class="flex-1 overflow-y-auto bg-gray-50">
-        <header class="bg-white border-b-2 border-indigo-500 px-6 py-4 flex justify-between items-center sticky top-0 z-10 shadow-sm">
+        <header class="bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center sticky top-0 z-10 shadow-sm">
             <div>
                 <h1 class="text-lg font-semibold text-slate-800 tracking-tight"><?php echo $__env->yieldContent('page-title', 'Dashboard'); ?></h1>
                 <p class="text-xs text-gray-400">Sistem Manajemen Kerja Sama — Pusdatin Kemendikdasmen</p>
