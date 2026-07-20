@@ -1,10 +1,11 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Admin\DashboardController as AdminDashboard;
+use App\Http\Controllers\Admin\KerjasamaController as AdminKerjasama;
 use App\Http\Controllers\Mitra\DashboardController as MitraDashboard;
 use App\Http\Controllers\Mitra\KerjasamaController as MitraKerjasama;
 use App\Http\Controllers\Mitra\NotaKesepakatanController;
-use App\Http\Controllers\Mitra\SuratController as MitraSurat;
 
 Route::get('/', function () {
     return view('auth.role-selection');
@@ -30,12 +31,23 @@ Route::middleware(['web'])
         Route::get('/kerjasama/{id}/upload-ulang', [NotaKesepakatanController::class, 'uploadUlangForm'])->name('kerjasama.upload-ulang');
         Route::post('/kerjasama/{id}/upload-ulang', [NotaKesepakatanController::class, 'uploadUlang'])->name('kerjasama.upload-ulang');
         Route::post('/kerjasama/{id}/upload-undangan', [NotaKesepakatanController::class, 'uploadUndangan'])->name('kerjasama.upload-undangan');
-        Route::get('/surat', [MitraSurat::class, 'index'])->name('surat.index');
-        Route::get('/surat/create', [MitraSurat::class, 'create'])->name('surat.create');
-        Route::post('/surat', [MitraSurat::class, 'store'])->name('surat.store');
-        Route::get('/surat/{id}', [MitraSurat::class, 'show'])->name('surat.show');
-        Route::get('/surat/{id}/edit', [MitraSurat::class, 'edit'])->name('surat.edit');
-        Route::put('/surat/{id}', [MitraSurat::class, 'update'])->name('surat.update');
-        Route::get('/surat/{id}/download', [MitraSurat::class, 'download'])->name('surat.download');
-        Route::delete('/surat/{id}', [MitraSurat::class, 'destroy'])->name('surat.destroy');
+    });
+
+// Admin
+Route::middleware(['web', \App\Http\Middleware\AutoLoginAdmin::class])
+    ->prefix('admin')->name('admin.')->group(function () {
+        Route::get('/', [AdminDashboard::class, 'index'])->name('dashboard');
+        Route::get('/kerjasama', [AdminKerjasama::class, 'index'])->name('kerjasama.index');
+        Route::get('/kerjasama/create', [AdminKerjasama::class, 'create'])->name('kerjasama.create');
+        Route::post('/kerjasama', [AdminKerjasama::class, 'store'])->name('kerjasama.store');
+        Route::delete('/kerjasama/bulk-delete', [AdminKerjasama::class, 'bulkDelete'])->name('kerjasama.bulkDelete');
+        Route::get('/kerjasama/{id}/edit', [AdminKerjasama::class, 'edit'])->name('kerjasama.edit');
+        Route::put('/kerjasama/{id}', [AdminKerjasama::class, 'update'])->name('kerjasama.update');
+        Route::delete('/kerjasama/{id}', [AdminKerjasama::class, 'destroy'])->name('kerjasama.destroy');
+        Route::get('/kerjasama/{id}/review', [AdminKerjasama::class, 'review'])->name('kerjasama.review');
+        Route::post('/kerjasama/{id}/setujui', [AdminKerjasama::class, 'setujui'])->name('kerjasama.setujui');
+        Route::post('/kerjasama/{id}/tolak', [AdminKerjasama::class, 'tolak'])->name('kerjasama.tolak');
+        Route::post('/kerjasama/{id}/jadwalkan', [AdminKerjasama::class, 'jadwalkan'])->name('kerjasama.jadwalkan');
+        Route::post('/kerjasama/{id}/lanjut-pembahasan', [AdminKerjasama::class, 'lanjutPembahasan'])->name('kerjasama.lanjutPembahasan');
+        Route::post('/kerjasama/{id}/finalisasi', [AdminKerjasama::class, 'finalisasi'])->name('kerjasama.finalisasi');
     });

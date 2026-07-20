@@ -24,14 +24,15 @@
             </div>
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Tingkat <span class="text-red-500">*</span></label>
-                <select name="ks_tingkat" required class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                <select id="tingkatDisplay" required class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm disabled:bg-gray-100 disabled:text-gray-500">
                     @foreach($tingkatList as $t)
                         <option value="{{ $t->id }}" {{ $kerjasama->ks_tingkat == $t->id ? 'selected' : '' }}>{{ $t->nama_tingkat }}</option>
                     @endforeach
                 </select>
+                <input type="hidden" name="ks_tingkat" id="tingkatHidden" value="{{ $kerjasama->ks_tingkat }}">
             </div>
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Nama K/L / Instansi <span class="text-red-500">*</span></label>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Nama Kementerian / Lembaga / Instansi <span class="text-red-500">*</span></label>
                 <input type="text" name="nama_kl" value="{{ $kerjasama->nama_kl }}" required class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
             </div>
         </div>
@@ -41,7 +42,7 @@
                 <h3 class="text-base font-semibold text-navy">Dokumen Nota Kesepakatan</h3>
             </div>
 
-            @php $existingFiles = $kerjasama->dokumen_ks ? (json_decode($kerjasama->dokumen_ks, true) ?: []) : []; @endphp
+            @php $existingFiles = $kerjasama->folder_ks ? (json_decode($kerjasama->folder_ks, true) ?: []) : []; @endphp
             @if(count($existingFiles))
             <div class="bg-gray-50 rounded-lg p-3 text-sm">
                 <p class="text-gray-500 mb-2">Dokumen saat ini:</p>
@@ -111,20 +112,31 @@
 
 <script>
     const jenisSelect = document.getElementById('jenisSelect');
+    const tingkatDisplay = document.getElementById('tingkatDisplay');
+    const tingkatHidden = document.getElementById('tingkatHidden');
     const nkFields = document.getElementById('nkFormFields');
     const nkNotAvail = document.getElementById('nkNotAvailable');
     const submitBtn = document.getElementById('submitBtn');
 
     function toggleForm() {
         if (jenisSelect.value === '3') {
+            tingkatDisplay.value = '3';
+            tingkatDisplay.setAttribute('disabled', 'disabled');
+            tingkatHidden.value = '3';
             nkFields.classList.remove('hidden');
             nkNotAvail.classList.add('hidden');
             submitBtn.classList.remove('hidden');
         } else if (jenisSelect.value === '') {
+            tingkatDisplay.value = '';
+            tingkatDisplay.removeAttribute('disabled');
+            tingkatHidden.value = '';
             nkFields.classList.add('hidden');
             nkNotAvail.classList.add('hidden');
             submitBtn.classList.remove('hidden');
         } else {
+            tingkatDisplay.value = '';
+            tingkatDisplay.removeAttribute('disabled');
+            tingkatHidden.value = '';
             nkFields.classList.add('hidden');
             nkNotAvail.classList.remove('hidden');
             submitBtn.classList.add('hidden');
@@ -132,6 +144,9 @@
     }
 
     jenisSelect.addEventListener('change', toggleForm);
+    tingkatDisplay.addEventListener('change', function() {
+        tingkatHidden.value = this.value;
+    });
     toggleForm();
 </script>
 @endsection

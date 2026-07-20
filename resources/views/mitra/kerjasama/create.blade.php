@@ -32,15 +32,16 @@
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Tingkat <span class="text-red-500">*</span></label>
-                    <select name="ks_tingkat" required class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                    <select id="tingkatDisplay" required class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm disabled:bg-gray-100 disabled:text-gray-500">
                         <option value="">Pilih Tingkat</option>
                         @foreach($tingkatList as $t)
                             <option value="{{ $t->id }}" {{ old('ks_tingkat') == $t->id ? 'selected' : '' }}>{{ $t->nama_tingkat }}</option>
                         @endforeach
                     </select>
+                    <input type="hidden" name="ks_tingkat" id="tingkatHidden" value="{{ old('ks_tingkat') }}">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Nama K/L / Instansi <span class="text-red-500">*</span></label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Nama Kementerian / Lembaga / Instansi <span class="text-red-500">*</span></label>
                     <input type="text" name="nama_kl" value="{{ old('nama_kl') }}" required class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" placeholder="Nama instansi/lembaga mitra">
                 </div>
             </div>
@@ -108,6 +109,8 @@
 
 <script>
     const jenisSelect = document.getElementById('jenisSelect');
+    const tingkatDisplay = document.getElementById('tingkatDisplay');
+    const tingkatHidden = document.getElementById('tingkatHidden');
     const nkFields = document.getElementById('nkFields');
     const nonNkFields = document.getElementById('nonNkFields');
     const submitBtn = document.getElementById('submitBtn');
@@ -128,18 +131,27 @@
     function toggleForm() {
         var val = jenisSelect.value;
         if (val === '3') {
+            tingkatDisplay.value = '3';
+            tingkatDisplay.setAttribute('disabled', 'disabled');
+            tingkatHidden.value = '3';
             nkFields.classList.remove('hidden');
             nonNkFields.classList.add('hidden');
             submitBtn.classList.remove('hidden');
             enableAll(nkFields);
             disableAll(nonNkFields);
         } else if (val === '') {
+            tingkatDisplay.value = '';
+            tingkatDisplay.removeAttribute('disabled');
+            tingkatHidden.value = '';
             nkFields.classList.add('hidden');
             nonNkFields.classList.add('hidden');
             submitBtn.classList.remove('hidden');
             disableAll(nkFields);
             disableAll(nonNkFields);
         } else {
+            tingkatDisplay.value = '';
+            tingkatDisplay.removeAttribute('disabled');
+            tingkatHidden.value = '';
             nkFields.classList.add('hidden');
             nonNkFields.classList.remove('hidden');
             submitBtn.classList.add('hidden');
@@ -149,6 +161,9 @@
     }
 
     jenisSelect.addEventListener('change', toggleForm);
+    tingkatDisplay.addEventListener('change', function() {
+        tingkatHidden.value = this.value;
+    });
     toggleForm();
 </script>
 @endsection

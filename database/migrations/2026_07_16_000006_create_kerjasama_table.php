@@ -14,7 +14,6 @@ return new class extends Migration
             $table->foreignId('ks_jenis')->constrained('ks_jenis');
             $table->foreignId('ks_tingkat')->constrained('ks_tingkat');
             $table->string('kode_wilayah', 20)->nullable();
-            $table->string('provinsi', 100)->nullable();
             $table->string('nama_kl', 200)->nullable();
             $table->integer('jumlah_kl_terlibat')->default(1);
             $table->string('pihak1', 200)->nullable();
@@ -23,8 +22,6 @@ return new class extends Migration
             $table->integer('jangka_waktu_thn')->nullable();
             $table->date('tanggal_mulai_ks')->nullable();
             $table->date('tanggal_selesai_ks')->nullable();
-            $table->string('sisa_masa_berlaku', 100)->nullable();
-            $table->integer('tahun_mulai')->nullable();
             $table->string('nomor_pihak1', 100)->nullable();
             $table->string('nomor_pihak2', 100)->nullable();
             $table->string('ttd_pihak1', 200)->nullable();
@@ -38,24 +35,14 @@ return new class extends Migration
             $table->string('nomor_cp_teknis', 50)->nullable();
             $table->text('dokumen_ks')->nullable();
             $table->text('dokumen_pendukung')->nullable();
-            $table->string('folder_ks', 200)->nullable();
+            $table->text('folder_ks')->nullable();
             $table->text('unit_utama_terlibat')->nullable();
             $table->text('pusdatin_kirim_data')->nullable();
             $table->text('pusdatin_terima_data')->nullable();
-            $table->date('expired_date')->nullable();
             $table->boolean('soft_delete')->default(false);
             $table->timestamp('create_date')->nullable();
             $table->timestamp('last_update')->nullable();
-
-            // Workflow & review (tambahan untuk fitur aplikasi)
-            $table->string('status_pengajuan', 50)->default('DRAFT');
-            $table->date('tanggal_pembahasan_ks')->nullable();
-            $table->time('jam_pembahasan')->nullable();
-            $table->string('lokasi_pembahasan', 200)->nullable();
-            $table->string('link_meeting', 200)->nullable();
-            $table->string('pic_pembahasan', 200)->nullable();
-            $table->date('tanggal_ttd')->nullable();
-            $table->text('review_log')->nullable();
+            $table->dateTime('tanggal_pembahasan')->nullable();
         });
     }
 

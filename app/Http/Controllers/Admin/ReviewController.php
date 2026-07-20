@@ -37,7 +37,7 @@ class ReviewController extends Controller
         $request->validate(['alasan' => 'required|string']);
         $ks = Kerjasama::where('kerjasama_id', $id)->notDeleted()->firstOrFail();
         $ks->update(['ks_status_dok' => 1]);
-        $ks->addReviewEntry('Ditolak', $request->alasan, $request->catatan_perbaikan);
+        $ks->addReviewEntry('Ditolak', $request->alasan . ($request->catatan_perbaikan ? ' — ' . $request->catatan_perbaikan : ''));
         return back()->with('success', 'Ditolak.');
     }
 }

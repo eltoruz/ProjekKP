@@ -22,11 +22,10 @@ class Kerjasama extends Model
         'nomor_pihak1', 'nomor_pihak2', 'ttd_pihak1', 'ttd_pihak2',
         'ks_status_dok', 'narahubung_adm', 'nomor_cp_adm',
         'ks_metode', 'ks_implementasi', 'narahubung_teknis', 'nomor_cp_teknis',
-        'dokumen_ks', 'surat_undangan', 'dokumen_pendukung', 'folder_ks', 'unit_utama_terlibat',
+        'dokumen_ks', 'dokumen_pendukung', 'folder_ks', 'unit_utama_terlibat',
         'pusdatin_kirim_data', 'pusdatin_terima_data', 'soft_delete',
         'create_date', 'last_update',
         'tanggal_pembahasan',
-        'review_log',
     ];
 
     protected $casts = [
@@ -38,7 +37,7 @@ class Kerjasama extends Model
         'last_update' => 'datetime',
     ];
 
-    protected $appends = ['dokumen_ks_display', 'surat_undangan_display', 'review_log_display'];
+    protected $appends = ['dokumen_ks_display', 'folder_ks_display'];
 
     protected static function boot()
     {
@@ -60,31 +59,26 @@ class Kerjasama extends Model
     public function statusDok() { return $this->belongsTo(KsStatusDok::class, 'ks_status_dok'); }
     public function metode() { return $this->belongsTo(KsMetode::class, 'ks_metode'); }
     public function implementasi() { return $this->belongsTo(KsImplementasi::class, 'ks_implementasi'); }
+    public function reviewLogs() { return $this->hasMany(ReviewLog::class, 'kerjasama_id', 'kerjasama_id')->orderBy('id'); }
 
     public function scopeNotDeleted($query) { return $query->where('soft_delete', false); }
     public function scopeByStatus($query, int $status) { return $query->where('ks_status_dok', $status); }
 
-    public function getReviewLogAttribute($value): array
+    public function getReviewLogAttribute(): array
     {
-        return json_decode($value ?? '[]', true) ?: [];
+        return $this->reviewLogs->map(fn($log) => [
+            'label' => $log->label,
+            'catatan' => $log->catatan,
+            'waktu' => $log->created_at->toDateTimeString(),
+        ])->toArray();
     }
 
-    public function setReviewLogAttribute($value): void
+    public function addReviewEntry(string $label, ?string $catatan = null): void
     {
-        $this->attributes['review_log'] = json_encode($value);
-    }
-
-    public function addReviewEntry(string $label, ?string $alasan = null, ?string $catatan = null): void
-    {
-        $logs = $this->review_log;
-        $logs[] = [
+        $this->reviewLogs()->create([
             'label' => $label,
-            'alasan' => $alasan,
             'catatan' => $catatan,
-            'waktu' => now()->toDateTimeString(),
-        ];
-        $this->review_log = $logs;
-        $this->save();
+        ]);
     }
 
     public function getSisaMasaBerlakuHariAttribute()
@@ -106,54 +100,31 @@ class Kerjasama extends Model
     public function getDokumenKsDisplayAttribute(): string
     {
         if (!$this->dokumen_ks) return '-';
-        $files = json_decode($this->dokumen_ks, true);
-        if (!is_array($files)) return $this->dokumen_ks;
-        $labels = ['Surat Permohonan', 'Draft Nota Kesepakatan', 'Dokumen Final', 'Dokumen Revisi'];
+        $url = Storage::disk('public')->exists($this->dokumen_ks)
+            ? Storage::disk('public')->url($this->dokumen_ks)
+            : $this->dokumen_ks;
+        return "<a href='{$url}' target='_blank' style='color:#2563eb;text-decoration:underline;font-size:0.875rem'>Dokumen Final (TTD)</a>";
+    }
+
+    public function getFolderKsDisplayAttribute(): array
+    {
+        if (!$this->folder_ks) return [];
+        $files = json_decode($this->folder_ks, true);
+        if (!is_array($files)) return [];
+        $labels = ['Surat Permohonan', 'Draft Nota Kesepakatan', 'Surat Undangan'];
         return collect($files)->map(function ($f, $i) use ($labels) {
-            $name = $labels[$i] ?? 'Dokumen '.($i+1);
             $url = Storage::disk('public')->exists($f)
                 ? Storage::disk('public')->url($f)
                 : $f;
-            return "<a href='{$url}' target='_blank' style='color:#2563eb;text-decoration:underline;font-size:0.875rem'>{$name}</a>";
-        })->implode(' | ');
+            return ['label' => $labels[$i] ?? 'Dokumen ' . ($i + 1), 'url' => $url];
+        })->toArray();
     }
 
-    public function getSuratUndanganDisplayAttribute(): string
+    public function hasSuratUndangan(): bool
     {
-        if (!$this->surat_undangan) return '-';
-        $url = Storage::disk('public')->exists($this->surat_undangan)
-            ? Storage::disk('public')->url($this->surat_undangan)
-            : $this->surat_undangan;
-        return "<a href='{$url}' target='_blank' style='color:#2563eb;text-decoration:underline;font-size:0.875rem'>Lihat Surat Undangan</a>";
-    }
-
-    public function getReviewLogDisplayAttribute(): string
-    {
-        $logs = $this->review_log;
-        if (empty($logs)) return '<span class="text-gray-400">-</span>';
-        return collect($logs)->map(function ($l) {
-            $label = $l['label'] ?? '';
-            $alasan = $l['alasan'] ?? '';
-            $catatan = $l['catatan'] ?? '';
-            $waktu = $l['waktu'] ?? '';
-            $badgeColor = match($label) {
-                'Ditolak' => '#ef4444',
-                'Disetujui' => '#22c55e',
-                'Jadwal' => '#3b82f6',
-                'TTD Selesai' => '#a855f7',
-                default => '#9ca3af',
-            };
-            $time = \Carbon\Carbon::parse($waktu)->format('d M Y, H:i');
-            return "<div style='display:flex;align-items:flex-start;gap:8px;padding:4px 0'>
-                <span style='display:inline-block;width:8px;height:8px;border-radius:50%;background:{$badgeColor};margin-top:5px;flex-shrink:0'></span>
-                <div>
-                    <strong>{$label}</strong>
-                    <span style='color:#9ca3af;font-size:0.85em;margin-left:4px'>{$time}</span>
-                    <br><span style='color:#6b7280'>{$alasan}</span>
-                    ".($catatan ? "<br><span style='color:#9ca3af;font-size:0.85em'>{$catatan}</span>" : '')."
-                </div>
-            </div>";
-        })->implode('');
+        if (!$this->folder_ks) return false;
+        $files = json_decode($this->folder_ks, true);
+        return is_array($files) && count($files) >= 3;
     }
 
     public function getStatusColorAttribute()

@@ -34,7 +34,7 @@
                     <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Mitra</th>
                     <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Jenis</th>
                     <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tentang</th>
-                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Informasi Pengajuan</th>
                     <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tanggal</th>
                     <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Aksi</th>
                 </tr>
@@ -47,8 +47,22 @@
                     <td class="px-4 py-3">{{ $ks->jenis?->nama_jenis ?? '-' }}</td>
                     <td class="px-4 py-3 max-w-xs truncate">{{ $ks->tentang ?? '-' }}</td>
                     <td class="px-4 py-3">
-                        @if($ks->ks_status_dok)
-                            <x-status-badge :status="$ks->ks_status_dok" :label="$ks->status_label" />
+                        @if($ks->ks_status_dok == 2)
+                            @if(!$ks->tanggal_pembahasan)
+                                <span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700">Menunggu Jadwal</span>
+                            @elseif(!$ks->hasSuratUndangan())
+                                <span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700">Upload Undangan</span>
+                            @else
+                                <span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-700">Menunggu Pembahasan</span>
+                            @endif
+                        @elseif($ks->ks_status_dok)
+                            @php
+                                $sColors = [1 => 'bg-blue-100 text-blue-700', 3 => 'bg-orange-100 text-orange-700', 4 => 'bg-purple-100 text-purple-700', 5 => 'bg-green-100 text-green-700', 6 => 'bg-gray-100 text-gray-600'];
+                                $sLabels = [1 => 'Menunggu Review', 3 => 'Pembahasan', 4 => 'Penandatanganan', 5 => 'Selesai', 6 => 'Berakhir'];
+                            @endphp
+                            <span class="px-2.5 py-0.5 rounded-full text-xs font-medium {{ $sColors[$ks->ks_status_dok] ?? 'bg-gray-100 text-gray-600' }}">
+                                {{ $sLabels[$ks->ks_status_dok] ?? $ks->status_label }}
+                            </span>
                         @else
                             <span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">Draft</span>
                         @endif

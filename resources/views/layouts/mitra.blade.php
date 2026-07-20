@@ -45,16 +45,6 @@
                 </a>
             </div>
 
-            <div class="pt-3">
-                <p class="px-3 text-[10px] font-semibold text-white/40 uppercase tracking-wider mb-2">Surat</p>
-                <a href="{{ route('mitra.surat.index') }}"
-                    class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm {{ request()->routeIs('mitra.surat.*') ? 'bg-primary/20 text-white font-medium' : 'text-white/70 hover:bg-white/10 hover:text-white' }}">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
-                    </svg>
-                    Daftar Surat
-                </a>
-            </div>
         </nav>
 
         <div class="border-t border-white/10 px-4 py-3">

@@ -21,9 +21,9 @@ class NotaKesepakatanController extends Controller
         if ($request->hasFile('surat_permohonan')) $paths[] = $request->file('surat_permohonan')->store('dokumen/' . $id, 'public');
         if ($request->hasFile('draft_nk')) $paths[] = $request->file('draft_nk')->store('dokumen/' . $id, 'public');
 
-        $existing = $ks->dokumen_ks ? json_decode($ks->dokumen_ks, true) ?: [] : [];
+        $existing = $ks->folder_ks ? json_decode($ks->folder_ks, true) ?: [] : [];
         $ks->update([
-            'dokumen_ks' => json_encode(array_merge($existing, $paths)),
+            'folder_ks' => json_encode(array_merge($existing, $paths)),
             'ks_status_dok' => 1,
         ]);
 
@@ -35,7 +35,7 @@ class NotaKesepakatanController extends Controller
         $ks = Kerjasama::where('kerjasama_id', $id)->notDeleted()->firstOrFail();
         $ks->update(['ks_status_dok' => 1]);
         $ks->addReviewEntry('Diajukan', 'Pengajuan baru dari mitra');
-        return redirect()->route('mitra.kerjasama.show', $id)->with('success', 'Diajukan ke Admin.');
+        return redirect()->route('mitra.kerjasama.show', $id)->with('success', 'Diajukan ke Admin. Silakan menunggu konfirmasi dari Admin Pusdatin.');
     }
 
     public function uploadUlangForm($id)
@@ -58,7 +58,7 @@ class NotaKesepakatanController extends Controller
         if ($request->hasFile('surat_permohonan')) $paths[] = $request->file('surat_permohonan')->store('dokumen/' . $id, 'public');
         if ($request->hasFile('draft_nk')) $paths[] = $request->file('draft_nk')->store('dokumen/' . $id, 'public');
         $ks->update([
-            'dokumen_ks' => json_encode($paths),
+            'folder_ks' => json_encode($paths),
             'ks_status_dok' => 1,
         ]);
 
@@ -74,9 +74,14 @@ class NotaKesepakatanController extends Controller
         ]);
 
         $path = $request->file('surat_undangan')->store('dokumen/' . $id, 'public');
-        $ks->update(['surat_undangan' => $path]);
+        $existing = $ks->folder_ks ? json_decode($ks->folder_ks, true) ?: [] : [];
+        $existing[] = $path;
+        $ks->update([
+            'folder_ks' => json_encode($existing),
+            'ks_status_dok' => 3,
+        ]);
         $ks->addReviewEntry('Undangan', 'Mitra mengupload surat undangan pembahasan');
 
-        return redirect()->route('mitra.kerjasama.show', $id);
+        return redirect()->route('mitra.kerjasama.show', $id)->with('info', 'Surat undangan berhasil diupload. Silakan melakukan pembahasan dengan admin sesuai tanggal di surat undangan.');
     }
 }

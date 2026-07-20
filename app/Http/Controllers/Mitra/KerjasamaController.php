@@ -61,13 +61,17 @@ class KerjasamaController extends Controller
 
         $validated['ks_status_dok'] = null;
 
+        if ($validated['ks_jenis'] == 3) {
+            $validated['ks_tingkat'] = 3;
+        }
+
         $ks = Kerjasama::create($validated);
 
         if ($ks->ks_jenis == 3) {
             $paths = [];
             if ($request->hasFile('surat_permohonan')) $paths[] = $request->file('surat_permohonan')->store('dokumen/' . $ks->kerjasama_id, 'public');
             if ($request->hasFile('draft_nk')) $paths[] = $request->file('draft_nk')->store('dokumen/' . $ks->kerjasama_id, 'public');
-            $ks->update(['dokumen_ks' => json_encode($paths)]);
+            $ks->update(['folder_ks' => json_encode($paths)]);
         }
 
         return redirect()->route('mitra.kerjasama.show', $ks->kerjasama_id);
@@ -101,6 +105,9 @@ class KerjasamaController extends Controller
             'narahubung_teknis' => 'nullable|string|max:200',
             'nomor_cp_teknis' => 'nullable|string|max:50',
         ]);
+        if ($validated['ks_jenis'] == 3) {
+            $validated['ks_tingkat'] = 3;
+        }
         $ks->update($validated);
 
         return redirect()->route('mitra.kerjasama.show', $id)->with('success', 'Data diperbarui.');

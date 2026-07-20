@@ -14,14 +14,5 @@ class DatabaseSeeder extends Seeder
             MasterDataSeeder::class,
         ]);
 
-        // Dummy admin user untuk Filament auth
-        DB::table('users')->insert([
-            'name' => 'Admin Pusdatin',
-            'email' => 'admin@pusdatin.local',
-            'password' => Hash::make('admin'),
-            'role' => 'admin',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
     }
 }
