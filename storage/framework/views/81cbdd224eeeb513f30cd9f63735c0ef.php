@@ -259,13 +259,6 @@
                     <button type="button" @click="open = true; src = '<?php echo e(Storage::disk('public')->url($file)); ?>'" class="text-primary text-xs hover:underline">Lihat</button>
                 </li>
                 <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
-                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($kerjasama->dokumen_ks): ?>
-                <li class="flex items-center gap-2 py-2">
-                    <span class="text-sm">Dokumen Final (TTD)</span>
-                    <span class="text-gray-300">—</span>
-                    <button type="button" @click="open = true; src = '<?php echo e(Storage::disk('public')->url($kerjasama->dokumen_ks)); ?>'" class="text-primary text-xs hover:underline">Lihat</button>
-                </li>
-                <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
             </ul>
         </div>
 

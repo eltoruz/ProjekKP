@@ -50,4 +50,5 @@ Route::middleware(['web', \App\Http\Middleware\AutoLoginAdmin::class])
         Route::post('/kerjasama/{id}/jadwalkan', [AdminKerjasama::class, 'jadwalkan'])->name('kerjasama.jadwalkan');
         Route::post('/kerjasama/{id}/lanjut-pembahasan', [AdminKerjasama::class, 'lanjutPembahasan'])->name('kerjasama.lanjutPembahasan');
         Route::post('/kerjasama/{id}/finalisasi', [AdminKerjasama::class, 'finalisasi'])->name('kerjasama.finalisasi');
+        Route::post('/kerjasama/{id}/update-finalisasi', [AdminKerjasama::class, 'updateFinalisasi'])->name('kerjasama.updateFinalisasi');
     });

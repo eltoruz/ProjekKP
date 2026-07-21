@@ -83,6 +83,35 @@
         </div>
     </div>
 
+    <!-- Data Final (setelah TTD) -->
+    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($status >= 5): ?>
+    <div class="bg-white rounded-lg shadow-sm border border-green-200 mb-4">
+        <div class="px-5 py-3 border-b border-green-100 flex items-center justify-between bg-green-50">
+            <div class="flex items-center gap-2">
+                <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <h3 class="text-sm font-semibold text-green-800">Data Final Kerja Sama</h3>
+            </div>
+            <button @click="showFinalisasi = true" class="bg-green-500 text-white px-3 py-1 rounded text-xs font-medium hover:bg-green-600">Edit Finalisasi</button>
+        </div>
+        <div class="px-5 py-4 grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($ks->pihak1): ?><div><span class="text-xs text-gray-400">Pihak 1</span><p><?php echo e($ks->pihak1); ?></p></div><?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($ks->pihak2): ?><div><span class="text-xs text-gray-400">Pihak 2</span><p><?php echo e($ks->pihak2); ?></p></div><?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($ks->tentang): ?><div class="md:col-span-2"><span class="text-xs text-gray-400">Perihal</span><p><?php echo e($ks->tentang); ?></p></div><?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($ks->jangka_waktu_thn): ?><div><span class="text-xs text-gray-400">Jangka Waktu</span><p><?php echo e($ks->jangka_waktu_thn); ?> tahun</p></div><?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($ks->tanggal_mulai_ks): ?><div><span class="text-xs text-gray-400">Tgl Mulai</span><p><?php echo e($ks->tanggal_mulai_ks->format('d M Y')); ?></p></div><?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($ks->tanggal_selesai_ks): ?><div><span class="text-xs text-gray-400">Tgl Berakhir</span><p><?php echo e($ks->tanggal_selesai_ks->format('d M Y')); ?></p></div><?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($ks->nomor_pihak1): ?><div><span class="text-xs text-gray-400">No. Pihak 1</span><p><?php echo e($ks->nomor_pihak1); ?></p></div><?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($ks->nomor_pihak2): ?><div><span class="text-xs text-gray-400">No. Pihak 2</span><p><?php echo e($ks->nomor_pihak2); ?></p></div><?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($ks->ttd_pihak1): ?><div><span class="text-xs text-gray-400">TTD Pihak 1</span><p><?php echo e($ks->ttd_pihak1); ?></p></div><?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($ks->ttd_pihak2): ?><div><span class="text-xs text-gray-400">TTD Pihak 2</span><p><?php echo e($ks->ttd_pihak2); ?></p></div><?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($ks->kode_wilayah): ?><div><span class="text-xs text-gray-400">Kode Wilayah</span><p><?php echo e($ks->kode_wilayah); ?></p></div><?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($ks->jumlah_kl_terlibat > 1): ?><div><span class="text-xs text-gray-400">Jumlah K/L</span><p><?php echo e($ks->jumlah_kl_terlibat); ?></p></div><?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($ks->metode): ?><div><span class="text-xs text-gray-400">Metode</span><p><?php echo e($ks->metode->nama_metode); ?></p></div><?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($ks->implementasi): ?><div><span class="text-xs text-gray-400">Implementasi</span><p><?php echo e($ks->implementasi->nama_status); ?></p></div><?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+        </div>
+    </div>
+    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+
     <!-- Kontak -->
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-4">
         <div class="px-5 py-3 border-b border-gray-100 flex items-center gap-2">
@@ -247,68 +276,70 @@
     <!-- MODAL: Finalisasi -->
     <div x-show="showFinalisasi" x-cloak class="fixed inset-0 z-50 flex items-start justify-center bg-black/50 overflow-y-auto py-10" x-transition>
         <div class="bg-white rounded-xl shadow-xl w-full max-w-2xl p-6" @click.outside="showFinalisasi = false">
-            <h3 class="text-lg font-semibold text-green-600 mb-4">Finalisasi Kerja Sama</h3>
-            <form method="POST" action="<?php echo e(route('admin.kerjasama.finalisasi', $ks->kerjasama_id)); ?>" enctype="multipart/form-data">
+            <h3 class="text-lg font-semibold text-green-600 mb-4"><?php echo e($status >= 5 ? 'Edit Finalisasi' : 'Finalisasi Kerja Sama'); ?></h3>
+            <form method="POST" action="<?php echo e($status >= 5 ? route('admin.kerjasama.updateFinalisasi', $ks->kerjasama_id) : route('admin.kerjasama.finalisasi', $ks->kerjasama_id)); ?>" enctype="multipart/form-data">
                 <?php echo csrf_field(); ?>
                 <div class="space-y-3 max-h-[60vh] overflow-y-auto pr-1">
+                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($status < 5): ?>
                     <div>
                         <label class="block text-xs font-medium text-gray-500 mb-1">Dokumen Final (TTD)</label>
                         <input type="file" name="dokumen_final" accept=".pdf,.docx,.zip" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
                     </div>
+                    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                     <div class="grid grid-cols-2 gap-3">
                         <div>
                             <label class="block text-xs font-medium text-gray-500 mb-1">Penandatangan Pihak 1</label>
-                            <input type="text" name="ttd_pihak1" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                            <input type="text" name="ttd_pihak1" value="<?php echo e($ks->ttd_pihak1); ?>" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-gray-500 mb-1">Penandatangan Pihak 2</label>
-                            <input type="text" name="ttd_pihak2" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                            <input type="text" name="ttd_pihak2" value="<?php echo e($ks->ttd_pihak2); ?>" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-gray-500 mb-1">Kode Wilayah</label>
-                            <input type="text" name="kode_wilayah" maxlength="20" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                            <input type="text" name="kode_wilayah" maxlength="20" value="<?php echo e($ks->kode_wilayah); ?>" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-gray-500 mb-1">Jangka (thn)</label>
-                            <input type="number" name="jangka_waktu_thn" min="1" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                            <input type="number" name="jangka_waktu_thn" min="1" value="<?php echo e($ks->jangka_waktu_thn); ?>" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
                         </div>
                     </div>
                     <div class="grid grid-cols-2 gap-3">
                         <div>
                             <label class="block text-xs font-medium text-gray-500 mb-1">Pihak 1</label>
-                            <input type="text" name="pihak1" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                            <input type="text" name="pihak1" value="<?php echo e($ks->pihak1); ?>" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-gray-500 mb-1">Pihak 2</label>
-                            <input type="text" name="pihak2" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                            <input type="text" name="pihak2" value="<?php echo e($ks->pihak2); ?>" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
                         </div>
                     </div>
                     <div>
                         <label class="block text-xs font-medium text-gray-500 mb-1">Perihal</label>
-                        <textarea name="tentang" rows="2" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"></textarea>
+                        <textarea name="tentang" rows="2" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"><?php echo e($ks->tentang); ?></textarea>
                     </div>
                     <div class="grid grid-cols-3 gap-3">
                         <div>
                             <label class="block text-xs font-medium text-gray-500 mb-1">Jumlah K/L</label>
-                            <input type="number" name="jumlah_kl_terlibat" min="1" value="1" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                            <input type="number" name="jumlah_kl_terlibat" min="1" value="<?php echo e($ks->jumlah_kl_terlibat); ?>" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-gray-500 mb-1">Tgl Mulai</label>
-                            <input type="date" name="tanggal_mulai_ks" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                            <input type="date" name="tanggal_mulai_ks" value="<?php echo e($ks->tanggal_mulai_ks?->format('Y-m-d')); ?>" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-gray-500 mb-1">Tgl Berakhir</label>
-                            <input type="date" name="tanggal_selesai_ks" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                            <input type="date" name="tanggal_selesai_ks" value="<?php echo e($ks->tanggal_selesai_ks?->format('Y-m-d')); ?>" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
                         </div>
                     </div>
                     <div class="grid grid-cols-2 gap-3">
                         <div>
                             <label class="block text-xs font-medium text-gray-500 mb-1">No Pihak 1</label>
-                            <input type="text" name="nomor_pihak1" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                            <input type="text" name="nomor_pihak1" value="<?php echo e($ks->nomor_pihak1); ?>" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-gray-500 mb-1">No Pihak 2</label>
-                            <input type="text" name="nomor_pihak2" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                            <input type="text" name="nomor_pihak2" value="<?php echo e($ks->nomor_pihak2); ?>" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
                         </div>
                     </div>
                     <div class="grid grid-cols-2 gap-3">
@@ -317,7 +348,7 @@
                             <select name="ks_metode" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
                                 <option value="">-- Pilih --</option>
                                 <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__currentLoopData = $metodeList; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $id => $name): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                                <option value="<?php echo e($id); ?>"><?php echo e($name); ?></option>
+                                <option value="<?php echo e($id); ?>" <?php echo e($ks->ks_metode == $id ? 'selected' : ''); ?>><?php echo e($name); ?></option>
                                 <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                             </select>
                         </div>
@@ -326,7 +357,7 @@
                             <select name="ks_implementasi" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
                                 <option value="">-- Pilih --</option>
                                 <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__currentLoopData = $implementasiList; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $id => $name): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                                <option value="<?php echo e($id); ?>"><?php echo e($name); ?></option>
+                                <option value="<?php echo e($id); ?>" <?php echo e($ks->ks_implementasi == $id ? 'selected' : ''); ?>><?php echo e($name); ?></option>
                                 <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                             </select>
                         </div>
@@ -334,7 +365,7 @@
                 </div>
                 <div class="flex justify-end gap-2 mt-4 pt-4 border-t border-gray-100">
                     <button type="button" @click="showFinalisasi = false" class="border border-gray-300 px-4 py-2 rounded-lg text-sm hover:bg-gray-50">Batal</button>
-                    <button type="submit" class="bg-green-500 text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-green-600">Finalisasi</button>
+                    <button type="submit" class="bg-green-500 text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-green-600"><?php echo e($status >= 5 ? 'Simpan' : 'Finalisasi'); ?></button>
                 </div>
             </form>
         </div>

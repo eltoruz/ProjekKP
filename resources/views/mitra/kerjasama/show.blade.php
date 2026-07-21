@@ -243,7 +243,7 @@
 
     <!-- Dokumen -->
     @php $files = $kerjasama->folder_ks ? (json_decode($kerjasama->folder_ks, true) ?: []) : []; @endphp
-    @if(count($files) || $kerjasama->dokumen_ks)
+    @if(count($files))
     <div class="bg-white rounded-lg shadow-sm border border-gray-200" x-data="{ open: false, src: '' }">
         <div class="px-6 py-4 border-b border-gray-100">
             <h3 class="text-base font-semibold text-gray-800">Dokumen</h3>
@@ -261,13 +261,6 @@
                     <button type="button" @click="open = true; src = '{{ Storage::disk('public')->url($file) }}'" class="text-primary text-xs hover:underline">Lihat</button>
                 </li>
                 @endforeach
-                @if($kerjasama->dokumen_ks)
-                <li class="flex items-center gap-2 py-2">
-                    <span class="text-sm">Dokumen Final (TTD)</span>
-                    <span class="text-gray-300">—</span>
-                    <button type="button" @click="open = true; src = '{{ Storage::disk('public')->url($kerjasama->dokumen_ks) }}'" class="text-primary text-xs hover:underline">Lihat</button>
-                </li>
-                @endif
             </ul>
         </div>
 

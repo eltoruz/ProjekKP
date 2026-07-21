@@ -213,4 +213,21 @@ class KerjasamaController extends Controller
 
         return redirect()->route('admin.kerjasama.review', $id)->with('success', 'Finalisasi selesai.');
     }
+
+    public function updateFinalisasi(Request $request, $id)
+    {
+        $ks = Kerjasama::where('kerjasama_id', $id)->notDeleted()->firstOrFail();
+
+        $data = $request->only([
+            'ttd_pihak1', 'ttd_pihak2', 'kode_wilayah', 'pihak1', 'pihak2',
+            'tentang', 'jumlah_kl_terlibat', 'jangka_waktu_thn',
+            'tanggal_mulai_ks', 'tanggal_selesai_ks',
+            'nomor_pihak1', 'nomor_pihak2', 'ks_metode', 'ks_implementasi',
+        ]);
+
+        $ks->update($data);
+        $ks->addReviewEntry('Update Final', 'Data final diperbarui');
+
+        return redirect()->route('admin.kerjasama.review', $id)->with('success', 'Data final diperbarui.');
+    }
 }
