@@ -26,7 +26,13 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
-            'password' => 'hashed',
         ];
+    }
+
+    public function metadata()
+    {
+        return $this->belongsToMany(Metadata::class, 'metadata_user', 'user_id', 'metadata_id')
+                    ->withPivot(['id', 'is_masked', 'soft_delete'])
+                    ->withTimestamps();
     }
 }
