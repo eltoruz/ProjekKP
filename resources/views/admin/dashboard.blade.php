@@ -54,7 +54,7 @@
     <!-- Selesai -->
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
         <div class="flex items-center justify-between mb-2">
-            <span class="text-xs font-medium text-gray-500 uppercase">Selesai</span>
+            <span class="text-xs font-medium text-gray-500 uppercase">Dokumen telah ditandatangani (Tahap Integrasi Data)</span>
             <div class="w-8 h-8 rounded-lg bg-green-100 flex items-center justify-center">
                 <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
             </div>
@@ -111,7 +111,7 @@
                             $lastReject = collect($ks->review_log)->filter(fn($l) => ($l['label'] ?? '') === 'Ditolak')->last();
                             $isRejected = $lastReject && !$ks->ks_status_dok;
                             $sColors = [1 => 'bg-blue-100 text-blue-700', 2 => 'bg-yellow-100 text-yellow-700', 3 => 'bg-orange-100 text-orange-700', 4 => 'bg-purple-100 text-purple-700', 5 => 'bg-green-100 text-green-700', 6 => 'bg-gray-100 text-gray-600'];
-                            $sLabels = [1 => 'Menunggu Review', 2 => 'Menunggu Jadwal', 3 => 'Pembahasan', 4 => 'Penandatanganan', 5 => 'Selesai', 6 => 'Berakhir'];
+                            $sLabels = [1 => 'Menunggu Review', 2 => 'Menunggu Jadwal', 3 => 'Pembahasan', 4 => 'Penandatanganan', 5 => 'Dokumen telah ditandatangani (Tahap Integrasi Data)', 6 => 'Berakhir'];
                             $colorClass = $isRejected ? 'bg-red-100 text-red-700' : ($sColors[$ks->ks_status_dok] ?? 'bg-gray-100 text-gray-600');
                         @endphp
                         <span class="px-2.5 py-0.5 rounded-full text-xs font-medium {{ $colorClass }}">

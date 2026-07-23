@@ -45,9 +45,11 @@
                 @endphp
                 <span class="inline-block px-3 py-1 rounded-full text-xs font-medium {{ $badgeClass }}">{{ $ks->status_label }}</span>
             </div>
-            @if($waitingUndangan)
-            <button @click="showJadwal = true" class="bg-amber-500 text-white px-4 py-1.5 rounded-lg text-xs font-medium hover:bg-amber-600">Ubah Jadwal</button>
-            @endif
+            <div class="flex items-center gap-2">
+                @if($waitingUndangan)
+                <button @click="showJadwal = true" class="bg-amber-500 text-white px-4 py-1.5 rounded-lg text-xs font-medium hover:bg-amber-600">Ubah Jadwal</button>
+                @endif
+            </div>
         </div>
     </div>
 
@@ -186,6 +188,55 @@
                 </div>
                 <iframe :src="src" class="flex-1 w-full rounded-b-xl" frameborder="0"></iframe>
             </div>
+        </div>
+    </div>
+    @endif
+
+    <!-- Integrasi Data Catalog -->
+    @if($status >= 5)
+    @php
+        $mitraUser = \App\Models\User::where('role', 'mitra')->first() ?? \App\Models\User::first();
+        $selectedMetadata = \App\Models\MetadataUser::with('metadata')
+            ->where('user_id', $mitraUser->id)
+            ->where('soft_delete', 0)
+            ->get();
+        $groupedAdminSelections = $selectedMetadata->groupBy(function($item) {
+            return $item->metadata->tbl_name ?? 'Lainnya';
+        });
+    @endphp
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-4">
+        <div class="px-5 py-3 border-b border-gray-100 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"/></svg>
+                <h3 class="text-sm font-semibold text-slate-800">Data Integrasi Pusdatin yang Diajukan</h3>
+            </div>
+            <span class="px-2.5 py-0.5 rounded bg-green-100 text-green-800 text-[10px] font-bold uppercase">
+                {{ $selectedMetadata->count() }} Kolom Terpilih
+            </span>
+        </div>
+        <div class="px-5 py-4">
+            @if($selectedMetadata->count() > 0)
+                <p class="text-xs text-gray-500 mb-3">Berikut adalah tabel dan kolom data integrasi Pusdatin yang terpilih untuk kerja sama ini:</p>
+                <div class="border border-gray-100 rounded-lg divide-y divide-gray-100 overflow-hidden bg-gray-50/50">
+                    @foreach($groupedAdminSelections as $tblName => $items)
+                    <div class="p-3">
+                        <div class="flex items-center gap-2 mb-1.5">
+                            <span class="text-[9px] px-1.5 py-0.5 bg-blue-100 text-blue-800 font-mono font-bold rounded">Tabel</span>
+                            <span class="text-xs font-bold font-mono text-slate-800">{{ $tblName }}</span>
+                        </div>
+                        <div class="flex flex-wrap gap-1.5">
+                            @foreach($items as $item)
+                            <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-mono border bg-white text-gray-700 border-gray-200 shadow-3xs">
+                                {{ $item->metadata->name }}
+                            </span>
+                            @endforeach
+                        </div>
+                    </div>
+                    @endforeach
+                </div>
+            @else
+                <p class="text-xs text-gray-500">Mitra belum memilih kolom data dari katalog integrasi.</p>
+            @endif
         </div>
     </div>
     @endif

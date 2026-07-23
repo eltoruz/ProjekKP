@@ -50,7 +50,7 @@
             4 => ['icon' => 'M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12', 'label' => 'Upload Undangan', 'desc' => 'Upload surat undangan'],
             5 => ['icon' => 'M8 12h.01M12 12h.01M16 12h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z', 'label' => 'Pembahasan', 'desc' => 'Proses pembahasan dokumen'],
             6 => ['icon' => 'M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z', 'label' => 'Penandatanganan', 'desc' => 'Proses TTD para pihak'],
-            7 => ['icon' => 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z', 'label' => 'Selesai', 'desc' => 'Dokumen ditandatangani'],
+            7 => ['icon' => 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z', 'label' => 'Dokumen telah ditandatangani (Tahap Integrasi Data)', 'desc' => 'TTD selesai & Atur Integrasi'],
         ];
     @endphp
 
@@ -203,6 +203,62 @@
         @if(!$kerjasama->ks_metode && !$kerjasama->jangka_waktu_thn)
         <p class="text-xs text-yellow-600 mt-3">Menunggu finalisasi data oleh Admin Pusdatin.</p>
         @endif
+
+        <!-- Integration Catalog Section -->
+        <div class="mt-6 pt-6 border-t border-gray-100">
+            @php
+                // Resolve user
+                $user = auth()->user() ?? \App\Models\User::where('role', 'mitra')->first() ?? \App\Models\User::first();
+                $userSelections = \App\Models\MetadataUser::with('metadata')
+                    ->where('user_id', $user->id)
+                    ->where('soft_delete', 0)
+                    ->get();
+                $groupedUserSelections = $userSelections->groupBy(function($item) {
+                    return $item->metadata->tbl_name ?? 'Lainnya';
+                });
+                $hasSelections = $userSelections->count() > 0;
+            @endphp
+
+            <div class="bg-gray-50 rounded-xl p-5 border border-gray-200">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="flex items-center space-x-2">
+                        <svg class="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+                        <h4 class="text-sm font-bold text-gray-800">Data Integrasi Pusdatin yang Diajukan</h4>
+                    </div>
+                </div>
+
+                @if(!$hasSelections)
+                    <p class="text-xs text-gray-600 mb-4">Silakan pilih tabel dan kolom data dari Katalog Pusdatin yang Anda butuhkan untuk mengaktifkan integrasi sistem Anda.</p>
+                    <a href="{{ route('mitra.kerjasama.integrasi', $kerjasama->kerjasama_id) }}" class="inline-flex items-center justify-center px-4 py-2 bg-primary hover:bg-blue-600 text-white text-xs font-semibold rounded-lg shadow-sm transition">
+                        Pilih Katalog Data &rarr;
+                    </a>
+                @else
+                    <p class="text-xs text-gray-600 mb-4">Pengajuan integrasi data Anda telah aktif! Berikut adalah ringkasan skema tabel yang dapat diakses oleh sistem Anda:</p>
+                    
+                    <div class="bg-white rounded-lg border border-gray-200 divide-y divide-gray-100 overflow-hidden mb-4">
+                        @foreach($groupedUserSelections as $tblName => $items)
+                        <div class="p-3.5">
+                            <div class="flex items-center space-x-2 mb-1.5">
+                                <span class="text-[10px] px-1.5 py-0.5 bg-blue-100 text-blue-800 font-mono font-semibold rounded">Tabel</span>
+                                <span class="text-xs font-bold font-mono text-gray-800">{{ $tblName }}</span>
+                            </div>
+                            <div class="flex flex-wrap gap-1.5">
+                                @foreach($items as $item)
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-mono border bg-gray-50 text-gray-700 border-gray-200">
+                                    {{ $item->metadata->name }}
+                                </span>
+                                @endforeach
+                            </div>
+                        </div>
+                        @endforeach
+                    </div>
+
+                    <a href="{{ route('mitra.kerjasama.integrasi', $kerjasama->kerjasama_id) }}" class="inline-flex items-center justify-center px-4 py-2 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 text-xs font-semibold rounded-lg shadow-sm transition">
+                        Ubah Pilihan Katalog Data
+                    </a>
+                @endif
+            </div>
+        </div>
     </div>
     @endif
 
