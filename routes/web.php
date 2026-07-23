@@ -31,6 +31,8 @@ Route::middleware(['web'])
         Route::get('/kerjasama/{id}/upload-ulang', [NotaKesepakatanController::class, 'uploadUlangForm'])->name('kerjasama.upload-ulang');
         Route::post('/kerjasama/{id}/upload-ulang', [NotaKesepakatanController::class, 'uploadUlang'])->name('kerjasama.upload-ulang');
         Route::post('/kerjasama/{id}/upload-undangan', [NotaKesepakatanController::class, 'uploadUndangan'])->name('kerjasama.upload-undangan');
+        Route::get('/kerjasama/{id}/integrasi', [\App\Http\Controllers\Mitra\IntegrationController::class, 'index'])->name('kerjasama.integrasi');
+        Route::post('/kerjasama/{id}/integrasi', [\App\Http\Controllers\Mitra\IntegrationController::class, 'store'])->name('kerjasama.integrasi.store');
     });
 
 // Admin
@@ -51,4 +53,6 @@ Route::middleware(['web', \App\Http\Middleware\AutoLoginAdmin::class])
         Route::post('/kerjasama/{id}/lanjut-pembahasan', [AdminKerjasama::class, 'lanjutPembahasan'])->name('kerjasama.lanjutPembahasan');
         Route::post('/kerjasama/{id}/finalisasi', [AdminKerjasama::class, 'finalisasi'])->name('kerjasama.finalisasi');
         Route::post('/kerjasama/{id}/update-finalisasi', [AdminKerjasama::class, 'updateFinalisasi'])->name('kerjasama.updateFinalisasi');
+        Route::get('/kerjasama/{id}/integrasi-review', [\App\Http\Controllers\Admin\IntegrationController::class, 'index'])->name('kerjasama.integrasi-review');
+        Route::post('/kerjasama/{id}/integrasi-review', [\App\Http\Controllers\Admin\IntegrationController::class, 'update'])->name('kerjasama.integrasi-review.update');
     });
