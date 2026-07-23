@@ -15,7 +15,11 @@ class KerjasamaController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Kerjasama::notDeleted()->with(['jenis', 'tingkat', 'statusDok'])
+        $query = Kerjasama::notDeleted()
+            ->where(function ($q) {
+                $q->whereNotNull('ks_status_dok')->orWhereHas('reviewLogs');
+            })
+            ->with(['jenis', 'tingkat', 'statusDok'])
             ->orderBy('last_update', 'desc');
 
         if ($request->filled('search')) {
@@ -80,6 +84,10 @@ class KerjasamaController extends Controller
             'ks_metode' => 'nullable|exists:ks_metode,id',
             'ks_implementasi' => 'nullable|exists:ks_implementasi,id',
         ]);
+
+        if (empty($validated['ks_status_dok'])) {
+            $validated['ks_status_dok'] = 1;
+        }
 
         $ks = Kerjasama::create($validated);
 
@@ -159,17 +167,20 @@ class KerjasamaController extends Controller
             'ks_status_dok' => 2,
             'tanggal_pembahasan' => $request->tanggal_pembahasan,
         ]);
+        $tglFormatted = \Carbon\Carbon::parse($request->tanggal_pembahasan)->format('d M Y, H:i');
         $ks->addReviewEntry('Disetujui', 'Pengajuan disetujui, pembahasan dijadwalkan');
-        $ks->addReviewEntry('Jadwal', $request->tanggal_pembahasan);
+        $ks->addReviewEntry('Jadwal', 'Pembahasan: ' . $tglFormatted);
         return redirect()->route('admin.kerjasama.review', $id);
     }
 
     public function tolak(Request $request, $id)
     {
-        $request->validate(['alasan' => 'required|string']);
+        $catatan = $request->catatan_penolakan ?? $request->alasan;
+        if (empty($catatan)) {
+            return back()->withErrors(['catatan_penolakan' => 'Catatan penolakan wajib diisi.']);
+        }
         $ks = Kerjasama::where('kerjasama_id', $id)->notDeleted()->firstOrFail();
         $ks->update(['ks_status_dok' => null]);
-        $catatan = $request->alasan . ($request->catatan ? ' — ' . $request->catatan : '');
         $ks->addReviewEntry('Ditolak', $catatan);
         return redirect()->route('admin.kerjasama.review', $id)->with('success', 'Pengajuan ditolak.');
     }
@@ -179,7 +190,8 @@ class KerjasamaController extends Controller
         $request->validate(['tanggal_pembahasan' => 'required|date']);
         $ks = Kerjasama::where('kerjasama_id', $id)->notDeleted()->firstOrFail();
         $ks->update(['tanggal_pembahasan' => $request->tanggal_pembahasan]);
-        $ks->addReviewEntry('Jadwal', 'Pembahasan ' . $request->tanggal_pembahasan);
+        $tglFormatted = \Carbon\Carbon::parse($request->tanggal_pembahasan)->format('d M Y, H:i');
+        $ks->addReviewEntry('Jadwal', 'Pembahasan: ' . $tglFormatted);
         return redirect()->route('admin.kerjasama.review', $id)->with('success', 'Jadwal disimpan.');
     }
 

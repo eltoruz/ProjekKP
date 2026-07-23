@@ -61,11 +61,11 @@
         </h3>
 
         @if($isRejected)
-        <div class="bg-red-50 border border-red-200 rounded-lg p-3 mb-4 flex items-start gap-2">
-            <svg class="w-4 h-4 text-red-500 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-4 flex items-start gap-3">
+            <svg class="w-5 h-5 text-red-500 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
             <div>
-                <p class="text-sm font-medium text-red-700">Pengajuan Ditolak</p>
-                <p class="text-xs text-red-600 mt-0.5">{{ $lastReject['catatan'] ?? 'Silakan perbaiki dan ajukan ulang.' }}</p>
+                <p class="text-sm font-semibold text-red-700">Pengajuan Ditolak</p>
+                <p class="text-sm text-red-600 mt-1"><span class="font-medium">Catatan Penolakan:</span> {{ $lastReject['catatan'] ?? $lastReject['alasan'] ?? 'Silakan perbaiki dokumen dan ajukan ulang.' }}</p>
             </div>
         </div>
         @endif
@@ -290,6 +290,15 @@
                 $label = $log['label'] ?? $log['status'] ?? '';
                 $waktu = \Carbon\Carbon::parse($log['waktu'] ?? '')->format('d M Y, H:i');
                 $catatan = $log['catatan'] ?? null;
+                if ($catatan) {
+                    $catatan = preg_replace_callback('/\b(\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}(?::\d{2})?)\b/', function($m) {
+                        try {
+                            return \Illuminate\Support\Carbon::parse($m[1])->format('d M Y, H:i');
+                        } catch (\Throwable $e) {
+                            return $m[1];
+                        }
+                    }, $catatan);
+                }
                 $last = $i === count($reviewLogs) - 1;
                 $badgeClass = match($label) {
                     'Ditolak' => 'bg-red-100 text-red-700',

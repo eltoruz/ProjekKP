@@ -10,7 +10,7 @@ class ReviewController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Kerjasama::notDeleted()->with(['jenis', 'tingkat', 'statusDok']);
+        $query = Kerjasama::notDeleted()->whereNotNull('ks_status_dok')->with(['jenis', 'tingkat', 'statusDok']);
         if ($request->status) $query->where('ks_status_dok', $request->status);
         $kerjasamas = $query->orderBy('last_update', 'desc')->paginate(15);
         $needReview = Kerjasama::notDeleted()->byStatus(1)->count();
@@ -20,7 +20,7 @@ class ReviewController extends Controller
     public function show($id)
     {
         $ks = Kerjasama::with(['jenis', 'tingkat', 'statusDok', 'metode', 'implementasi'])
-            ->where('kerjasama_id', $id)->notDeleted()->firstOrFail();
+            ->where('kerjasama_id', $id)->notDeleted()->whereNotNull('ks_status_dok')->firstOrFail();
         return view('admin.review.show', ['kerjasama' => $ks]);
     }
 

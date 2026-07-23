@@ -63,6 +63,8 @@
                             <span class="px-2.5 py-0.5 rounded-full text-xs font-medium {{ $sColors[$ks->ks_status_dok] ?? 'bg-gray-100 text-gray-600' }}">
                                 {{ $sLabels[$ks->ks_status_dok] ?? $ks->status_label }}
                             </span>
+                        @elseif($ks->status_label === 'Ditolak')
+                            <span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700">Ditolak</span>
                         @else
                             <span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">Draft</span>
                         @endif
@@ -70,7 +72,7 @@
                     <td class="px-4 py-3 text-gray-500">{{ $ks->last_update?->format('d M Y') }}</td>
                     <td class="px-4 py-3 text-right space-x-2">
                         <a href="{{ route('mitra.kerjasama.show', $ks->kerjasama_id) }}" class="text-blue-600 hover:text-blue-800 text-sm">Detail</a>
-                        @if(in_array($ks->ks_status_dok, [1, null], true))
+                        @if($ks->canBeDeletedByMitra())
                         <form action="{{ route('mitra.kerjasama.destroy', $ks->kerjasama_id) }}" method="POST" class="inline" onsubmit="return confirm('Hapus?')">
                             @csrf @method('DELETE')
                             <button type="submit" class="text-red-600 hover:text-red-800 text-sm">Hapus</button>
