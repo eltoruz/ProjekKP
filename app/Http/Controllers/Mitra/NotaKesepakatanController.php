@@ -24,7 +24,6 @@ class NotaKesepakatanController extends Controller
         $existing = $ks->folder_ks ? json_decode($ks->folder_ks, true) ?: [] : [];
         $ks->update([
             'folder_ks' => json_encode(array_merge($existing, $paths)),
-            'ks_status_dok' => 1,
         ]);
 
         return redirect()->route('mitra.kerjasama.show', $id)->with('success', 'Dokumen diupload.');

@@ -14,6 +14,15 @@
                 $label = $log->label ?? '';
                 $time = $log->created_at ? $log->created_at->format('d M Y, H:i') : '-';
                 $catatan = $log->catatan ?? null;
+                if ($catatan) {
+                    $catatan = preg_replace_callback('/\b(\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}(?::\d{2})?)\b/', function($m) {
+                        try {
+                            return \Illuminate\Support\Carbon::parse($m[1])->format('d M Y, H:i');
+                        } catch (\Throwable $e) {
+                            return $m[1];
+                        }
+                    }, $catatan);
+                }
                 $last = $i === $logs->count() - 1;
 
                 $badgeClass = match($label) {

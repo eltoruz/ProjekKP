@@ -95,7 +95,9 @@
                         <td class="px-4 py-3 text-gray-600">{{ $ks->tingkat->nama_tingkat ?? '-' }}</td>
                         <td class="px-4 py-3">
                             @php
-                                $statusColor = match((int)$ks->ks_status_dok) {
+                                $lastReject = collect($ks->review_log)->filter(fn($l) => ($l['label'] ?? '') === 'Ditolak')->last();
+                                $isRejected = $lastReject && !$ks->ks_status_dok;
+                                $statusColor = $isRejected ? 'bg-red-100 text-red-700' : match((int)$ks->ks_status_dok) {
                                     1 => 'bg-blue-100 text-blue-700',
                                     2 => 'bg-yellow-100 text-yellow-700',
                                     3 => 'bg-orange-100 text-orange-700',
@@ -105,7 +107,7 @@
                                     default => 'bg-gray-100 text-gray-600',
                                 };
                             @endphp
-                            <span class="inline-block px-2 py-0.5 rounded-full text-[11px] font-medium {{ $statusColor }}">{{ $ks->statusDok->nama_status ?? '-' }}</span>
+                            <span class="inline-block px-2 py-0.5 rounded-full text-[11px] font-medium {{ $statusColor }}">{{ $ks->status_label }}</span>
                         </td>
                         <td class="px-4 py-3 text-gray-500 text-xs">{{ $ks->tanggal_pembahasan?->format('d M Y, H:i') ?? '-' }}</td>
                         <td class="px-4 py-3 text-gray-500 text-xs">{{ $ks->last_update?->format('d M Y, H:i') ?? '-' }}</td>

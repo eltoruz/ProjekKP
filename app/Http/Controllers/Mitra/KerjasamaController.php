@@ -115,7 +115,11 @@ class KerjasamaController extends Controller
 
     public function destroy($id)
     {
-        Kerjasama::where('kerjasama_id', $id)->notDeleted()->firstOrFail()->update(['soft_delete' => true]);
+        $ks = Kerjasama::where('kerjasama_id', $id)->notDeleted()->firstOrFail();
+        if (!$ks->canBeDeletedByMitra()) {
+            return redirect()->route('mitra.kerjasama.index')->with('error', 'Kerja sama yang sudah diajukan atau ditolak tidak dapat dihapus.');
+        }
+        $ks->update(['soft_delete' => true]);
         return redirect()->route('mitra.kerjasama.index')->with('success', 'Dihapus.');
     }
 }

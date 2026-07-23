@@ -7,12 +7,8 @@
 <div class="max-w-2xl">
     @if($lastReject)
     <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-        <h4 class="text-sm font-semibold text-red-700">Alasan Penolakan:</h4>
-        <p class="text-sm text-red-600 mt-1">{{ $lastReject['alasan'] }}</p>
-        @if(!empty($lastReject['catatan']))
-            <h4 class="text-sm font-semibold text-red-700 mt-3">Catatan Perbaikan:</h4>
-            <p class="text-sm text-red-600 mt-1">{{ $lastReject['catatan'] }}</p>
-        @endif
+        <h4 class="text-sm font-semibold text-red-700">Catatan Penolakan:</h4>
+        <p class="text-sm text-red-600 mt-1">{{ $lastReject['catatan'] ?? $lastReject['alasan'] ?? '-' }}</p>
     </div>
     @endif
 

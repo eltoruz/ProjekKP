@@ -8,6 +8,8 @@
     $status = (int) $ks->ks_status_dok;
     $hasJadwal = (bool) $ks->tanggal_pembahasan;
     $waitingUndangan = $status === 2 && $hasJadwal && !$ks->hasSuratUndangan();
+    $lastReject = collect($ks->review_log)->filter(fn($l) => ($l['label'] ?? '') === 'Ditolak')->last();
+    $isRejected = $lastReject && !$ks->ks_status_dok;
 @endphp
 
 @if(session('success'))
@@ -31,7 +33,7 @@
         <div class="px-5 py-4 flex items-center justify-between">
             <div class="flex items-center gap-2">
                 @php
-                    $badgeClass = match((int)$ks->ks_status_dok) {
+                    $badgeClass = $isRejected ? 'bg-red-100 text-red-700' : match((int)$ks->ks_status_dok) {
                         1 => 'bg-blue-100 text-blue-700',
                         2 => 'bg-yellow-100 text-yellow-700',
                         3 => 'bg-orange-100 text-orange-700',
@@ -41,7 +43,7 @@
                         default => 'bg-gray-100 text-gray-600',
                     };
                 @endphp
-                <span class="inline-block px-3 py-1 rounded-full text-xs font-medium {{ $badgeClass }}">{{ $ks->statusDok->nama_status ?? '-' }}</span>
+                <span class="inline-block px-3 py-1 rounded-full text-xs font-medium {{ $badgeClass }}">{{ $ks->status_label }}</span>
             </div>
             @if($waitingUndangan)
             <button @click="showJadwal = true" class="bg-amber-500 text-white px-4 py-1.5 rounded-lg text-xs font-medium hover:bg-amber-600">Ubah Jadwal</button>
@@ -49,11 +51,22 @@
         </div>
     </div>
 
+    <!-- Rejection Alert -->
+    @if($isRejected)
+    <div class="bg-red-50 rounded-lg shadow-sm border border-red-200 mb-4 p-4 flex items-start gap-3">
+        <svg class="w-5 h-5 text-red-500 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <div>
+            <p class="text-sm font-semibold text-red-700">Pengajuan Ditolak</p>
+            <p class="text-sm text-red-600 mt-1"><span class="font-medium">Catatan Penolakan:</span> {{ $lastReject['catatan'] ?? 'Pengajuan telah ditolak. Menunggu perbaikan dari mitra.' }}</p>
+        </div>
+    </div>
+    @endif
+
     <!-- Waiting Undangan -->
     @if($waitingUndangan)
     <div class="bg-green-50 rounded-lg shadow-sm border border-green-200 mb-4">
         <div class="px-5 py-3 flex items-start gap-2">
-            <svg class="w-5 h-5 text-green-500 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <svg class="w-5 h-5 text-green-500 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
             <p class="text-sm text-green-700">Pembahasan telah dijadwalkan. Menunggu mitra mengupload surat undangan pembahasan.</p>
         </div>
     </div>
@@ -219,13 +232,23 @@
     <div x-show="showSetujui" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-black/50" x-transition>
         <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6" @click.outside="showSetujui = false">
             <h3 class="text-lg font-semibold text-green-600 mb-4">Setujui & Jadwalkan Pembahasan</h3>
-            <form method="POST" action="{{ route('admin.kerjasama.setujui', $ks->kerjasama_id) }}">
+            <form method="POST" action="{{ route('admin.kerjasama.setujui', $ks->kerjasama_id) }}" x-data="{ tgl: '{{ date('Y-m-d') }}', jam: '09:00' }" @submit="$refs.fullDate1.value = tgl + ' ' + jam">
                 @csrf
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal & Waktu Pembahasan <span class="text-red-500">*</span></label>
-                    <input type="datetime-local" name="tanggal_pembahasan" required class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                <input type="hidden" name="tanggal_pembahasan" x-ref="fullDate1" required>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Pembahasan <span class="text-red-500">*</span></label>
+                        <input type="date" x-model="tgl" required class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Jam Pembahasan (24 Jam) <span class="text-red-500">*</span></label>
+                        <input type="text" x-model="jam" placeholder="21:45 atau ketik 2145" maxlength="5" required
+                               oninput="formatJamInput(this)" onblur="validateJamOnBlur(this)"
+                               class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white font-mono text-base tracking-wider">
+                         
+                    </div>
                 </div>
-                <div class="flex justify-end gap-2 mt-4">
+                <div class="flex justify-end gap-2 mt-5">
                     <button type="button" @click="showSetujui = false" class="border border-gray-300 px-4 py-2 rounded-lg text-sm hover:bg-gray-50">Batal</button>
                     <button type="submit" class="bg-green-500 text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-green-600">Setujui & Jadwalkan</button>
                 </div>
@@ -239,15 +262,9 @@
             <h3 class="text-lg font-semibold text-red-600 mb-4">Tolak Pengajuan</h3>
             <form method="POST" action="{{ route('admin.kerjasama.tolak', $ks->kerjasama_id) }}">
                 @csrf
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Alasan Penolakan <span class="text-red-500">*</span></label>
-                        <textarea name="alasan" rows="3" required class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" placeholder="Tulis alasan..."></textarea>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Catatan Perbaikan</label>
-                        <textarea name="catatan" rows="2" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" placeholder="Opsional..."></textarea>
-                    </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Catatan Penolakan <span class="text-red-500">*</span></label>
+                    <textarea name="catatan_penolakan" rows="4" required class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" placeholder="Tulis catatan penolakan..."></textarea>
                 </div>
                 <div class="flex justify-end gap-2 mt-4">
                     <button type="button" @click="showTolak = false" class="border border-gray-300 px-4 py-2 rounded-lg text-sm hover:bg-gray-50">Batal</button>
@@ -261,13 +278,23 @@
     <div x-show="showJadwal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-black/50" x-transition>
         <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6" @click.outside="showJadwal = false">
             <h3 class="text-lg font-semibold text-amber-600 mb-4">{{ $hasJadwal ? 'Ubah Jadwal' : 'Jadwalkan Pembahasan' }}</h3>
-            <form method="POST" action="{{ route('admin.kerjasama.jadwalkan', $ks->kerjasama_id) }}">
+            <form method="POST" action="{{ route('admin.kerjasama.jadwalkan', $ks->kerjasama_id) }}" x-data="{ tgl: '{{ $hasJadwal ? $ks->tanggal_pembahasan->format('Y-m-d') : date('Y-m-d') }}', jam: '{{ $hasJadwal ? $ks->tanggal_pembahasan->format('H:i') : '09:00' }}' }" @submit="$refs.fullDate2.value = tgl + ' ' + jam">
                 @csrf
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal & Waktu <span class="text-red-500">*</span></label>
-                    <input type="datetime-local" name="tanggal_pembahasan" value="{{ $hasJadwal ? $ks->tanggal_pembahasan->format('Y-m-d\TH:i') : '' }}" required class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                <input type="hidden" name="tanggal_pembahasan" x-ref="fullDate2" required>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Pembahasan <span class="text-red-500">*</span></label>
+                        <input type="date" x-model="tgl" required class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Jam Pembahasan (24 Jam) <span class="text-red-500">*</span></label>
+                        <input type="text" x-model="jam" placeholder="21:45 atau ketik 2145" maxlength="5" required
+                               oninput="formatJamInput(this)" onblur="validateJamOnBlur(this)"
+                               class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white font-mono text-base tracking-wider">
+                         
+                    </div>
                 </div>
-                <div class="flex justify-end gap-2 mt-4">
+                <div class="flex justify-end gap-2 mt-5">
                     <button type="button" @click="showJadwal = false" class="border border-gray-300 px-4 py-2 rounded-lg text-sm hover:bg-gray-50">Batal</button>
                     <button type="submit" class="bg-amber-500 text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-amber-600">Simpan</button>
                 </div>
@@ -302,8 +329,8 @@
                             <input type="text" name="kode_wilayah" maxlength="20" value="{{ $ks->kode_wilayah }}" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
                         </div>
                         <div>
-                            <label class="block text-xs font-medium text-gray-500 mb-1">Jangka (thn)</label>
-                            <input type="number" name="jangka_waktu_thn" min="1" value="{{ $ks->jangka_waktu_thn }}" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                            <label class="block text-xs font-medium text-gray-500 mb-1">Jumlah K/L</label>
+                            <input type="number" name="jumlah_kl_terlibat" min="1" value="{{ $ks->jumlah_kl_terlibat }}" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
                         </div>
                     </div>
                     <div class="grid grid-cols-2 gap-3">
@@ -322,8 +349,8 @@
                     </div>
                     <div class="grid grid-cols-3 gap-3">
                         <div>
-                            <label class="block text-xs font-medium text-gray-500 mb-1">Jumlah K/L</label>
-                            <input type="number" name="jumlah_kl_terlibat" min="1" value="{{ $ks->jumlah_kl_terlibat }}" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                            <label class="block text-xs font-medium text-gray-500 mb-1">Jangka (thn)</label>
+                            <input type="number" name="jangka_waktu_thn" min="1" value="{{ $ks->jangka_waktu_thn }}" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-gray-500 mb-1">Tgl Mulai</label>

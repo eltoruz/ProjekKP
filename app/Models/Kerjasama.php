@@ -94,6 +94,11 @@ class Kerjasama extends Model
 
     public function getStatusLabelAttribute()
     {
+        if (!$this->ks_status_dok) {
+            $lastReject = collect($this->review_log)->filter(fn($l) => ($l['label'] ?? '') === 'Ditolak')->last();
+            if ($lastReject) return 'Ditolak';
+            return 'Draft';
+        }
         return $this->statusDok?->nama_status ?? '-';
     }
 
@@ -138,5 +143,10 @@ class Kerjasama extends Model
             6 => 'gray',
             default => 'gray',
         };
+    }
+
+    public function canBeDeletedByMitra(): bool
+    {
+        return $this->ks_status_dok === null && $this->reviewLogs()->count() === 0;
     }
 }

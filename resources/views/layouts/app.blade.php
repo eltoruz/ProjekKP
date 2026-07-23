@@ -23,6 +23,43 @@
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
         body { font-family: 'Poppins', sans-serif; }
     </style>
+    <script>
+        function formatJamInput(el) {
+            let raw = el.value.replace(/[^0-9]/g, '');
+            if (raw.length > 4) raw = raw.slice(0, 4);
+            if (raw.length >= 3) {
+                let h = parseInt(raw.slice(0, 2), 10);
+                if (h > 23) h = 23;
+                let hStr = h < 10 ? '0' + h : '' + h;
+                let mRaw = raw.slice(2);
+                let m = parseInt(mRaw, 10);
+                if (!isNaN(m) && m > 59) m = 59;
+                let mStr = raw.length === 3 ? mRaw : (!isNaN(m) ? (m < 10 ? '0' + m : '' + m) : mRaw);
+                el.value = hStr + ':' + mStr;
+            } else {
+                el.value = raw;
+            }
+        }
+        function validateJamOnBlur(el) {
+            let raw = el.value.replace(/[^0-9]/g, '');
+            if (raw.length === 4) {
+                let h = parseInt(raw.slice(0, 2), 10);
+                let m = parseInt(raw.slice(2), 10);
+                if (h > 23) h = 23;
+                if (m > 59) m = 59;
+                el.value = (h < 10 ? '0' + h : h) + ':' + (m < 10 ? '0' + m : m);
+            } else if (raw.length === 3) {
+                let h = parseInt(raw.slice(0, 1), 10);
+                let m = parseInt(raw.slice(1), 10);
+                if (m > 59) m = 59;
+                el.value = '0' + h + ':' + (m < 10 ? '0' + m : m);
+            } else if (raw.length === 1 || raw.length === 2) {
+                let h = parseInt(raw, 10);
+                if (h > 23) h = 23;
+                el.value = (h < 10 ? '0' + h : h) + ':00';
+            }
+        }
+    </script>
 </head>
 <body class="bg-gray-50 text-gray-900 min-h-screen">
     @yield('content')

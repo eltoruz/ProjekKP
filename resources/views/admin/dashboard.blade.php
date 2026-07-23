@@ -73,4 +73,65 @@
         <p class="text-2xl font-bold text-slate-800">{{ $stats['berakhir'] }}</p>
     </div>
 </div>
+
+<!-- Kontainer Pengajuan Terbaru -->
+<div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+    <div class="flex items-center justify-between mb-4">
+        <div>
+            <h3 class="text-base font-semibold text-slate-800">Pengajuan Terbaru</h3>
+            <p class="text-xs text-gray-500 mt-0.5">Daftar pengajuan kerja sama yang baru diajukan atau diperbarui.</p>
+        </div>
+        <a href="{{ route('admin.kerjasama.index') }}" class="text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors">
+            Lihat Semua &rarr;
+        </a>
+    </div>
+
+    <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+            <thead class="bg-gray-50 border-y border-gray-100">
+                <tr>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">No</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Mitra / Instansi</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Jenis</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tentang</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tanggal</th>
+                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Aksi</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+                @forelse($recentSubmissions as $ks)
+                <tr class="hover:bg-gray-50 transition-colors">
+                    <td class="px-4 py-3 text-gray-500">{{ $loop->iteration }}</td>
+                    <td class="px-4 py-3 font-medium text-slate-800">{{ $ks->nama_kl ?? 'N/A' }}</td>
+                    <td class="px-4 py-3 text-gray-600">{{ $ks->jenis?->nama_jenis ?? '-' }}</td>
+                    <td class="px-4 py-3 max-w-xs truncate text-gray-600">{{ $ks->tentang ?? '-' }}</td>
+                    <td class="px-4 py-3">
+                        @php
+                            $lastReject = collect($ks->review_log)->filter(fn($l) => ($l['label'] ?? '') === 'Ditolak')->last();
+                            $isRejected = $lastReject && !$ks->ks_status_dok;
+                            $sColors = [1 => 'bg-blue-100 text-blue-700', 2 => 'bg-yellow-100 text-yellow-700', 3 => 'bg-orange-100 text-orange-700', 4 => 'bg-purple-100 text-purple-700', 5 => 'bg-green-100 text-green-700', 6 => 'bg-gray-100 text-gray-600'];
+                            $sLabels = [1 => 'Menunggu Review', 2 => 'Menunggu Jadwal', 3 => 'Pembahasan', 4 => 'Penandatanganan', 5 => 'Selesai', 6 => 'Berakhir'];
+                            $colorClass = $isRejected ? 'bg-red-100 text-red-700' : ($sColors[$ks->ks_status_dok] ?? 'bg-gray-100 text-gray-600');
+                        @endphp
+                        <span class="px-2.5 py-0.5 rounded-full text-xs font-medium {{ $colorClass }}">
+                            {{ $isRejected ? 'Ditolak' : ($sLabels[$ks->ks_status_dok] ?? $ks->status_label) }}
+                        </span>
+                    </td>
+                    <td class="px-4 py-3 text-gray-500 text-xs">{{ $ks->last_update?->format('d M Y, H:i') }}</td>
+                    <td class="px-4 py-3 text-right">
+                        <a href="{{ route('admin.kerjasama.review', $ks->kerjasama_id) }}" class="inline-flex items-center gap-1 text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200 px-3 py-1 rounded-lg hover:bg-blue-100 transition-colors">
+                            Review &rarr;
+                        </a>
+                    </td>
+                </tr>
+                @empty
+                <tr>
+                    <td colspan="7" class="px-4 py-8 text-center text-gray-400">Belum ada pengajuan masuk.</td>
+                </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
+</div>
 @endsection
