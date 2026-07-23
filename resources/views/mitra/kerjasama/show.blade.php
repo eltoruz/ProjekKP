@@ -138,7 +138,7 @@
     </div>
 
     <!-- Jadwal Pembahasan -->
-    @if($kerjasama->tanggal_pembahasan && $kerjasama->ks_status_dok < 3)
+    @if($kerjasama->tanggal_pembahasan && $kerjasama->ks_status_dok < 4)
     <div class="bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg shadow-sm border-2 border-blue-300 p-6">
         <div class="flex items-start gap-4">
             <div class="w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center shrink-0">
