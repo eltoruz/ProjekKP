@@ -2,134 +2,72 @@
 <?php $__env->startSection('page-title', 'Dashboard'); ?>
 
 <?php $__env->startSection('page-content'); ?>
-<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-    <?php if (isset($component)) { $__componentOriginal527fae77f4db36afc8c8b7e9f5f81682 = $component; } ?>
-<?php if (isset($attributes)) { $__attributesOriginal527fae77f4db36afc8c8b7e9f5f81682 = $attributes; } ?>
-<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.stat-card','data' => ['title' => 'Total Pengajuan','value' => $total,'bgColor' => 'bg-blue-100','icon' => '<svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
-<?php $component->withName('stat-card'); ?>
-<?php if ($component->shouldRender()): ?>
-<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
-<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
-<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
-<?php endif; ?>
-<?php $component->withAttributes(['title' => 'Total Pengajuan','value' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute($total),'bgColor' => 'bg-blue-100','icon' => '<svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>']); ?>
-<?php echo $__env->renderComponent(); ?>
-<?php endif; ?>
-<?php if (isset($__attributesOriginal527fae77f4db36afc8c8b7e9f5f81682)): ?>
-<?php $attributes = $__attributesOriginal527fae77f4db36afc8c8b7e9f5f81682; ?>
-<?php unset($__attributesOriginal527fae77f4db36afc8c8b7e9f5f81682); ?>
-<?php endif; ?>
-<?php if (isset($__componentOriginal527fae77f4db36afc8c8b7e9f5f81682)): ?>
-<?php $component = $__componentOriginal527fae77f4db36afc8c8b7e9f5f81682; ?>
-<?php unset($__componentOriginal527fae77f4db36afc8c8b7e9f5f81682); ?>
-<?php endif; ?>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+    <!-- Total -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
+        <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-medium text-gray-500 uppercase">Total Pengajuan</span>
+            <div class="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center">
+                <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            </div>
+        </div>
+        <p class="text-2xl font-bold text-navy"><?php echo e($total); ?></p>
+    </div>
 
-    <?php if (isset($component)) { $__componentOriginal527fae77f4db36afc8c8b7e9f5f81682 = $component; } ?>
-<?php if (isset($attributes)) { $__attributesOriginal527fae77f4db36afc8c8b7e9f5f81682 = $attributes; } ?>
-<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.stat-card','data' => ['title' => 'Draft','value' => $belum,'bgColor' => 'bg-gray-100','icon' => '<svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
-<?php $component->withName('stat-card'); ?>
-<?php if ($component->shouldRender()): ?>
-<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
-<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
-<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
-<?php endif; ?>
-<?php $component->withAttributes(['title' => 'Draft','value' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute($belum),'bgColor' => 'bg-gray-100','icon' => '<svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>']); ?>
-<?php echo $__env->renderComponent(); ?>
-<?php endif; ?>
-<?php if (isset($__attributesOriginal527fae77f4db36afc8c8b7e9f5f81682)): ?>
-<?php $attributes = $__attributesOriginal527fae77f4db36afc8c8b7e9f5f81682; ?>
-<?php unset($__attributesOriginal527fae77f4db36afc8c8b7e9f5f81682); ?>
-<?php endif; ?>
-<?php if (isset($__componentOriginal527fae77f4db36afc8c8b7e9f5f81682)): ?>
-<?php $component = $__componentOriginal527fae77f4db36afc8c8b7e9f5f81682; ?>
-<?php unset($__componentOriginal527fae77f4db36afc8c8b7e9f5f81682); ?>
-<?php endif; ?>
+    <!-- Draft -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
+        <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-medium text-gray-500 uppercase">Draft</span>
+            <div class="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center">
+                <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+            </div>
+        </div>
+        <p class="text-2xl font-bold text-navy"><?php echo e($belum); ?></p>
+    </div>
 
-    <?php if (isset($component)) { $__componentOriginal527fae77f4db36afc8c8b7e9f5f81682 = $component; } ?>
-<?php if (isset($attributes)) { $__attributesOriginal527fae77f4db36afc8c8b7e9f5f81682 = $attributes; } ?>
-<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.stat-card','data' => ['title' => 'Dalam Pembahasan','value' => $dibahas,'bgColor' => 'bg-blue-200','icon' => '<svg class="w-5 h-5 text-blue-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
-<?php $component->withName('stat-card'); ?>
-<?php if ($component->shouldRender()): ?>
-<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
-<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
-<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
-<?php endif; ?>
-<?php $component->withAttributes(['title' => 'Dalam Pembahasan','value' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute($dibahas),'bgColor' => 'bg-blue-200','icon' => '<svg class="w-5 h-5 text-blue-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>']); ?>
-<?php echo $__env->renderComponent(); ?>
-<?php endif; ?>
-<?php if (isset($__attributesOriginal527fae77f4db36afc8c8b7e9f5f81682)): ?>
-<?php $attributes = $__attributesOriginal527fae77f4db36afc8c8b7e9f5f81682; ?>
-<?php unset($__attributesOriginal527fae77f4db36afc8c8b7e9f5f81682); ?>
-<?php endif; ?>
-<?php if (isset($__componentOriginal527fae77f4db36afc8c8b7e9f5f81682)): ?>
-<?php $component = $__componentOriginal527fae77f4db36afc8c8b7e9f5f81682; ?>
-<?php unset($__componentOriginal527fae77f4db36afc8c8b7e9f5f81682); ?>
-<?php endif; ?>
+    <!-- Dalam Pembahasan -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
+        <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-medium text-gray-500 uppercase">Pembahasan</span>
+            <div class="w-8 h-8 rounded-lg bg-orange-100 flex items-center justify-center">
+                <svg class="w-4 h-4 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            </div>
+        </div>
+        <p class="text-2xl font-bold text-navy"><?php echo e($dibahas); ?></p>
+    </div>
 
-    <?php if (isset($component)) { $__componentOriginal527fae77f4db36afc8c8b7e9f5f81682 = $component; } ?>
-<?php if (isset($attributes)) { $__attributesOriginal527fae77f4db36afc8c8b7e9f5f81682 = $attributes; } ?>
-<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.stat-card','data' => ['title' => 'Selesai','value' => $selesai,'bgColor' => 'bg-green-100','icon' => '<svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
-<?php $component->withName('stat-card'); ?>
-<?php if ($component->shouldRender()): ?>
-<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
-<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
-<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
-<?php endif; ?>
-<?php $component->withAttributes(['title' => 'Selesai','value' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute($selesai),'bgColor' => 'bg-green-100','icon' => '<svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>']); ?>
-<?php echo $__env->renderComponent(); ?>
-<?php endif; ?>
-<?php if (isset($__attributesOriginal527fae77f4db36afc8c8b7e9f5f81682)): ?>
-<?php $attributes = $__attributesOriginal527fae77f4db36afc8c8b7e9f5f81682; ?>
-<?php unset($__attributesOriginal527fae77f4db36afc8c8b7e9f5f81682); ?>
-<?php endif; ?>
-<?php if (isset($__componentOriginal527fae77f4db36afc8c8b7e9f5f81682)): ?>
-<?php $component = $__componentOriginal527fae77f4db36afc8c8b7e9f5f81682; ?>
-<?php unset($__componentOriginal527fae77f4db36afc8c8b7e9f5f81682); ?>
-<?php endif; ?>
-</div>
+    <!-- Selesai -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
+        <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-medium text-gray-500 uppercase">Selesai</span>
+            <div class="w-8 h-8 rounded-lg bg-green-100 flex items-center justify-center">
+                <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+            </div>
+        </div>
+        <p class="text-2xl font-bold text-navy"><?php echo e($selesai); ?></p>
+    </div>
 
-<div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-    <?php if (isset($component)) { $__componentOriginal527fae77f4db36afc8c8b7e9f5f81682 = $component; } ?>
-<?php if (isset($attributes)) { $__attributesOriginal527fae77f4db36afc8c8b7e9f5f81682 = $attributes; } ?>
-<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.stat-card','data' => ['title' => 'Tahap Akhir','value' => $disetujui,'bgColor' => 'bg-yellow-100','icon' => '<svg class="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
-<?php $component->withName('stat-card'); ?>
-<?php if ($component->shouldRender()): ?>
-<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
-<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
-<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
-<?php endif; ?>
-<?php $component->withAttributes(['title' => 'Tahap Akhir','value' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute($disetujui),'bgColor' => 'bg-yellow-100','icon' => '<svg class="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>']); ?>
-<?php echo $__env->renderComponent(); ?>
-<?php endif; ?>
-<?php if (isset($__attributesOriginal527fae77f4db36afc8c8b7e9f5f81682)): ?>
-<?php $attributes = $__attributesOriginal527fae77f4db36afc8c8b7e9f5f81682; ?>
-<?php unset($__attributesOriginal527fae77f4db36afc8c8b7e9f5f81682); ?>
-<?php endif; ?>
-<?php if (isset($__componentOriginal527fae77f4db36afc8c8b7e9f5f81682)): ?>
-<?php $component = $__componentOriginal527fae77f4db36afc8c8b7e9f5f81682; ?>
-<?php unset($__componentOriginal527fae77f4db36afc8c8b7e9f5f81682); ?>
-<?php endif; ?>
+    <!-- Tahap Akhir -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
+        <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-medium text-gray-500 uppercase">Tahap Akhir</span>
+            <div class="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center">
+                <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+            </div>
+        </div>
+        <p class="text-2xl font-bold text-navy"><?php echo e($disetujui); ?></p>
+    </div>
 
-    <?php if (isset($component)) { $__componentOriginal527fae77f4db36afc8c8b7e9f5f81682 = $component; } ?>
-<?php if (isset($attributes)) { $__attributesOriginal527fae77f4db36afc8c8b7e9f5f81682 = $attributes; } ?>
-<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.stat-card','data' => ['title' => 'Masa Berlaku Berakhir','value' => $expired,'bgColor' => 'bg-gray-200','icon' => '<svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
-<?php $component->withName('stat-card'); ?>
-<?php if ($component->shouldRender()): ?>
-<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
-<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
-<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
-<?php endif; ?>
-<?php $component->withAttributes(['title' => 'Masa Berlaku Berakhir','value' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute($expired),'bgColor' => 'bg-gray-200','icon' => '<svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>']); ?>
-<?php echo $__env->renderComponent(); ?>
-<?php endif; ?>
-<?php if (isset($__attributesOriginal527fae77f4db36afc8c8b7e9f5f81682)): ?>
-<?php $attributes = $__attributesOriginal527fae77f4db36afc8c8b7e9f5f81682; ?>
-<?php unset($__attributesOriginal527fae77f4db36afc8c8b7e9f5f81682); ?>
-<?php endif; ?>
-<?php if (isset($__componentOriginal527fae77f4db36afc8c8b7e9f5f81682)): ?>
-<?php $component = $__componentOriginal527fae77f4db36afc8c8b7e9f5f81682; ?>
-<?php unset($__componentOriginal527fae77f4db36afc8c8b7e9f5f81682); ?>
-<?php endif; ?>
+    <!-- Berakhir -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
+        <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-medium text-gray-500 uppercase">Berakhir</span>
+            <div class="w-8 h-8 rounded-lg bg-gray-200 flex items-center justify-center">
+                <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            </div>
+        </div>
+        <p class="text-2xl font-bold text-navy"><?php echo e($expired); ?></p>
+    </div>
 </div>
 
 <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($upcoming->count()): ?>

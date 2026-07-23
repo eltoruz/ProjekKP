@@ -16,6 +16,7 @@ class KerjasamaController extends Controller
     public function index(Request $request)
     {
         $query = Kerjasama::notDeleted()->with(['jenis', 'tingkat', 'statusDok'])
+            ->whereNotNull('ks_status_dok')
             ->orderBy('last_update', 'desc');
 
         if ($request->filled('search')) {
