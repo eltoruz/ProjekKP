@@ -31,6 +31,9 @@ Route::middleware(['web'])
         Route::get('/kerjasama/{id}/upload-ulang', [NotaKesepakatanController::class, 'uploadUlangForm'])->name('kerjasama.upload-ulang');
         Route::post('/kerjasama/{id}/upload-ulang', [NotaKesepakatanController::class, 'uploadUlang'])->name('kerjasama.upload-ulang');
         Route::post('/kerjasama/{id}/upload-undangan', [NotaKesepakatanController::class, 'uploadUndangan'])->name('kerjasama.upload-undangan');
+        Route::get('/kerjasama/{id}/pemilihan-data', [MitraKerjasama::class, 'pemilihanDataForm'])->name('kerjasama.pemilihan-data.form');
+        Route::post('/kerjasama/{id}/pemilihan-data', [NotaKesepakatanController::class, 'simpanPemilihanData'])->name('kerjasama.pemilihan-data');
+        Route::get('/api/metadata/columns', [MitraKerjasama::class, 'getTableColumns'])->name('api.metadata.columns');
     });
 
 // Admin

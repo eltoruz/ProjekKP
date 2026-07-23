@@ -83,4 +83,85 @@ class NotaKesepakatanController extends Controller
 
         return redirect()->route('mitra.kerjasama.show', $id)->with('info', 'Surat undangan berhasil diupload. Silakan melakukan pembahasan dengan admin sesuai tanggal di surat undangan.');
     }
+
+    public function simpanPemilihanData(Request $request, $id)
+    {
+        $ks = Kerjasama::where('kerjasama_id', $id)->notDeleted()->firstOrFail();
+        if ((int)$ks->ks_status_dok < 5) {
+            return back()->with('error', 'Pemilihan data hanya dapat dilakukan setelah Nota Kesepakatan berstatus Selesai/Final.');
+        }
+
+        // 1. Per-column selection (selected_data containing metadata UUIDs)
+        if ($request->has('selected_data') && is_array($request->selected_data)) {
+            $request->validate([
+                'selected_data' => 'required|array|min:1',
+                'selected_data.*' => 'required|string|exists:metadata,id',
+                'alasan_table' => 'nullable|array',
+                'alasan' => 'nullable|array',
+            ], [
+                'selected_data.required' => 'Minimal 1 kolom/item data wajib dipilih.',
+                'selected_data.min' => 'Minimal 1 kolom/item data wajib dipilih.',
+            ]);
+
+            \App\Models\MetadataUser::where('kerjasama_id', $id)->update(['soft_delete' => true]);
+
+            foreach ($request->selected_data as $metadataId) {
+                $metadata = \App\Models\Metadata::find($metadataId);
+                if (!$metadata) continue;
+
+                $tblName = $metadata->tbl_name;
+                $reason = trim($request->alasan[$metadataId] ?? $request->alasan_table[$tblName] ?? '');
+                if (empty($reason)) {
+                    $reason = 'Digunakan untuk kebutuhan integrasi dan sinkronisasi data.';
+                }
+
+                \App\Models\MetadataUser::create([
+                    'kerjasama_id' => $id,
+                    'metadata_id' => $metadataId,
+                    'alasan' => $reason,
+                    'is_masked' => false,
+                    'soft_delete' => false,
+                ]);
+            }
+
+            $ks->addReviewEntry('Pemilihan Data', 'Mitra menyimpan pemilihan data per-kolom yang diperlukan');
+            return redirect()->route('mitra.kerjasama.show', $id)->with('success', 'Pemilihan data yang diperlukan berhasil disimpan.');
+        }
+
+        // 2. Whole table selection (selected_tables)
+        if ($request->has('selected_tables') && is_array($request->selected_tables)) {
+            $request->validate([
+                'selected_tables' => 'required|array|min:1',
+                'selected_tables.*' => 'required|string',
+                'alasan_table' => 'required|array',
+            ], [
+                'selected_tables.required' => 'Minimal 1 tabel data wajib dipilih.',
+                'selected_tables.min' => 'Minimal 1 tabel data wajib dipilih.',
+            ]);
+
+            \App\Models\MetadataUser::where('kerjasama_id', $id)->update(['soft_delete' => true]);
+
+            foreach ($request->selected_tables as $tblName) {
+                $reason = trim($request->alasan_table[$tblName] ?? '');
+                if (empty($reason)) {
+                    $reason = 'Digunakan untuk kebutuhan integrasi dan sinkronisasi data.';
+                }
+                $columns = \App\Models\Metadata::where('tbl_name', $tblName)->pluck('id');
+                foreach ($columns as $metadataId) {
+                    \App\Models\MetadataUser::create([
+                        'kerjasama_id' => $id,
+                        'metadata_id' => $metadataId,
+                        'alasan' => $reason,
+                        'is_masked' => false,
+                        'soft_delete' => false,
+                    ]);
+                }
+            }
+
+            $ks->addReviewEntry('Pemilihan Data', 'Mitra menyimpan pemilihan data yang diperlukan');
+            return redirect()->route('mitra.kerjasama.show', $id)->with('success', 'Pemilihan data yang diperlukan berhasil disimpan.');
+        }
+
+        return back()->with('error', 'Minimal 1 kolom atau tabel data wajib dipilih.');
+    }
 }

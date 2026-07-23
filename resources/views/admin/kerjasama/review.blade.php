@@ -127,6 +127,146 @@
     </div>
     @endif
 
+    <!-- Hasil Pemilihan Data oleh Mitra (Terstruktur per Database & Tabel) -->
+    @if($status >= 5)
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-4">
+        <div class="px-5 py-3 border-b border-gray-100 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+                <h3 class="text-sm font-semibold text-slate-800">Hasil Pemilihan Data oleh Mitra</h3>
+            </div>
+            @if($ks->pemilihanData->isNotEmpty())
+                <span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">✓ {{ $ks->pemilihanData->count() }} Kolom Terpilih</span>
+            @else
+                <span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-700">⚠️ Belum Memilih Data</span>
+            @endif
+        </div>
+        <div class="p-5">
+            @if($ks->pemilihanData->isNotEmpty())
+            @php
+                $adminGroupedSelection = $ks->pemilihanData->groupBy(function($item) {
+                    return $item->metadata->db_name ?? 'Database';
+                })->map(function($itemsInDb) {
+                    return $itemsInDb->groupBy(function($item) {
+                        return $item->metadata->tbl_name ?? 'Tabel';
+                    });
+                });
+            @endphp
+
+            <!-- Accordion Grouping UI untuk Admin -->
+            <div class="space-y-3" x-data="{
+                openAdminTables: {},
+                expandAll() {
+                    for (let key in this.openAdminTables) this.openAdminTables[key] = true;
+                },
+                collapseAll() {
+                    for (let key in this.openAdminTables) this.openAdminTables[key] = false;
+                }
+            }">
+                <!-- Quick Action Toolbar -->
+                <div class="flex items-center justify-between gap-2 py-1.5 px-3 bg-gray-50 border border-gray-200 rounded-lg text-xs">
+                    <div class="flex items-center gap-2">
+                        <button type="button" @click="expandAll()" class="text-indigo-600 hover:text-indigo-800 font-medium hover:underline">📂 Buka Semua Accordion</button>
+                        <span class="text-gray-300">•</span>
+                        <button type="button" @click="collapseAll()" class="text-gray-600 hover:text-gray-800 font-medium hover:underline">📁 Tutup Semua</button>
+                    </div>
+                    <span class="text-gray-500 font-medium">Total: <strong class="text-indigo-600">{{ $adminGroupedSelection->sum(fn($db) => $db->count()) }}</strong> tabel (<strong class="text-indigo-600">{{ $ks->pemilihanData->count() }}</strong> kolom)</span>
+                </div>
+
+                @foreach($adminGroupedSelection as $dbName => $tables)
+                <div class="space-y-2">
+                    <!-- Group Header Database -->
+                    <div class="flex items-center gap-2 py-1.5 px-3 bg-slate-100 border border-slate-200 rounded-lg text-slate-800 font-mono font-bold text-xs">
+                        <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s-8-1.79-8-4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"/>
+                        </svg>
+                        <span>DATABASE: {{ $dbName }}</span>
+                        <span class="text-[11px] font-normal text-slate-500">({{ count($tables) }} tabel)</span>
+                    </div>
+
+                    @foreach($tables as $tblName => $selCols)
+                    @php
+                        $firstSel = $selCols->first();
+                        $schemaName = $firstSel->metadata->schema_name ?? 'dbo';
+                        $alasanText = $firstSel->alasan ?? '-';
+                        $tblKey = $dbName . '.' . $tblName;
+                    @endphp
+                    <div x-init="openAdminTables['{{ $tblKey }}'] = true" 
+                         class="rounded-xl border border-indigo-200 bg-white overflow-hidden shadow-2xs ml-2">
+                        
+                        <!-- Table Card Header -->
+                        <div class="p-3 bg-indigo-50/40 border-b border-indigo-100 flex items-center justify-between cursor-pointer select-none"
+                             @click="openAdminTables['{{ $tblKey }}'] = !openAdminTables['{{ $tblKey }}']">
+                            
+                            <div class="flex items-center gap-2.5 flex-wrap">
+                                <span class="font-mono text-sm font-bold text-slate-800">{{ $tblName }}</span>
+                                <span class="px-2 py-0.5 rounded-md bg-white text-slate-600 font-mono text-[11px] font-medium border border-slate-200">{{ $dbName }}.{{ $schemaName }}</span>
+                                <span class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-indigo-100 text-indigo-700">
+                                    {{ count($selCols) }} kolom terpilih
+                                </span>
+                            </div>
+
+                            <div class="flex items-center gap-2">
+                                <span class="text-xs text-gray-500 font-medium">Detail Kolom</span>
+                                <svg class="w-4 h-4 text-gray-400 transition-transform duration-200" 
+                                     :class="openAdminTables['{{ $tblKey }}'] ? 'rotate-180 text-indigo-600' : ''" 
+                                     fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                </svg>
+                            </div>
+                        </div>
+
+                        <!-- Accordion Body: List Kolom & Alasan -->
+                        <div x-show="openAdminTables['{{ $tblKey }}']" x-collapse class="p-4 bg-white border-t border-gray-100 space-y-3">
+                            <div class="overflow-x-auto border border-gray-200 rounded-lg">
+                                <table class="w-full text-left text-xs border-collapse">
+                                    <thead>
+                                        <tr class="bg-gray-50 border-b border-gray-200 text-gray-600 font-semibold uppercase">
+                                            <th class="py-2 px-3 w-10 text-center">No</th>
+                                            <th class="py-2 px-3">Nama Kolom</th>
+                                            <th class="py-2 px-3">Tipe Data</th>
+                                            <th class="py-2 px-3">Deskripsi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-100">
+                                        @foreach($selCols as $colIdx => $selItem)
+                                        <tr class="hover:bg-indigo-50/30 transition-colors">
+                                            <td class="py-2 px-3 text-center text-gray-500 font-medium">{{ $colIdx + 1 }}</td>
+                                            <td class="py-2 px-3 font-mono font-bold text-slate-800">{{ $selItem->metadata->name ?? '-' }}</td>
+                                            <td class="py-2 px-3 font-mono text-gray-500">
+                                                <span class="px-1.5 py-0.5 rounded bg-gray-100 text-gray-600 text-[11px] font-mono">
+                                                    {{ $selItem->metadata->type_name ?? $selItem->metadata->type ?? '-' }}
+                                                </span>
+                                            </td>
+                                            <td class="py-2 px-3 text-gray-500 text-[11px]">{{ $selItem->metadata->description ?? '-' }}</td>
+                                        </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <!-- Alasan / Keterangan Penggunaan Data -->
+                            <div class="pt-2 border-t border-gray-100">
+                                <span class="text-[11px] font-bold text-indigo-950 uppercase tracking-wider">Keterangan / Alasan Penggunaan Data:</span>
+                                <div class="text-xs text-gray-700 bg-slate-50 p-2.5 rounded-lg border border-slate-200 mt-1 leading-relaxed font-medium">
+                                    {{ $alasanText }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    @endforeach
+                </div>
+                @endforeach
+            </div>
+            @else
+            <p class="text-sm text-gray-500 italic">Mitra belum melakukan pemilihan data yang diperlukan untuk Nota Kesepakatan ini.</p>
+            @endif
+        </div>
+    </div>
+    @endif
+
     <!-- Kontak -->
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-4">
         <div class="px-5 py-3 border-b border-gray-100 flex items-center gap-2">

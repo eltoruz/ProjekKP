@@ -134,7 +134,7 @@ class KerjasamaController extends Controller
 
     public function review($id)
     {
-        $ks = Kerjasama::with(['jenis', 'tingkat', 'statusDok', 'metode', 'implementasi', 'reviewLogs'])
+        $ks = Kerjasama::with(['jenis', 'tingkat', 'statusDok', 'metode', 'implementasi', 'reviewLogs', 'pemilihanData.metadata'])
             ->where('kerjasama_id', $id)->notDeleted()->firstOrFail();
 
         $metodeList = KsMetode::pluck('nama_metode', 'id');

@@ -60,6 +60,7 @@ class Kerjasama extends Model
     public function metode() { return $this->belongsTo(KsMetode::class, 'ks_metode'); }
     public function implementasi() { return $this->belongsTo(KsImplementasi::class, 'ks_implementasi'); }
     public function reviewLogs() { return $this->hasMany(ReviewLog::class, 'kerjasama_id', 'kerjasama_id')->orderBy('id'); }
+    public function pemilihanData() { return $this->hasMany(MetadataUser::class, 'kerjasama_id', 'kerjasama_id')->where('soft_delete', false)->with('metadata'); }
 
     public function scopeNotDeleted($query) { return $query->where('soft_delete', false); }
     public function scopeByStatus($query, int $status) { return $query->where('ks_status_dok', $status); }
