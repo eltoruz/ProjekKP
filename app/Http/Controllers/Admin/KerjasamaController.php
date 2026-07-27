@@ -248,6 +248,11 @@ class KerjasamaController extends Controller
         $ks = Kerjasama::with(['jenis', 'tingkat', 'statusDok', 'metode', 'implementasi', 'pemilihanData.metadata'])
             ->where('kerjasama_id', $id)->notDeleted()->firstOrFail();
 
+        if ($ks->status_pemilihan_data !== 'submitted') {
+            return redirect()->route('admin.kerjasama.review', $id)
+                ->with('error', 'Gagal membuka persetujuan data: Pemilihan data masih berstatus draf dan belum diajukan secara resmi oleh Mitra.');
+        }
+
         $metodeList = KsMetode::pluck('nama_metode', 'id');
         $implementasiList = KsImplementasi::pluck('nama_status', 'id');
 
@@ -257,6 +262,11 @@ class KerjasamaController extends Controller
     public function simpanPersetujuanData(Request $request, $id)
     {
         $ks = Kerjasama::where('kerjasama_id', $id)->notDeleted()->firstOrFail();
+
+        if ($ks->status_pemilihan_data !== 'submitted') {
+            return redirect()->route('admin.kerjasama.review', $id)
+                ->with('error', 'Gagal menyimpan persetujuan: Pemilihan data masih berstatus draf dan belum diajukan secara resmi oleh Mitra.');
+        }
 
         // 1. Update overall metode and status implementasi (pengaktifan) if provided
         $updateData = [];

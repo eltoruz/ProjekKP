@@ -169,26 +169,50 @@
                 <h3 class="text-sm font-semibold text-slate-800">Hasil Pemilihan Data oleh Mitra</h3>
             </div>
             <div class="flex items-center gap-3">
-                @if($ks->pemilihanData->isNotEmpty())
-                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                        {{ $ks->pemilihanData->count() }} Kolom Terpilih
+                @if($ks->status_pemilihan_data === 'submitted')
+                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700 border border-green-200">
+                        <svg class="w-3.5 h-3.5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                        Telah Diajukan ({{ $ks->pemilihanData->count() }} Kolom)
                     </span>
+                    <a href="{{ route('admin.kerjasama.persetujuan-data.form', $ks->kerjasama_id) }}" 
+                       class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors shadow-2xs">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                        Kelola Persetujuan Data per Item
+                    </a>
+                @elseif($ks->pemilihanData->isNotEmpty())
+                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 border border-amber-300">
+                        <svg class="w-3.5 h-3.5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
+                        Draf Terisi (Belum Diajukan Mitra)
+                    </span>
+                    <button type="button" disabled 
+                            class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold text-gray-400 bg-gray-100 border border-gray-200 cursor-not-allowed"
+                            title="Kelola persetujuan data hanya aktif setelah Mitra mengajukan pemilihan data">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                        Kelola Persetujuan (Menunggu Pengajuan Mitra)
+                    </button>
                 @else
-                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-700">
+                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-600 border border-slate-300">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
-                        Belum Memilih Data
+                        Mitra Belum Memilih Data
                     </span>
                 @endif
-
-                <a href="{{ route('admin.kerjasama.persetujuan-data.form', $ks->kerjasama_id) }}" 
-                   class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors shadow-2xs">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
-                    Kelola Persetujuan Data per Item
-                </a>
             </div>
         </div>
         <div class="p-5">
+            @if($ks->status_pemilihan_data !== 'submitted' && $ks->pemilihanData->isNotEmpty())
+            <div class="mb-4 p-3.5 bg-amber-50 border border-amber-200 rounded-lg flex items-center justify-between text-xs text-amber-900 shadow-2xs">
+                <div class="flex items-center gap-2.5">
+                    <svg class="w-5 h-5 text-amber-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <div>
+                        <strong class="font-bold text-amber-950">Mitra masih dalam tahap mengisi draf pemilihan data.</strong>
+                        <p class="text-[11px] text-amber-800 mt-0.5">Pemilihan data di bawah belum diajukan secara resmi oleh Mitra. Fitur pengolahan & persetujuan data Admin akan aktif setelah Mitra menekan tombol <em>"Ajukan Pemilihan Data ke Admin"</em>.</p>
+                    </div>
+                </div>
+            </div>
+            @endif
+
             @if($ks->pemilihanData->isNotEmpty())
             @php
                 $adminGroupedSelection = $ks->pemilihanData->groupBy(function($item) {
@@ -254,9 +278,23 @@
                             <div class="flex items-center gap-2.5 flex-wrap">
                                 <span class="font-mono text-sm font-bold text-slate-800">{{ $tblName }}</span>
                                 <span class="px-2 py-0.5 rounded-md bg-white text-slate-600 font-mono text-[11px] font-medium border border-slate-200">{{ $dbName }}.{{ $schemaName }}</span>
+                                @php
+                                    $tblApproved = $selCols->where('approval_status', 'approved')->count();
+                                    $tblRejected = $selCols->where('approval_status', 'rejected')->count();
+                                    $tblPending = $selCols->filter(fn($i) => !$i->approval_status || $i->approval_status === 'pending')->count();
+                                @endphp
                                 <span class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-indigo-100 text-indigo-700">
-                                    {{ count($selCols) }} kolom terpilih
+                                    {{ count($selCols) }} kolom
                                 </span>
+                                @if($tblApproved > 0)
+                                <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-green-100 text-green-700 border border-green-200">{{ $tblApproved }} disetujui</span>
+                                @endif
+                                @if($tblRejected > 0)
+                                <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-red-100 text-red-700 border border-red-200">{{ $tblRejected }} ditolak</span>
+                                @endif
+                                @if($tblPending > 0)
+                                <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-gray-100 text-gray-600 border border-gray-200">{{ $tblPending }} pending</span>
+                                @endif
                             </div>
 
                             <div class="flex items-center gap-2">
@@ -279,11 +317,13 @@
                                             <th class="py-2 px-3">Nama Kolom</th>
                                             <th class="py-2 px-3">Tipe Data</th>
                                             <th class="py-2 px-3">Deskripsi</th>
+                                            <th class="py-2 px-3 text-center">Status</th>
                                         </tr>
                                     </thead>
                                     <tbody class="divide-y divide-gray-100">
                                         @foreach($selCols as $colIdx => $selItem)
-                                        <tr class="hover:bg-indigo-50/30 transition-colors">
+                                        <tr class="hover:bg-indigo-50/30 transition-colors
+                                            {{ $selItem->approval_status === 'approved' ? 'bg-green-50/40' : ($selItem->approval_status === 'rejected' ? 'bg-red-50/40' : '') }}">
                                             <td class="py-2 px-3 text-center text-gray-500 font-medium">{{ $colIdx + 1 }}</td>
                                             <td class="py-2 px-3 font-mono font-bold text-slate-800">{{ $selItem->metadata->name ?? '-' }}</td>
                                             <td class="py-2 px-3 font-mono text-gray-500">
@@ -292,6 +332,24 @@
                                                 </span>
                                             </td>
                                             <td class="py-2 px-3 text-gray-500 text-[11px]">{{ $selItem->metadata->description ?? '-' }}</td>
+                                            <td class="py-2 px-3 text-center">
+                                                @if($selItem->approval_status === 'approved')
+                                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-green-100 text-green-700 border border-green-200">
+                                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                                        Disetujui
+                                                    </span>
+                                                @elseif($selItem->approval_status === 'rejected')
+                                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-red-100 text-red-700 border border-red-200">
+                                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                                                        Ditolak
+                                                    </span>
+                                                @else
+                                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-gray-100 text-gray-500 border border-gray-200">
+                                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                                        Pending
+                                                    </span>
+                                                @endif
+                                            </td>
                                         </tr>
                                         @endforeach
                                     </tbody>
