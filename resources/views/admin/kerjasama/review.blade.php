@@ -26,9 +26,40 @@
 
     <!-- Status Section -->
     <div class="bg-white rounded-lg shadow-sm border border-gray-200">
-        <div class="px-5 py-3 border-b border-gray-100 flex items-center gap-2">
-            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9"/></svg>
-            <h3 class="text-sm font-semibold text-slate-800">Status Dokumen</h3>
+        <div class="px-5 py-3 border-b border-gray-100 flex items-center justify-between flex-wrap gap-2">
+            <div class="flex items-center gap-2">
+                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9"/></svg>
+                <h3 class="text-sm font-semibold text-slate-800">Status Dokumen</h3>
+            </div>
+            <div class="flex items-center gap-2 flex-wrap">
+                @switch($status)
+                    @case(1)
+                        <button @click="showSetujui = true" class="bg-green-500 text-white px-3.5 py-1.5 rounded-lg text-xs font-medium hover:bg-green-600 transition-colors shadow-2xs">Setujui & Jadwalkan</button>
+                        <button @click="showTolak = true" class="bg-red-500 text-white px-3.5 py-1.5 rounded-lg text-xs font-medium hover:bg-red-600 transition-colors shadow-2xs">Tolak</button>
+                        @break
+                    @case(2)
+                        @if(!$hasJadwal)
+                        <button @click="showJadwal = true" class="bg-amber-500 text-white px-3.5 py-1.5 rounded-lg text-xs font-medium hover:bg-amber-600 transition-colors shadow-2xs">Jadwalkan</button>
+                        @endif
+                        @break
+                    @case(3)
+                        <form method="POST" action="{{ route('admin.kerjasama.lanjutPembahasan', $ks->kerjasama_id) }}" onsubmit="return confirm('Lanjutkan ke penandatanganan?')">
+                            @csrf
+                            <button class="bg-purple-500 text-white px-3.5 py-1.5 rounded-lg text-xs font-medium hover:bg-purple-600 transition-colors shadow-2xs">Lanjut ke Penandatanganan</button>
+                        </form>
+                        @break
+                    @case(4)
+                        <button @click="showFinalisasi = true" class="bg-green-500 text-white px-3.5 py-1.5 rounded-lg text-xs font-medium hover:bg-green-600 transition-colors shadow-2xs">Finalisasi</button>
+                        @break
+                @endswitch
+                @if((int)$ks->ks_status_dok >= 5)
+                <a href="{{ route('admin.kerjasama.cetak-ringkasan', $ks->kerjasama_id) }}" target="_blank"
+                   class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 transition-colors shadow-2xs">
+                    <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+                    Cetak Lampiran Data MoU
+                </a>
+                @endif
+            </div>
         </div>
         <div class="px-5 py-4 flex items-center justify-between">
             <div class="flex items-center gap-2">
@@ -130,18 +161,32 @@
     <!-- Hasil Pemilihan Data oleh Mitra (Terstruktur per Database & Tabel) -->
     @if($status >= 5)
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-4">
-        <div class="px-5 py-3 border-b border-gray-100 flex items-center justify-between">
+        <div class="px-5 py-3 border-b border-gray-100 flex flex-wrap items-center justify-between gap-2">
             <div class="flex items-center gap-2">
                 <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                 </svg>
                 <h3 class="text-sm font-semibold text-slate-800">Hasil Pemilihan Data oleh Mitra</h3>
             </div>
-            @if($ks->pemilihanData->isNotEmpty())
-                <span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">✓ {{ $ks->pemilihanData->count() }} Kolom Terpilih</span>
-            @else
-                <span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-700">⚠️ Belum Memilih Data</span>
-            @endif
+            <div class="flex items-center gap-3">
+                @if($ks->pemilihanData->isNotEmpty())
+                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                        {{ $ks->pemilihanData->count() }} Kolom Terpilih
+                    </span>
+                @else
+                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-700">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
+                        Belum Memilih Data
+                    </span>
+                @endif
+
+                <a href="{{ route('admin.kerjasama.persetujuan-data.form', $ks->kerjasama_id) }}" 
+                   class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors shadow-2xs">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                    Kelola Persetujuan Data per Item
+                </a>
+            </div>
         </div>
         <div class="p-5">
             @if($ks->pemilihanData->isNotEmpty())
@@ -168,9 +213,15 @@
                 <!-- Quick Action Toolbar -->
                 <div class="flex items-center justify-between gap-2 py-1.5 px-3 bg-gray-50 border border-gray-200 rounded-lg text-xs">
                     <div class="flex items-center gap-2">
-                        <button type="button" @click="expandAll()" class="text-indigo-600 hover:text-indigo-800 font-medium hover:underline">📂 Buka Semua Accordion</button>
+                        <button type="button" @click="expandAll()" class="inline-flex items-center gap-1 text-indigo-600 hover:text-indigo-800 font-medium hover:underline">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 19a2 2 0 01-2-2V7a2 2 0 012-2h4l2 2h4a2 2 0 012 v1M5 19h14a2 2 0 002-2v-5a2 2 0 00-2-2H9a2 2 0 00-2-2M5 19l2-2"/></svg>
+                            Buka Semua Accordion
+                        </button>
                         <span class="text-gray-300">•</span>
-                        <button type="button" @click="collapseAll()" class="text-gray-600 hover:text-gray-800 font-medium hover:underline">📁 Tutup Semua</button>
+                        <button type="button" @click="collapseAll()" class="inline-flex items-center gap-1 text-gray-600 hover:text-gray-800 font-medium hover:underline">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
+                            Tutup Semua
+                        </button>
                     </div>
                     <span class="text-gray-500 font-medium">Total: <strong class="text-indigo-600">{{ $adminGroupedSelection->sum(fn($db) => $db->count()) }}</strong> tabel (<strong class="text-indigo-600">{{ $ks->pemilihanData->count() }}</strong> kolom)</span>
                 </div>
@@ -193,7 +244,7 @@
                         $alasanText = $firstSel->alasan ?? '-';
                         $tblKey = $dbName . '.' . $tblName;
                     @endphp
-                    <div x-init="openAdminTables['{{ $tblKey }}'] = true" 
+                    <div x-init="openAdminTables['{{ $tblKey }}'] = false" 
                          class="rounded-xl border border-indigo-200 bg-white overflow-hidden shadow-2xs ml-2">
                         
                         <!-- Table Card Header -->
@@ -266,6 +317,69 @@
         </div>
     </div>
     @endif
+    <!-- Riwayat Pelaporan Berkala Mitra -->
+    @if($status >= 5 || $ks->reports->isNotEmpty())
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-4">
+        <div class="px-5 py-3 border-b border-gray-100 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+                <h3 class="text-sm font-semibold text-slate-800">Riwayat Pelaporan Berkala Mitra</h3>
+            </div>
+            <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-100">
+                {{ $ks->reports->count() }} Laporan
+            </span>
+        </div>
+        <div class="p-5">
+            @if($ks->reports->isEmpty())
+                <p class="text-sm text-gray-500 italic">Belum ada laporan berkala yang diunggah oleh mitra.</p>
+            @else
+                <div class="overflow-x-auto border border-gray-200 rounded-lg">
+                    <table class="w-full text-left text-xs border-collapse">
+                        <thead>
+                            <tr class="bg-gray-50 border-b border-gray-200 text-gray-600 font-semibold uppercase">
+                                <th class="py-2.5 px-3">Tahun</th>
+                                <th class="py-2.5 px-3">Periode</th>
+                                <th class="py-2.5 px-3">File Laporan</th>
+                                <th class="py-2.5 px-3">Catatan</th>
+                                <th class="py-2.5 px-3">Tanggal Upload</th>
+                                <th class="py-2.5 px-3 text-center">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100">
+                            @foreach($ks->reports as $report)
+                            <tr class="hover:bg-slate-50 transition-colors">
+                                <td class="py-2.5 px-3 font-semibold text-slate-800">{{ $report->tahun }}</td>
+                                <td class="py-2.5 px-3 font-medium text-indigo-700">
+                                    <span class="px-2 py-0.5 rounded bg-indigo-50 border border-indigo-100 text-[11px]">
+                                        {{ $report->periode }}
+                                    </span>
+                                </td>
+                                <td class="py-2.5 px-3 font-mono text-gray-700">{{ $report->nama_file ?? 'File Laporan' }}</td>
+                                <td class="py-2.5 px-3 text-gray-600">{{ $report->catatan ?? '-' }}</td>
+                                <td class="py-2.5 px-3 text-gray-500">{{ $report->created_at ? $report->created_at->format('d M Y, H:i') : '-' }}</td>
+                                <td class="py-2.5 px-3 text-center">
+                                    @php
+                                        $fileUrl = Storage::disk('public')->exists($report->file_path)
+                                            ? Storage::disk('public')->url($report->file_path)
+                                            : asset('storage/' . $report->file_path);
+                                    @endphp
+                                    <a href="{{ $fileUrl }}" target="_blank"
+                                       class="inline-flex items-center gap-1 px-2.5 py-1 rounded text-xs font-medium text-indigo-600 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 transition-colors">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                                        Download / Lihat File
+                                    </a>
+                                </td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            @endif
+        </div>
+    </div>
+    @endif
 
     <!-- Kontak -->
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-4">
@@ -330,29 +444,7 @@
     </div>
     @endif
 
-    <!-- Action Buttons -->
-    <div class="flex gap-2 my-10">
-        @switch($status)
-            @case(1)
-                <button @click="showSetujui = true" class="bg-green-500 text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-green-600">Setujui & Jadwalkan</button>
-                <button @click="showTolak = true" class="bg-red-500 text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-red-600">Tolak</button>
-                @break
-            @case(2)
-                @if(!$hasJadwal)
-                <button @click="showJadwal = true" class="bg-amber-500 text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-amber-600">Jadwalkan</button>
-                @endif
-                @break
-            @case(3)
-                <form method="POST" action="{{ route('admin.kerjasama.lanjutPembahasan', $ks->kerjasama_id) }}" onsubmit="return confirm('Lanjutkan ke penandatanganan?')">
-                    @csrf
-                    <button class="bg-purple-500 text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-purple-600">Lanjut ke Penandatanganan</button>
-                </form>
-                @break
-            @case(4)
-                <button @click="showFinalisasi = true" class="bg-green-500 text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-green-600">Finalisasi</button>
-                @break
-        @endswitch
-    </div>
+
 
     <!-- Riwayat -->
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-4">

@@ -91,8 +91,13 @@ class NotaKesepakatanController extends Controller
             return back()->with('error', 'Pemilihan data hanya dapat dilakukan setelah Nota Kesepakatan berstatus Selesai/Final.');
         }
 
+        // Read-only check: cannot edit if already submitted
+        if ($ks->status_pemilihan_data === 'submitted') {
+            return back()->with('error', 'Pemilihan data telah diajukan dan terkunci. Anda tidak dapat mengubah data yang sudah final.');
+        }
+
         // 1. Per-column selection (selected_data containing metadata UUIDs)
-        if ($request->has('selected_data') && is_array($request->selected_data)) {
+        if ($request->has('selected_data') && is_array($request->selected_data) && count($request->selected_data) > 0) {
             $request->validate([
                 'selected_data' => 'required|array|min:1',
                 'selected_data.*' => 'required|string|exists:metadata,id',
@@ -111,29 +116,30 @@ class NotaKesepakatanController extends Controller
 
                 $tblName = $metadata->tbl_name;
                 $reason = trim($request->alasan[$metadataId] ?? $request->alasan_table[$tblName] ?? '');
-                if (empty($reason)) {
-                    $reason = 'Digunakan untuk kebutuhan integrasi dan sinkronisasi data.';
-                }
 
                 \App\Models\MetadataUser::create([
                     'kerjasama_id' => $id,
                     'metadata_id' => $metadataId,
                     'alasan' => $reason,
                     'is_masked' => false,
+                    'approval_status' => 'pending',
                     'soft_delete' => false,
                 ]);
             }
 
-            $ks->addReviewEntry('Pemilihan Data', 'Mitra menyimpan pemilihan data per-kolom yang diperlukan');
-            return redirect()->route('mitra.kerjasama.show', $id)->with('success', 'Pemilihan data yang diperlukan berhasil disimpan.');
+            $ks->update(['status_pemilihan_data' => 'draft']);
+            $ks->addReviewEntry('Pemilihan Data', 'Mitra menyimpan draf pemilihan data');
+
+            return redirect()->route('mitra.kerjasama.show', $id)
+                ->with('success', 'Draf pemilihan data berhasil disimpan. Silakan periksa kembali di halaman detail dan klik "Ajukan Pemilihan Data" untuk mengirim ke Admin.');
         }
 
         // 2. Whole table selection (selected_tables)
-        if ($request->has('selected_tables') && is_array($request->selected_tables)) {
+        if ($request->has('selected_tables') && is_array($request->selected_tables) && count($request->selected_tables) > 0) {
             $request->validate([
                 'selected_tables' => 'required|array|min:1',
                 'selected_tables.*' => 'required|string',
-                'alasan_table' => 'required|array',
+                'alasan_table' => 'nullable|array',
             ], [
                 'selected_tables.required' => 'Minimal 1 tabel data wajib dipilih.',
                 'selected_tables.min' => 'Minimal 1 tabel data wajib dipilih.',
@@ -143,9 +149,6 @@ class NotaKesepakatanController extends Controller
 
             foreach ($request->selected_tables as $tblName) {
                 $reason = trim($request->alasan_table[$tblName] ?? '');
-                if (empty($reason)) {
-                    $reason = 'Digunakan untuk kebutuhan integrasi dan sinkronisasi data.';
-                }
                 $columns = \App\Models\Metadata::where('tbl_name', $tblName)->pluck('id');
                 foreach ($columns as $metadataId) {
                     \App\Models\MetadataUser::create([
@@ -153,15 +156,60 @@ class NotaKesepakatanController extends Controller
                         'metadata_id' => $metadataId,
                         'alasan' => $reason,
                         'is_masked' => false,
+                        'approval_status' => 'pending',
                         'soft_delete' => false,
                     ]);
                 }
             }
 
-            $ks->addReviewEntry('Pemilihan Data', 'Mitra menyimpan pemilihan data yang diperlukan');
-            return redirect()->route('mitra.kerjasama.show', $id)->with('success', 'Pemilihan data yang diperlukan berhasil disimpan.');
+            $ks->update(['status_pemilihan_data' => 'draft']);
+            $ks->addReviewEntry('Pemilihan Data', 'Mitra menyimpan draf pemilihan data');
+
+            return redirect()->route('mitra.kerjasama.show', $id)
+                ->with('success', 'Draf pemilihan data berhasil disimpan. Silakan periksa kembali di halaman detail dan klik "Ajukan Pemilihan Data" untuk mengirim ke Admin.');
         }
 
-        return back()->with('error', 'Minimal 1 kolom atau tabel data wajib dipilih.');
+        // If saving draft with 0 items, mark soft_delete and set status to draft
+        \App\Models\MetadataUser::where('kerjasama_id', $id)->update(['soft_delete' => true]);
+        $ks->update(['status_pemilihan_data' => 'draft']);
+        return redirect()->route('mitra.kerjasama.show', $id)->with('success', 'Draf pemilihan data disimpan.');
+    }
+
+    public function ajukanPemilihanData(Request $request, $id)
+    {
+        $ks = Kerjasama::with('pemilihanData')->where('kerjasama_id', $id)->notDeleted()->firstOrFail();
+
+        if ((int)$ks->ks_status_dok < 5) {
+            return back()->with('error', 'Pengajuan data hanya dapat dilakukan setelah Nota Kesepakatan berstatus Selesai/Final.');
+        }
+
+        if ($ks->status_pemilihan_data === 'submitted') {
+            return back()->with('error', 'Pemilihan data telah diajukan sebelumnya dan terkunci.');
+        }
+
+        $items = $ks->pemilihanData;
+        if ($items->isEmpty()) {
+            return back()->with('error', 'Gagal mengajukan: Anda belum memilih data. Silakan klik "Pilih Data yang Diperlukan" terlebih dahulu.');
+        }
+
+        foreach ($items as $item) {
+            if (empty(trim($item->alasan ?? ''))) {
+                return back()->with('error', 'Gagal mengajukan: Terdapat item data terpilih yang belum memiliki alasan penggunaan. Silakan lengkapi alasan pada formulir pemilihan data.');
+            }
+        }
+
+        $ks->update(['status_pemilihan_data' => 'submitted']);
+        $ks->addReviewEntry('Pemilihan Data', 'Mitra mengajukan pemilihan data secara final (submitted)');
+
+        return redirect()->route('mitra.kerjasama.show', $id)
+            ->with('success', 'Pemilihan data berhasil diajukan ke Admin Pusdatin. Data kini telah dikunci (Read-Only) dan tidak dapat diubah lagi.');
+    }
+
+    public function cetakRingkasan($id)
+    {
+        $ks = Kerjasama::with(['jenis', 'tingkat', 'statusDok', 'metode', 'implementasi', 'pemilihanData.metadata'])
+            ->where('kerjasama_id', $id)->notDeleted()->firstOrFail();
+
+        return view('admin.kerjasama.cetak_ringkasan', compact('ks'));
     }
 }

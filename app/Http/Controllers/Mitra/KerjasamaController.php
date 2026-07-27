@@ -79,7 +79,7 @@ class KerjasamaController extends Controller
 
     public function show($id)
     {
-        $ks = Kerjasama::with(['jenis', 'tingkat', 'statusDok', 'metode', 'implementasi', 'pemilihanData.metadata'])
+        $ks = Kerjasama::with(['jenis', 'tingkat', 'statusDok', 'metode', 'implementasi', 'pemilihanData.metadata', 'reports'])
             ->where('kerjasama_id', $id)->notDeleted()->firstOrFail();
 
         return view('mitra.kerjasama.show', [

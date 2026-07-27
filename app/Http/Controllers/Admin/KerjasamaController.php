@@ -134,7 +134,7 @@ class KerjasamaController extends Controller
 
     public function review($id)
     {
-        $ks = Kerjasama::with(['jenis', 'tingkat', 'statusDok', 'metode', 'implementasi', 'reviewLogs', 'pemilihanData.metadata'])
+        $ks = Kerjasama::with(['jenis', 'tingkat', 'statusDok', 'metode', 'implementasi', 'reviewLogs', 'pemilihanData.metadata', 'reports'])
             ->where('kerjasama_id', $id)->notDeleted()->firstOrFail();
 
         $metodeList = KsMetode::pluck('nama_metode', 'id');
@@ -241,5 +241,73 @@ class KerjasamaController extends Controller
         $ks->addReviewEntry('Update Final', 'Data final diperbarui');
 
         return redirect()->route('admin.kerjasama.review', $id)->with('success', 'Data final diperbarui.');
+    }
+
+    public function persetujuanDataForm($id)
+    {
+        $ks = Kerjasama::with(['jenis', 'tingkat', 'statusDok', 'metode', 'implementasi', 'pemilihanData.metadata'])
+            ->where('kerjasama_id', $id)->notDeleted()->firstOrFail();
+
+        $metodeList = KsMetode::pluck('nama_metode', 'id');
+        $implementasiList = KsImplementasi::pluck('nama_status', 'id');
+
+        return view('admin.kerjasama.persetujuan_data', compact('ks', 'metodeList', 'implementasiList'));
+    }
+
+    public function simpanPersetujuanData(Request $request, $id)
+    {
+        $ks = Kerjasama::where('kerjasama_id', $id)->notDeleted()->firstOrFail();
+
+        // 1. Update overall metode and status implementasi (pengaktifan) if provided
+        $updateData = [];
+        if ($request->filled('ks_metode')) {
+            $updateData['ks_metode'] = $request->ks_metode;
+        }
+        if ($request->filled('ks_implementasi')) {
+            $updateData['ks_implementasi'] = $request->ks_implementasi;
+        }
+        if (!empty($updateData)) {
+            $ks->update($updateData);
+        }
+
+        // 2. Update approval status & notes per metadata item
+        $approvalStatuses = $request->input('approval_status', []); // [item_id => 'approved'|'rejected'|'pending']
+        $catatanAdmin = $request->input('catatan_admin', []); // [item_id => 'catatan...']
+
+        $existingItems = $ks->pemilihanData;
+        $approvedCount = 0;
+        $rejectedCount = 0;
+        $pendingCount = 0;
+
+        foreach ($existingItems as $item) {
+            $status = $approvalStatuses[$item->id] ?? 'pending';
+            if (!in_array($status, ['pending', 'approved', 'rejected'])) {
+                $status = 'pending';
+            }
+            $catatan = $catatanAdmin[$item->id] ?? null;
+
+            $item->update([
+                'approval_status' => $status,
+                'catatan_admin' => $catatan,
+            ]);
+
+            if ($status === 'approved') $approvedCount++;
+            elseif ($status === 'rejected') $rejectedCount++;
+            else $pendingCount++;
+        }
+
+        $logMsg = "Admin memperbarui persetujuan data: {$approvedCount} Disetujui, {$rejectedCount} Ditolak, {$pendingCount} Pending";
+        $ks->addReviewEntry('Persetujuan Data', $logMsg);
+
+        return redirect()->route('admin.kerjasama.persetujuan-data.form', $id)
+            ->with('success', 'Status persetujuan per item data berhasil disimpan.');
+    }
+
+    public function cetakRingkasan($id)
+    {
+        $ks = Kerjasama::with(['jenis', 'tingkat', 'statusDok', 'metode', 'implementasi', 'pemilihanData.metadata'])
+            ->where('kerjasama_id', $id)->notDeleted()->firstOrFail();
+
+        return view('admin.kerjasama.cetak_ringkasan', compact('ks'));
     }
 }

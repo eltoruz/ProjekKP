@@ -14,7 +14,7 @@
 <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4 text-sm">{{ session('error') }}</div>
 @endif
 
-<div class="space-y-6" x-data="{ confirmAjukan: false }">
+<div class="space-y-6" x-data="{ confirmAjukan: false, confirmAjukanData: false }">
     @php
         $reviewLogs = $kerjasama->review_log;
         $lastReject = collect($reviewLogs)->filter(fn($l) => ($l['label'] ?? '') === 'Ditolak')->last();
@@ -104,6 +104,38 @@
             @endforeach
         </div>
     </div>
+
+    <!-- Upload Dokumen (langsung tampil, bukan modal) -->
+    @if($kerjasama->ks_jenis == 3 && !$kerjasama->ks_status_dok && !$kerjasama->folder_ks)
+    <div class="bg-white rounded-lg shadow-sm border-2 border-dashed border-primary/30 p-6">
+        <div class="flex items-center gap-2 mb-4">
+            <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+            </svg>
+            <h3 class="text-base font-semibold text-navy">Upload Dokumen Nota Kesepakatan</h3>
+        </div>
+        <p class="text-sm text-gray-500 mb-4">Upload dua dokumen yang diperlukan: Surat Permohonan dan Draft Nota Kesepakatan.</p>
+        <form action="{{ route('mitra.kerjasama.upload', $kerjasama->kerjasama_id) }}" method="POST" enctype="multipart/form-data">
+            @csrf
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">1. Surat Permohonan <span class="text-red-500">*</span></label>
+                    <input type="file" name="surat_permohonan" accept=".pdf,.docx,.zip" required class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                    <p class="text-xs text-gray-400 mt-1">Surat dari Kepala Daerah ke Sekjen Kemendikdasmen</p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">2. Draft Nota Kesepakatan <span class="text-red-500">*</span></label>
+                    <input type="file" name="draft_nk" accept=".pdf,.docx,.zip" required class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                    <p class="text-xs text-gray-400 mt-1">Draft NK yang akan dibahas bersama</p>
+                </div>
+            </div>
+            <p class="text-xs text-gray-400 mb-4">Format: PDF, DOCX, ZIP — Maks 20MB per file</p>
+            <button type="submit" class="bg-primary text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-blue-600">
+                Upload Dokumen
+            </button>
+        </form>
+    </div>
+    @endif
 
     <!-- Action Buttons & Modal Konfirmasi -->
     @if($kerjasama->ks_jenis == 3 && !$kerjasama->ks_status_dok)
@@ -199,7 +231,14 @@
     <!-- Data Final (setelah TTD) -->
     @if((int)$kerjasama->ks_status_dok >= 5)
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-4">
-        <h3 class="text-base font-semibold text-navy mb-3">Data Final Kerja Sama</h3>
+        <div class="flex items-center justify-between mb-3 border-b border-gray-100 pb-3">
+            <h3 class="text-base font-semibold text-navy">Data Final Kerja Sama</h3>
+            <a href="{{ route('mitra.kerjasama.cetak-ringkasan', $kerjasama->kerjasama_id) }}" target="_blank"
+               class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 transition-colors shadow-2xs">
+                <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+                Cetak Lampiran Data MoU
+            </a>
+        </div>
         <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm">
             <div><span class="text-gray-500">Jangka Waktu:</span> <span class="font-medium">{{ $kerjasama->jangka_waktu_thn ? $kerjasama->jangka_waktu_thn.' tahun' : '-' }}</span></div>
             <div><span class="text-gray-500">Tanggal Mulai:</span> <span class="font-medium">{{ $kerjasama->tanggal_mulai_ks?->format('d M Y') ?? '-' }}</span></div>
@@ -221,9 +260,85 @@
     </div>
     @endif
 
+    <!-- Dedicated Card Pelaporan Berkala Penggunaan Data (Status >= 5) -->
+    @if((int)$kerjasama->ks_status_dok >= 5)
+    @php
+        $reportsCount = $kerjasama->reports->count();
+        $latestReport = $kerjasama->reports->first();
+        $isReportingActive = $kerjasama->is_reporting_active;
+    @endphp
+    <div class="bg-white rounded-xl shadow-sm border border-emerald-200 p-6 mb-4 overflow-hidden relative">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-5 border-b border-gray-100 pb-5">
+            <div class="flex items-start gap-3.5">
+                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shrink-0 shadow-md text-white">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <h3 class="text-base font-bold text-gray-900">Pelaporan Berkala Penggunaan Data</h3>
+                        @if($isReportingActive)
+                            <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 flex items-center gap-1.5">
+                                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Pelaporan Aktif (2x/Tahun)
+                            </span>
+                        @else
+                            <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-300 inline-flex items-center gap-1">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                Belum Aktif
+                            </span>
+                        @endif
+                    </div>
+                    <p class="text-xs text-gray-500 mt-1">Mitra berkewajiban mengunggah laporan penggunaan data 2 kali dalam setahun (Semester 1 & 2).</p>
+                </div>
+            </div>
+
+            <div class="shrink-0 flex items-center">
+                <a href="{{ route('mitra.kerjasama.laporan', $kerjasama->kerjasama_id) }}" 
+                   class="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 transition-colors shadow-sm">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+                    </svg>
+                    Kelola & Unggah Pelaporan Berkala
+                </a>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4">
+            <div class="bg-slate-50 border border-slate-200 rounded-lg p-3.5 flex items-center gap-3">
+                <div class="w-9 h-9 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0 font-bold text-sm">
+                    {{ $reportsCount }}
+                </div>
+                <div>
+                    <span class="text-[11px] font-semibold text-gray-500 block">Total Laporan Terunggah</span>
+                    <span class="text-xs font-bold text-gray-800">{{ $reportsCount }} Dokumen Laporan</span>
+                </div>
+            </div>
+
+            <div class="bg-slate-50 border border-slate-200 rounded-lg p-3.5 flex items-center gap-3 sm:col-span-2">
+                <div class="w-9 h-9 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center shrink-0">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                </div>
+                <div>
+                    <span class="text-[11px] font-semibold text-gray-500 block">Status / Laporan Terakhir</span>
+                    @if($latestReport)
+                        <span class="text-xs font-bold text-gray-800">
+                            {{ $latestReport->periode }} {{ $latestReport->tahun }} — Diunggah {{ $latestReport->created_at?->format('d M Y') ?? '-' }}
+                        </span>
+                    @else
+                        <span class="text-xs font-medium text-amber-700">
+                            Belum ada laporan diunggah untuk kerja sama ini.
+                        </span>
+                    @endif
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
+
     <!-- Fitur Pemilihan Data yang Diperlukan oleh Mitra (Kartu Akses Halaman Terpisah) -->
     @if((int)$kerjasama->ks_status_dok >= 5)
-    <div class="bg-white rounded-lg shadow-sm border border-indigo-200 p-6 mb-4">
+    <div class="bg-white rounded-lg shadow-sm border border-indigo-200 p-6 mb-4 space-y-4">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 pb-4">
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 rounded-xl bg-indigo-100 flex items-center justify-center shrink-0">
@@ -234,31 +349,60 @@
                 <div>
                     <div class="flex items-center gap-2">
                         <h3 class="text-base font-semibold text-gray-900">Pemilihan Data yang Diperlukan (Per-Kolom)</h3>
-                        @if($kerjasama->pemilihanData->isNotEmpty())
-                            <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-700">✓ Data Telah Terpilih ({{ $kerjasama->pemilihanData->count() }} kolom)</span>
+                        @if($kerjasama->status_pemilihan_data === 'submitted')
+                            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-800 border border-green-300">
+                                <svg class="w-3.5 h-3.5 text-green-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                                Terkunci & Telah Diajukan ke Admin
+                            </span>
+                        @elseif($kerjasama->pemilihanData->isNotEmpty())
+                            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 border border-amber-300">
+                                <svg class="w-3.5 h-3.5 text-amber-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                                Draf Terisi (Belum Diajukan)
+                            </span>
                         @else
-                            <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-700">⚠️ Belum Mengisi Data</span>
+                            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-600 border border-slate-300">
+                                <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
+                                Belum Mengisi Data
+                            </span>
                         @endif
                     </div>
                     <p class="text-xs text-gray-500 mt-0.5">Tentukan tabel dan kolom data spesifik dari Pusdatin yang Anda perlukan untuk kerja sama ini.</p>
                 </div>
             </div>
 
-            <div class="shrink-0">
-                <a href="{{ route('mitra.kerjasama.pemilihan-data.form', $kerjasama->kerjasama_id) }}" 
-                   class="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors shadow-sm">
+            <div class="shrink-0 flex items-center gap-2 flex-wrap">
+                @if($kerjasama->status_pemilihan_data === 'submitted')
+                    <a href="{{ route('mitra.kerjasama.pemilihan-data.form', $kerjasama->kerjasama_id) }}" 
+                       class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-lg text-xs font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 border border-gray-300 transition-colors shadow-2xs">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                        Lihat Data Terpilih (Read-Only)
+                    </a>
+                @else
+                    <a href="{{ route('mitra.kerjasama.pemilihan-data.form', $kerjasama->kerjasama_id) }}" 
+                       class="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-xs font-semibold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 transition-colors shadow-2xs">
+                        @if($kerjasama->pemilihanData->isNotEmpty())
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                            </svg>
+                            Edit Draf Pemilihan Data
+                        @else
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                            </svg>
+                            Pilih Data yang Diperlukan
+                        @endif
+                    </a>
+
                     @if($kerjasama->pemilihanData->isNotEmpty())
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                        </svg>
-                        Ubah Pemilihan Data
-                    @else
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                        </svg>
-                        Pilih Data yang Diperlukan
+                        <button type="button" @click="confirmAjukanData = true" 
+                                class="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-xs font-bold text-white bg-green-600 hover:bg-green-700 transition-colors shadow-sm cursor-pointer">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+                            </svg>
+                            Ajukan Pemilihan Data ke Admin
+                        </button>
                     @endif
-                </a>
+                @endif
             </div>
         </div>
 
@@ -286,9 +430,15 @@
             <!-- Quick Action Toolbar -->
             <div class="flex items-center justify-between gap-2 py-1.5 px-3 bg-gray-50 border border-gray-200 rounded-lg text-xs">
                 <div class="flex items-center gap-2">
-                    <button type="button" @click="expandAll()" class="text-indigo-600 hover:text-indigo-800 font-medium hover:underline">📂 Buka Semua Accordion</button>
+                    <button type="button" @click="expandAll()" class="inline-flex items-center gap-1 text-indigo-600 hover:text-indigo-800 font-medium hover:underline">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 19a2 2 0 01-2-2V7a2 2 0 012-2h4l2 2h4a2 2 0 012 v1M5 19h14a2 2 0 002-2v-5a2 2 0 00-2-2H9a2 2 0 00-2-2M5 19l2-2"/></svg>
+                        Buka Semua Accordion
+                    </button>
                     <span class="text-gray-300">•</span>
-                    <button type="button" @click="collapseAll()" class="text-gray-600 hover:text-gray-800 font-medium hover:underline">📁 Tutup Semua</button>
+                    <button type="button" @click="collapseAll()" class="inline-flex items-center gap-1 text-gray-600 hover:text-gray-800 font-medium hover:underline">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
+                        Tutup Semua
+                    </button>
                 </div>
                 <span class="text-gray-500 font-medium">Total: <strong class="text-indigo-600">{{ $groupedSelection->sum(fn($db) => $db->count()) }}</strong> tabel (<strong class="text-indigo-600">{{ $kerjasama->pemilihanData->count() }}</strong> kolom)</span>
             </div>
@@ -311,7 +461,7 @@
                     $alasanText = $firstSel->alasan ?? '-';
                     $tblKey = $dbName . '.' . $tblName;
                 @endphp
-                <div x-init="openSelectedTables['{{ $tblKey }}'] = true" 
+                <div x-init="openSelectedTables['{{ $tblKey }}'] = false" 
                      class="rounded-xl border border-indigo-200 bg-white overflow-hidden shadow-2xs ml-2">
                     
                     <!-- Table Card Header -->
@@ -537,36 +687,4 @@
     </div>
     @endif
 </div>
-
-    <!-- Upload Dokumen (langsung tampil, bukan modal) -->
-    @if($kerjasama->ks_jenis == 3 && !$kerjasama->ks_status_dok && !$kerjasama->folder_ks)
-    <div class="bg-white rounded-lg shadow-sm border-2 border-dashed border-primary/30 p-6">
-        <div class="flex items-center gap-2 mb-4">
-            <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
-            </svg>
-            <h3 class="text-base font-semibold text-navy">Upload Dokumen Nota Kesepakatan</h3>
-        </div>
-        <p class="text-sm text-gray-500 mb-4">Upload dua dokumen yang diperlukan: Surat Permohonan dan Draft Nota Kesepakatan.</p>
-        <form action="{{ route('mitra.kerjasama.upload', $kerjasama->kerjasama_id) }}" method="POST" enctype="multipart/form-data">
-            @csrf
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">1. Surat Permohonan <span class="text-red-500">*</span></label>
-                    <input type="file" name="surat_permohonan" accept=".pdf,.docx,.zip" required class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
-                    <p class="text-xs text-gray-400 mt-1">Surat dari Kepala Daerah ke Sekjen Kemendikdasmen</p>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">2. Draft Nota Kesepakatan <span class="text-red-500">*</span></label>
-                    <input type="file" name="draft_nk" accept=".pdf,.docx,.zip" required class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
-                    <p class="text-xs text-gray-400 mt-1">Draft NK yang akan dibahas bersama</p>
-                </div>
-            </div>
-            <p class="text-xs text-gray-400 mb-4">Format: PDF, DOCX, ZIP — Maks 20MB per file</p>
-            <button type="submit" class="bg-primary text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-blue-600">
-                Upload Dokumen
-            </button>
-        </form>
-    </div>
-    @endif
 @endsection

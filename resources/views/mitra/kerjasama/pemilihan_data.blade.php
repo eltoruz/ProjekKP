@@ -140,15 +140,22 @@
     },
 
     validateSubmit(e) {
-        if (this.totalCheckedCols === 0) {
-            alert('Submit ditolak: Anda wajib memilih minimal 1 kolom data.');
-            e.preventDefault();
-            return false;
-        }
-        if (this.hasMissingReason()) {
-            alert('Submit ditolak: Setiap tabel yang memiliki kolom terpilih WAJIB disertai Keterangan/Alasan Penggunaan Data.');
-            e.preventDefault();
-            return false;
+        let action = e.submitter ? e.submitter.value : 'save';
+        if (action === 'submit') {
+            if (this.totalCheckedCols === 0) {
+                alert('Submit ditolak: Anda wajib memilih minimal 1 kolom data.');
+                e.preventDefault();
+                return false;
+            }
+            if (this.hasMissingReason()) {
+                alert('Submit ditolak: Setiap tabel yang memiliki kolom terpilih WAJIB disertai Keterangan/Alasan Penggunaan Data.');
+                e.preventDefault();
+                return false;
+            }
+            if (!confirm('PERHATIAN: Setelah mengajukan secara final (Submit), data pilihan Anda akan TERKUNCI dan TIDAK DAPAT DIUBAH LAGI.\n\nApakah Anda yakin ingin mengajukan pemilihan data ini?')) {
+                e.preventDefault();
+                return false;
+            }
         }
     }
 }">
@@ -163,7 +170,18 @@
                 <span>/</span>
                 <span class="text-gray-800 font-medium">Pemilihan Data</span>
             </div>
-            <h2 class="text-xl font-bold text-gray-900">Pemilihan Data yang Diperlukan</h2>
+            <div class="flex items-center gap-3">
+                <h2 class="text-xl font-bold text-gray-900">Pemilihan Data yang Diperlukan</h2>
+                @if($kerjasama->status_pemilihan_data === 'submitted')
+                    <span class="px-3 py-1 rounded-full text-xs font-bold bg-green-100 text-green-800 border border-green-300">
+                        🔒 Final & Diajukan
+                    </span>
+                @else
+                    <span class="px-3 py-1 rounded-full text-xs font-bold bg-yellow-100 text-yellow-800 border border-yellow-300">
+                        📝 Draf Pemilihan
+                    </span>
+                @endif
+            </div>
             <p class="text-xs text-gray-500 mt-0.5">Pilih kolom spesifik pada tiap tabel yang Anda butuhkan beserta alasan penggunaannya</p>
         </div>
 
@@ -177,6 +195,31 @@
             </a>
         </div>
     </div>
+
+    @if($kerjasama->status_pemilihan_data === 'submitted')
+    <div class="bg-amber-50 border border-amber-300 p-4 rounded-xl text-amber-900 text-xs flex items-center gap-3 shadow-xs">
+        <svg class="w-6 h-6 text-amber-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+        </svg>
+        <div>
+            <strong class="font-bold text-sm block">Pemilihan Data Telah Diajukan & Terkunci (Read-Only)</strong>
+            <span>Pilihan data ini telah dikirim secara final ke Admin Pusdatin dan tidak dapat diubah lagi. Anda dapat melihat kembali item yang telah diajukan di bawah ini.</span>
+        </div>
+    </div>
+    @else
+    <div class="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-r-xl text-amber-950 text-xs flex items-start gap-3 shadow-xs">
+        <svg class="w-5 h-5 text-amber-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+        </svg>
+        <div class="space-y-1">
+            <strong class="font-bold text-amber-900 text-sm block">⚠️ Perhatian Mengenai Pengajuan Final (Locking)</strong>
+            <p class="leading-relaxed">
+                Gunakan tombol <strong class="text-indigo-800 bg-indigo-100/80 px-1.5 py-0.5 rounded">💾 Simpan Sebagai Draf</strong> untuk menyimpan pilihan sementara tanpa mengunci form. 
+                Jika Anda menekan <strong class="text-white bg-indigo-600 px-1.5 py-0.5 rounded">🚀 Ajukan / Submit Final</strong>, data pilihan beserta alasan akan diajukan secara resmi ke Admin Pusdatin dan <strong class="underline font-semibold text-amber-900">FORM AKAN TERKUNCI PERMANEN (TIDAK DAPAT DIUBAH LAGI)</strong>.
+            </p>
+        </div>
+    </div>
+    @endif
 
     <!-- Container Utama Form Pemilihan Data -->
     <div class="bg-white rounded-xl shadow-sm border border-indigo-200 p-6">
@@ -229,13 +272,24 @@
                 <!-- Row 3: Quick Actions & Counters -->
                 <div class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-200/80 text-xs">
                     <div class="flex items-center gap-3">
-                        <button type="button" @click="expandAll()" class="text-indigo-600 hover:text-indigo-800 font-medium hover:underline">📂 Buka Semua Accordion</button>
+                        <button type="button" @click="expandAll()" class="inline-flex items-center gap-1 text-indigo-600 hover:text-indigo-800 font-medium hover:underline">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 19a2 2 0 01-2-2V7a2 2 0 012-2h4l2 2h4a2 2 0 012 v1M5 19h14a2 2 0 002-2v-5a2 2 0 00-2-2H9a2 2 0 00-2-2M5 19l2-2"/></svg>
+                            Buka Semua Accordion
+                        </button>
                         <span class="text-gray-300">•</span>
-                        <button type="button" @click="collapseAll()" class="text-gray-600 hover:text-gray-800 font-medium hover:underline">📁 Tutup Semua</button>
+                        <button type="button" @click="collapseAll()" class="inline-flex items-center gap-1 text-gray-600 hover:text-gray-800 font-medium hover:underline">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
+                            Tutup Semua
+                        </button>
                     </div>
                     <div class="flex items-center gap-2">
                         <span class="text-gray-600">Total Terpilih: <strong class="text-indigo-600" x-text="totalCheckedCols"></strong> kolom (<strong class="text-indigo-600" x-text="totalSelectedTables"></strong> tabel)</span>
-                        <button type="button" x-show="totalCheckedCols > 0" @click="clearAll()" class="text-red-500 hover:text-red-700 font-medium text-[11px] hover:underline ml-2">✖ Reset Pilihan</button>
+                        @if($kerjasama->status_pemilihan_data !== 'submitted')
+                        <button type="button" x-show="totalCheckedCols > 0" @click="clearAll()" class="inline-flex items-center gap-0.5 text-red-500 hover:text-red-700 font-medium text-[11px] hover:underline ml-2">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                            Reset Pilihan
+                        </button>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -270,8 +324,9 @@
                                 <input type="checkbox" 
                                        :checked="isTableFullyChecked('{{ $dbName }}', '{{ $tbl->tbl_name }}')"
                                        :indeterminate="isTablePartiallyChecked('{{ $dbName }}', '{{ $tbl->tbl_name }}')"
+                                       @if($kerjasama->status_pemilihan_data === 'submitted') disabled @endif
                                        @click.stop="loadColumns('{{ $dbName }}', '{{ $tbl->tbl_name }}').then(() => toggleTable('{{ $dbName }}', '{{ $tbl->tbl_name }}'))"
-                                       class="w-4 h-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500 cursor-pointer">
+                                       class="w-4 h-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed">
 
                                 <div>
                                     <div class="flex items-center gap-2 flex-wrap">
@@ -285,10 +340,12 @@
                             </div>
 
                             <div class="flex items-center gap-3">
+                                @if($kerjasama->status_pemilihan_data !== 'submitted')
                                 <button type="button" @click.stop="loadColumns('{{ $dbName }}', '{{ $tbl->tbl_name }}').then(() => toggleTable('{{ $dbName }}', '{{ $tbl->tbl_name }}'))" 
                                         class="text-[11px] px-2.5 py-1 rounded-md bg-white border border-gray-300 text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 font-medium transition-colors shadow-2xs">
                                     <span x-text="isTableFullyChecked('{{ $dbName }}', '{{ $tbl->tbl_name }}') ? 'Batalkan Semua' : 'Pilih Semua'"></span>
                                 </button>
+                                @endif
                                 
                                 <!-- Loading Spinner -->
                                 <svg x-show="loadingTable['{{ $tblKey }}']" class="w-4 h-4 text-indigo-500 animate-spin" fill="none" viewBox="0 0 24 24">
@@ -339,7 +396,8 @@
                                                                    :value="col.id" 
                                                                    :id="'col_' + col.id"
                                                                    x-model="checkedCols[col.id]"
-                                                                   class="w-4 h-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500 cursor-pointer">
+                                                                   @if($kerjasama->status_pemilihan_data === 'submitted') disabled @endif
+                                                                   class="w-4 h-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed">
                                                         </td>
                                                         <td class="py-2 px-3">
                                                             <label :for="'col_' + col.id" class="cursor-pointer font-mono font-bold text-slate-800 hover:text-indigo-600" x-text="col.name"></label>
@@ -362,10 +420,14 @@
 
                                         <textarea :name="'alasan_table[{{ $tbl->tbl_name }}]'" x-model="alasan['{{ $tbl->tbl_name }}']" rows="2" 
                                                   placeholder="Tuliskan keterangan/alasan penggunaan data ini..." 
-                                                  class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white shadow-2xs"></textarea>
+                                                  @if($kerjasama->status_pemilihan_data === 'submitted') readonly @endif
+                                                  class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white shadow-2xs readonly:bg-gray-100 readonly:text-gray-600"></textarea>
                                         
                                         <p x-show="checkedColCountInTable('{{ $dbName }}', '{{ $tbl->tbl_name }}') > 0 && (!alasan['{{ $tbl->tbl_name }}'] || !alasan['{{ $tbl->tbl_name }}'].trim())" 
-                                           class="text-[11px] text-red-500 mt-1 font-medium">⚠️ Wajib mengisi alasan untuk tabel ini.</p>
+                                           class="text-[11px] text-red-500 mt-1 font-medium flex items-center gap-1">
+                                            <svg class="w-3 h-3 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
+                                            Wajib mengisi alasan untuk tabel ini.
+                                        </p>
                                     </div>
                                 </div>
                             </template>
@@ -378,18 +440,36 @@
             </div>
 
             <!-- Footer Submit Bar -->
-            <div class="mt-6 pt-4 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-3">
-                <div class="text-xs text-gray-600">
-                    Kolom Terpilih: <span class="font-bold text-indigo-600 text-sm" x-text="totalCheckedCols"></span> kolom (<span class="font-bold text-indigo-600 text-sm" x-text="totalSelectedTables"></span> tabel)
+            <div class="mt-6 pt-4 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div class="flex items-center gap-2 text-xs text-gray-600">
+                    <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-indigo-100 text-indigo-700 font-bold text-xs" x-text="totalCheckedCols"></span>
+                    <span>kolom terpilih dari <strong class="text-gray-800" x-text="totalSelectedTables"></strong> tabel</span>
                 </div>
+
+                @if($kerjasama->status_pemilihan_data === 'submitted')
                 <div class="flex items-center gap-3 w-full sm:w-auto">
-                    <a href="{{ route('mitra.kerjasama.show', $kerjasama->kerjasama_id) }}" class="w-1/2 sm:w-auto px-5 py-2.5 rounded-lg text-xs font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors text-center">Batal</a>
-                    <button type="submit" :disabled="totalCheckedCols === 0 || hasMissingReason()" 
-                            :class="(totalCheckedCols === 0 || hasMissingReason()) ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-indigo-600 text-white hover:bg-indigo-700'"
-                            class="w-1/2 sm:w-auto px-6 py-2.5 rounded-lg text-xs font-semibold transition-colors shadow-sm text-center">
-                        Simpan Pemilihan Data
-                    </button>
+                    <span class="px-4 py-2.5 rounded-lg text-xs font-semibold bg-gray-100 text-gray-500 border border-gray-300 flex items-center gap-1.5 shadow-2xs">
+                        <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                        Form Terkunci (Sudah Diajukan)
+                    </span>
+                    <a href="{{ route('mitra.kerjasama.show', $kerjasama->kerjasama_id) }}" class="px-5 py-2.5 rounded-lg text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors shadow-2xs">
+                        Kembali ke Detail
+                    </a>
                 </div>
+                @else
+                <div class="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
+                    <button type="submit" name="action" value="save" 
+                            class="w-full sm:w-auto px-6 py-2.5 rounded-lg text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/>
+                        </svg>
+                        Simpan Sebagai Draf
+                    </button>
+                    <span class="text-[11px] text-gray-500 italic">
+                        *Pengajuan final ke Admin dilakukan melalui tombol di Halaman Detail Kerja Sama.
+                    </span>
+                </div>
+                @endif
             </div>
         </form>
     </div>
