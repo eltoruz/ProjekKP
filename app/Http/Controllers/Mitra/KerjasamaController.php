@@ -9,6 +9,9 @@ use App\Models\KsTingkat;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
+use App\Http\Requests\StoreKerjasamaRequest;
+use App\Http\Requests\UpdateKerjasamaRequest;
+
 class KerjasamaController extends Controller
 {
     public function index(Request $request)
@@ -40,25 +43,9 @@ class KerjasamaController extends Controller
         return view('mitra.kerjasama.create', compact('jenisList', 'tingkatList'));
     }
 
-    public function store(Request $request)
+    public function store(StoreKerjasamaRequest $request)
     {
-        $validated = $request->validate([
-            'ks_jenis' => 'required|exists:ks_jenis,id',
-            'ks_tingkat' => 'required|exists:ks_tingkat,id',
-            'nama_kl' => 'required|string|max:200',
-            'narahubung_adm' => 'nullable|string|max:200',
-            'nomor_cp_adm' => 'nullable|string|max:50',
-            'narahubung_teknis' => 'nullable|string|max:200',
-            'nomor_cp_teknis' => 'nullable|string|max:50',
-        ]);
-
-        if ($validated['ks_jenis'] == 3) {
-            $request->validate([
-                'surat_permohonan' => 'required|file|mimes:pdf,docx,zip|max:20480',
-                'draft_nk' => 'required|file|mimes:pdf,docx,zip|max:20480',
-            ]);
-        }
-
+        $validated = $request->validated();
         $validated['ks_status_dok'] = null;
 
         if ($validated['ks_jenis'] == 3) {
@@ -165,19 +152,11 @@ class KerjasamaController extends Controller
         return view('mitra.kerjasama.edit', ['kerjasama' => $ks, 'jenisList' => $jenisList, 'tingkatList' => $tingkatList]);
     }
 
-    public function update(Request $request, $id)
+    public function update(UpdateKerjasamaRequest $request, $id)
     {
         $ks = Kerjasama::where('kerjasama_id', $id)->notDeleted()->firstOrFail();
+        $validated = $request->validated();
 
-        $validated = $request->validate([
-            'ks_jenis' => 'required|exists:ks_jenis,id',
-            'ks_tingkat' => 'required|exists:ks_tingkat,id',
-            'nama_kl' => 'required|string|max:200',
-            'narahubung_adm' => 'nullable|string|max:200',
-            'nomor_cp_adm' => 'nullable|string|max:50',
-            'narahubung_teknis' => 'nullable|string|max:200',
-            'nomor_cp_teknis' => 'nullable|string|max:50',
-        ]);
         if ($validated['ks_jenis'] == 3) {
             $validated['ks_tingkat'] = 3;
         }

@@ -83,7 +83,7 @@ class Kerjasama extends Model
         ])->toArray();
     }
 
-    public function addReviewEntry(string $label, ?string $catatan = null): void
+    public function addReviewEntry(string $label, string $catatan): void
     {
         $this->reviewLogs()->create([
             'label' => $label,

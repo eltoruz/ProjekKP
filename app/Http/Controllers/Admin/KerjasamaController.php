@@ -56,7 +56,7 @@ class KerjasamaController extends Controller
         return view('admin.kerjasama.create', compact('jenisList', 'tingkatList', 'statusList', 'metodeList', 'implementasiList'));
     }
 
-    public function store(Request $request)
+    public function store(Request $request, \App\Actions\Kerjasama\CreateKerjasamaAction $action)
     {
         $validated = $request->validate([
             'ks_jenis' => 'required|exists:ks_jenis,id',
@@ -85,23 +85,7 @@ class KerjasamaController extends Controller
             'ks_implementasi' => 'nullable|exists:ks_implementasi,id',
         ]);
 
-        if (empty($validated['ks_status_dok'])) {
-            $validated['ks_status_dok'] = 1;
-        }
-
-        $ks = Kerjasama::create($validated);
-
-        if ($request->hasFile('dokumen_ks')) {
-            $path = $request->file('dokumen_ks')->store('dokumen/' . $ks->kerjasama_id, 'public');
-            $ks->update(['dokumen_ks' => $path]);
-        }
-
-        if ($request->hasFile('dokumen_pendukung')) {
-            $path = $request->file('dokumen_pendukung')->store('dokumen/' . $ks->kerjasama_id, 'public');
-            $ks->update(['dokumen_pendukung' => $path]);
-        }
-
-        $ks->addReviewEntry('Dibuat', 'Data dibuat oleh Admin');
+        $ks = $action->execute($validated, $request);
 
         return redirect()->route('admin.kerjasama.review', $ks->kerjasama_id)->with('success', 'Data berhasil ditambahkan.');
     }
@@ -159,17 +143,19 @@ class KerjasamaController extends Controller
         return redirect()->route('admin.kerjasama.index')->with('success', count($ids) . ' data berhasil dihapus.');
     }
 
-    public function setujui(Request $request, $id)
+    public function setujui(Request $request, $id, \App\Actions\Kerjasama\ApproveKerjasamaAction $action)
     {
         $request->validate(['tanggal_pembahasan' => 'required|date']);
-        $ks = Kerjasama::where('kerjasama_id', $id)->notDeleted()->firstOrFail();
+        
+        $ks = $action->execute($id, 2, 'Disetujui', 'Pengajuan disetujui, pembahasan dijadwalkan');
+
         $ks->update([
-            'ks_status_dok' => 2,
             'tanggal_pembahasan' => $request->tanggal_pembahasan,
         ]);
+        
         $tglFormatted = \Carbon\Carbon::parse($request->tanggal_pembahasan)->format('d M Y, H:i');
-        $ks->addReviewEntry('Disetujui', 'Pengajuan disetujui, pembahasan dijadwalkan');
         $ks->addReviewEntry('Jadwal', 'Pembahasan: ' . $tglFormatted);
+        
         return redirect()->route('admin.kerjasama.review', $id);
     }
 
