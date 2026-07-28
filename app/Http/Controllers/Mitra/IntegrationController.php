@@ -101,7 +101,9 @@ class IntegrationController extends Controller
             }
         }
 
+        $kerjasama->update(['status_integrasi' => 'pending']);
+
         return redirect()->route('mitra.kerjasama.show', $id)
-            ->with('success', 'Pengajuan integrasi data berhasil disimpan!');
+            ->with('success', 'Pengajuan integrasi data berhasil dikirim! Menunggu persetujuan Admin Pusdatin.');
     }
 }

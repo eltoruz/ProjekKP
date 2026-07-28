@@ -25,7 +25,7 @@ class Kerjasama extends Model
         'dokumen_ks', 'dokumen_pendukung', 'folder_ks', 'unit_utama_terlibat',
         'pusdatin_kirim_data', 'pusdatin_terima_data', 'soft_delete',
         'create_date', 'last_update',
-        'tanggal_pembahasan',
+        'tanggal_pembahasan', 'status_integrasi',
     ];
 
     protected $casts = [

@@ -43,6 +43,7 @@ return new class extends Migration
             $table->timestamp('create_date')->nullable();
             $table->timestamp('last_update')->nullable();
             $table->dateTime('tanggal_pembahasan')->nullable();
+            $table->string('status_integrasi', 50)->nullable();
         });
     }
 

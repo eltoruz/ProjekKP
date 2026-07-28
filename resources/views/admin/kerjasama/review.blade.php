@@ -205,14 +205,33 @@
         });
     @endphp
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-4">
-        <div class="px-5 py-3 border-b border-gray-100 flex items-center justify-between">
+        <div class="px-5 py-3 border-b border-gray-100 flex flex-wrap items-center justify-between gap-3">
             <div class="flex items-center gap-2">
                 <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"/></svg>
-                <h3 class="text-sm font-semibold text-slate-800">Data Integrasi Pusdatin yang Diajukan</h3>
+                <h3 class="text-sm font-semibold text-slate-800">Katalog Data Integrasi Pusdatin</h3>
+                @php
+                    $intStatus = $ks->status_integrasi ?? 'belum_diajukan';
+                @endphp
+                @if($intStatus === 'pending')
+                    <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 border border-amber-200 animate-pulse">Perlu Approval</span>
+                @elseif($intStatus === 'approved')
+                    <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-800 border border-green-200">Disetujui</span>
+                @else
+                    <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-700 border border-gray-200">Belum Diajukan</span>
+                @endif
             </div>
-            <span class="px-2.5 py-0.5 rounded bg-green-100 text-green-800 text-[10px] font-bold uppercase">
-                {{ $selectedMetadata->count() }} Kolom Terpilih
-            </span>
+
+            <div class="flex items-center gap-3">
+                <span class="px-2.5 py-1 rounded bg-gray-100 text-gray-700 text-xs font-bold font-mono">
+                    {{ $selectedMetadata->count() }} Kolom Terpilih
+                </span>
+                @if($selectedMetadata->count() > 0 || $intStatus === 'pending')
+                <a href="{{ route('admin.kerjasama.integrasi-review', $ks->kerjasama_id) }}" class="inline-flex items-center px-3.5 py-1.5 bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold rounded-lg shadow-xs transition gap-1.5">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                    <span>Review & Approval Data</span>
+                </a>
+                @endif
+            </div>
         </div>
         <div class="px-5 py-4">
             @if($selectedMetadata->count() > 0)

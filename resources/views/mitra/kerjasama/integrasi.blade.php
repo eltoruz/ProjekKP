@@ -77,9 +77,20 @@
         <div class="text-xs text-blue-800 space-y-1">
             <p class="font-bold">Panduan Pemilihan Data:</p>
             <p>1. Silakan pilih database di bawah ini, lalu buka tabel (accordion) untuk mencentang kolom data yang diperlukan.</p>
-            <p>2. Pengajuan data ini akan direview oleh Admin Pusdatin untuk disetujui atau diberi penyamaran/sensor (masking) jika merupakan data sensitif.</p>
+            <p>2. Pengajuan data ini akan direview dan disetujui oleh Admin Pusdatin sebelum resmi aktif.</p>
         </div>
     </div>
+
+    @if(($kerjasama->status_integrasi ?? '') === 'approved')
+    <!-- Re-approval Warning Alert -->
+    <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-start space-x-3">
+        <svg class="w-5 h-5 text-amber-600 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+        <div class="text-xs text-amber-900 space-y-1">
+            <p class="font-bold">Perhatian Update Pengajuan:</p>
+            <p>Status integrasi Anda saat ini sudah <strong>Disetujui</strong>. Mengubah dan menyimpan ulang pilihan data ini akan memperbarui pengajuan Anda dan memerlukan persetujuan ulang dari Admin Pusdatin.</p>
+        </div>
+    </div>
+    @endif
 
     <!-- Database Tab Switcher -->
     <div class="flex border border-gray-200 bg-white p-1.5 rounded-xl shadow-xs gap-2 overflow-x-auto">

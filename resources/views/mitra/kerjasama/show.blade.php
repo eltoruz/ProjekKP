@@ -207,6 +207,7 @@
         <!-- Integration Catalog Section -->
         <div class="mt-6 pt-6 border-t border-gray-100">
             @php
+                $statusInt = $kerjasama->status_integrasi ?? 'belum_diajukan';
                 // Resolve user
                 $user = auth()->user() ?? \App\Models\User::where('role', 'mitra')->first() ?? \App\Models\User::first();
                 $userSelections = \App\Models\MetadataUser::with('metadata')
@@ -223,8 +224,15 @@
                 <div class="flex items-center justify-between mb-3">
                     <div class="flex items-center space-x-2">
                         <svg class="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
-                        <h4 class="text-sm font-bold text-gray-800">Data Integrasi Pusdatin yang Diajukan</h4>
+                        <h4 class="text-sm font-bold text-gray-800">Katalog Data Integrasi Pusdatin</h4>
                     </div>
+                    @if($statusInt === 'pending')
+                        <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 border border-amber-200 animate-pulse">Menunggu Persetujuan Admin</span>
+                    @elseif($statusInt === 'approved')
+                        <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-800 border border-green-200">Aktif / Disetujui</span>
+                    @else
+                        <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-700 border border-gray-200">Belum Diajukan</span>
+                    @endif
                 </div>
 
                 @if(!$hasSelections)
@@ -232,8 +240,32 @@
                     <a href="{{ route('mitra.kerjasama.integrasi', $kerjasama->kerjasama_id) }}" class="inline-flex items-center justify-center px-4 py-2 bg-primary hover:bg-blue-600 text-white text-xs font-semibold rounded-lg shadow-sm transition">
                         Pilih Katalog Data &rarr;
                     </a>
+                @elseif($statusInt === 'pending')
+                    <p class="text-xs text-gray-600 mb-4">Pengajuan data Anda sedang ditinjau oleh Admin Pusdatin. Berikut adalah ringkasan kolom data yang Anda minta:</p>
+                    
+                    <div class="bg-white rounded-lg border border-gray-200 divide-y divide-gray-100 overflow-hidden mb-4">
+                        @foreach($groupedUserSelections as $tblName => $items)
+                        <div class="p-3.5">
+                            <div class="flex items-center space-x-2 mb-1.5">
+                                <span class="text-[10px] px-1.5 py-0.5 bg-blue-100 text-blue-800 font-mono font-semibold rounded">Tabel</span>
+                                <span class="text-xs font-bold font-mono text-gray-800">{{ $tblName }}</span>
+                            </div>
+                            <div class="flex flex-wrap gap-1.5">
+                                @foreach($items as $item)
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-mono border bg-gray-50 text-gray-700 border-gray-200">
+                                    {{ $item->metadata->name }}
+                                </span>
+                                @endforeach
+                            </div>
+                        </div>
+                        @endforeach
+                    </div>
+
+                    <a href="{{ route('mitra.kerjasama.integrasi', $kerjasama->kerjasama_id) }}" class="inline-flex items-center justify-center px-4 py-2 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 text-xs font-semibold rounded-lg shadow-sm transition">
+                        Ubah Pilihan Katalog Data
+                    </a>
                 @else
-                    <p class="text-xs text-gray-600 mb-4">Pengajuan integrasi data Anda telah aktif! Berikut adalah ringkasan skema tabel yang dapat diakses oleh sistem Anda:</p>
+                    <p class="text-xs text-gray-600 mb-4">Pengajuan integrasi data Anda telah disetujui! Berikut adalah ringkasan skema tabel yang resmi diakses oleh sistem Anda:</p>
                     
                     <div class="bg-white rounded-lg border border-gray-200 divide-y divide-gray-100 overflow-hidden mb-4">
                         @foreach($groupedUserSelections as $tblName => $items)

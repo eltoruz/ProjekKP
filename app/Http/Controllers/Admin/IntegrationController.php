@@ -19,7 +19,6 @@ class IntegrationController extends Controller
 
         $selectedMetadata = MetadataUser::with('metadata')
             ->where('user_id', $user->id)
-            ->where('soft_delete', 0)
             ->get();
 
         $groupedSelections = $selectedMetadata->groupBy(function ($item) {
@@ -34,20 +33,25 @@ class IntegrationController extends Controller
         $kerjasama = Kerjasama::notDeleted()->findOrFail($id);
 
         $user = User::where('role', 'mitra')->first() ?? User::first();
-        $maskedIds = $request->input('masked_metadata', []);
+        $approvedIds = $request->input('approved_metadata', []);
 
-        // Reset all to 0 for this user
-        MetadataUser::where('user_id', $user->id)->update(['is_masked' => 0]);
-
-        if (!empty($maskedIds)) {
+        if (!empty($approvedIds)) {
+            // Keep approved ones, soft-delete unapproved ones
             MetadataUser::where('user_id', $user->id)
-                ->whereIn('id', $maskedIds)
-                ->update(['is_masked' => 1]);
+                ->whereIn('id', $approvedIds)
+                ->update(['soft_delete' => 0]);
+
+            MetadataUser::where('user_id', $user->id)
+                ->whereNotIn('id', $approvedIds)
+                ->update(['soft_delete' => 1]);
+        } else {
+            // If none checked, remove all for this user
+            MetadataUser::where('user_id', $user->id)->update(['soft_delete' => 1]);
         }
 
-        $kerjasama->update(['ks_status_integrasi' => 'Selesai Disetujui']);
+        $kerjasama->update(['status_integrasi' => 'approved']);
 
         return redirect()->route('admin.kerjasama.review', $id)
-            ->with('success', 'Pengaturan sensor/masking data berhasil diperbarui!');
+            ->with('success', 'Pengajuan integrasi data berhasil disetujui!');
     }
 }
