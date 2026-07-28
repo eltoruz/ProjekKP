@@ -9,6 +9,7 @@ use App\Models\KsJenis;
 use App\Models\KsMetode;
 use App\Models\KsStatusDok;
 use App\Models\KsTingkat;
+use App\Models\AppNotification;
 use Illuminate\Http\Request;
 
 class KerjasamaController extends Controller
@@ -295,6 +296,16 @@ class KerjasamaController extends Controller
         $logMsg = "Admin memperbarui persetujuan data: {$approvedCount} Disetujui, {$rejectedCount} Ditolak, {$pendingCount} Pending";
         $ks->addReviewEntry('Persetujuan Data', $logMsg);
 
+        // Notify Mitra about the review results
+        AppNotification::create([
+            'kerjasama_id' => $ks->kerjasama_id,
+            'target_role' => 'mitra',
+            'title' => 'Hasil Peninjauan Pemilihan Data',
+            'message' => "Admin Pusdatin telah meninjau pengajuan pemilihan data untuk MoU '{$ks->nama_kl}'. Hasil: {$approvedCount} Disetujui, {$rejectedCount} Ditolak.",
+            'url' => route('mitra.kerjasama.show', $ks->kerjasama_id),
+            'is_read' => false,
+        ]);
+
         return redirect()->route('admin.kerjasama.persetujuan-data.form', $id)
             ->with('success', 'Status persetujuan per item data berhasil disimpan.');
     }
@@ -305,5 +316,27 @@ class KerjasamaController extends Controller
             ->where('kerjasama_id', $id)->notDeleted()->firstOrFail();
 
         return view('admin.kerjasama.cetak_ringkasan', compact('ks'));
+    }
+
+    public function unlockPemilihanData($id)
+    {
+        $ks = Kerjasama::where('kerjasama_id', $id)->notDeleted()->firstOrFail();
+
+        $ks->update([
+            'status_pemilihan_data' => 'draft',
+        ]);
+
+        $ks->addReviewEntry('Buka Kunci Data', 'Admin membuka kembali akses pemilihan data kamus untuk Mitra');
+
+        AppNotification::create([
+            'kerjasama_id' => $ks->kerjasama_id,
+            'target_role' => 'mitra',
+            'title' => 'Akses Pemilihan Data Dibuka Kembali',
+            'message' => "Admin Pusdatin telah membuka kembali form pemilihan data Anda untuk MoU '{$ks->nama_kl}'. Silakan lakukan perubahan dan ajukan kembali jika sudah selesai.",
+            'url' => route('mitra.kerjasama.show', $ks->kerjasama_id),
+            'is_read' => false,
+        ]);
+
+        return redirect()->back()->with('success', 'Form pemilihan data Mitra berhasil dibuka kunci.');
     }
 }

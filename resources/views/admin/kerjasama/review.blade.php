@@ -21,6 +21,7 @@
     showTolak: false,
     showJadwal: false,
     showFinalisasi: false,
+    showLanjut: false,
     openRiwayat: false,
 }" class="space-y-4">
 
@@ -43,10 +44,7 @@
                         @endif
                         @break
                     @case(3)
-                        <form method="POST" action="{{ route('admin.kerjasama.lanjutPembahasan', $ks->kerjasama_id) }}" onsubmit="return confirm('Lanjutkan ke penandatanganan?')">
-                            @csrf
-                            <button class="bg-purple-500 text-white px-3.5 py-1.5 rounded-lg text-xs font-medium hover:bg-purple-600 transition-colors shadow-2xs">Lanjut ke Penandatanganan</button>
-                        </form>
+                        <button type="button" @click="showLanjut = true" class="bg-purple-500 text-white px-3.5 py-1.5 rounded-lg text-xs font-medium hover:bg-purple-600 transition-colors shadow-2xs cursor-pointer">Lanjut ke Penandatanganan</button>
                         @break
                     @case(4)
                         <button @click="showFinalisasi = true" class="bg-green-500 text-white px-3.5 py-1.5 rounded-lg text-xs font-medium hover:bg-green-600 transition-colors shadow-2xs">Finalisasi</button>
@@ -185,6 +183,13 @@
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
                         Kelola Persetujuan Data per Item
                     </a>
+                    <form action="{{ route('admin.kerjasama.unlockPemilihanData', $ks->kerjasama_id) }}" method="POST" class="inline" onsubmit="return confirm('Buka kembali akses pemilihan data untuk Mitra?')">
+                        @csrf
+                        <button type="submit" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-200 transition-colors shadow-2xs cursor-pointer">
+                            <svg class="w-3.5 h-3.5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"/></svg>
+                            Buka Kunci Form Mitra
+                        </button>
+                    </form>
                 @elseif($ks->pemilihanData->isNotEmpty())
                     <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 border border-amber-300">
                         <svg class="w-3.5 h-3.5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
@@ -517,6 +522,20 @@
                 <div class="flex justify-end gap-2 mt-4 pt-4 border-t border-gray-100">
                     <button type="button" @click="showFinalisasi = false" class="border border-gray-300 px-4 py-2 rounded-lg text-sm hover:bg-gray-50">Batal</button>
                     <button type="submit" class="bg-green-500 text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-green-600">{{ $status >= 5 ? 'Simpan' : 'Finalisasi' }}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: Lanjut ke Penandatanganan -->
+    <div x-show="showLanjut" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-black/50" x-transition>
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6" @click.outside="showLanjut = false">
+            <h3 class="text-lg font-semibold text-purple-600 mb-4">Lanjut ke Penandatanganan?</h3>
+            <form method="POST" action="{{ route('admin.kerjasama.lanjutPembahasan', $ks->kerjasama_id) }}">
+                @csrf
+                <div class="flex justify-end gap-2 mt-5">
+                    <button type="button" @click="showLanjut = false" class="border border-gray-300 px-4 py-2 rounded-lg text-sm hover:bg-gray-50 cursor-pointer">Batal</button>
+                    <button type="submit" class="bg-purple-600 text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-purple-700 cursor-pointer">Ya, Lanjutkan</button>
                 </div>
             </form>
         </div>

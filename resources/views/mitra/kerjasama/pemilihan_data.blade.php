@@ -22,139 +22,7 @@
     $initReasons = !empty($tableReasons) ? $tableReasons : new stdClass();
 @endphp
 
-<div class="space-y-6" x-data="{
-    search: '',
-    selectedDb: '',
-    selectedLetter: '',
-    openTables: {},
-    loadedCols: {},
-    loadingTable: {},
-    checkedCols: {{ json_encode($initChecked) }},
-    alasan: {{ json_encode($initReasons) }},
-    columnsApiUrl: '{{ route('mitra.api.metadata.columns') }}',
-
-    async loadColumns(dbName, tblName) {
-        let key = dbName + '.' + tblName;
-        if (this.loadedCols[key]) return;
-        this.loadingTable = {...this.loadingTable, [key]: true};
-        try {
-            let res = await fetch(this.columnsApiUrl + '?db_name=' + encodeURIComponent(dbName) + '&tbl_name=' + encodeURIComponent(tblName));
-            let cols = await res.json();
-            this.loadedCols = {...this.loadedCols, [key]: cols};
-        } catch(e) {
-            console.error('Failed to load columns for', key, e);
-        }
-        this.loadingTable = {...this.loadingTable, [key]: false};
-    },
-
-    async toggleAccordion(dbName, tblName) {
-        let key = dbName + '.' + tblName;
-        let isOpen = !!this.openTables[key];
-        this.openTables = {...this.openTables, [key]: !isOpen};
-        if (!isOpen) {
-            await this.loadColumns(dbName, tblName);
-        }
-    },
-
-    toggleTable(dbName, tblName) {
-        let key = dbName + '.' + tblName;
-        let cols = this.loadedCols[key] || [];
-        let allChecked = cols.length > 0 && cols.every(c => !!this.checkedCols[c.id]);
-        let updated = {...this.checkedCols};
-        cols.forEach(c => { updated[c.id] = !allChecked; });
-        this.checkedCols = updated;
-    },
-
-    isTableFullyChecked(dbName, tblName) {
-        let cols = this.loadedCols[dbName + '.' + tblName] || [];
-        return cols.length > 0 && cols.every(c => !!this.checkedCols[c.id]);
-    },
-
-    isTablePartiallyChecked(dbName, tblName) {
-        let cols = this.loadedCols[dbName + '.' + tblName] || [];
-        let count = cols.filter(c => !!this.checkedCols[c.id]).length;
-        return count > 0 && count < cols.length;
-    },
-
-    checkedColCountInTable(dbName, tblName) {
-        let cols = this.loadedCols[dbName + '.' + tblName] || [];
-        return cols.filter(c => !!this.checkedCols[c.id]).length;
-    },
-
-    get totalCheckedCols() {
-        return Object.values(this.checkedCols).filter(Boolean).length;
-    },
-
-    get totalSelectedTables() {
-        let count = 0;
-        for (let key in this.loadedCols) {
-            if (this.loadedCols[key].some(c => !!this.checkedCols[c.id])) count++;
-        }
-        return count;
-    },
-
-    hasMissingReason() {
-        if (this.totalCheckedCols === 0) return true;
-        for (let key in this.loadedCols) {
-            let cols = this.loadedCols[key];
-            if (cols.some(c => !!this.checkedCols[c.id])) {
-                let tblName = key.split('.').slice(1).join('.');
-                if (!this.alasan[tblName] || !this.alasan[tblName].trim()) return true;
-            }
-        }
-        return false;
-    },
-
-    expandAll() {
-        let updated = {...this.openTables};
-        for (let key in updated) updated[key] = true;
-        this.openTables = updated;
-    },
-
-    collapseAll() {
-        let updated = {...this.openTables};
-        for (let key in updated) updated[key] = false;
-        this.openTables = updated;
-    },
-
-    clearAll() {
-        this.checkedCols = {};
-    },
-
-    matchesFilter(tblName, dbName) {
-        if (this.selectedDb && this.selectedDb !== dbName) return false;
-        if (this.selectedLetter && tblName.charAt(0).toUpperCase() !== this.selectedLetter) return false;
-        if (this.search) {
-            let s = this.search.toLowerCase();
-            if (tblName.toLowerCase().indexOf(s) === -1 && dbName.toLowerCase().indexOf(s) === -1) return false;
-        }
-        return true;
-    },
-
-    dbHasVisibleTable(dbName, tables) {
-        return tables.some(t => this.matchesFilter(t, dbName));
-    },
-
-    validateSubmit(e) {
-        let action = e.submitter ? e.submitter.value : 'save';
-        if (action === 'submit') {
-            if (this.totalCheckedCols === 0) {
-                alert('Submit ditolak: Anda wajib memilih minimal 1 kolom data.');
-                e.preventDefault();
-                return false;
-            }
-            if (this.hasMissingReason()) {
-                alert('Submit ditolak: Setiap tabel yang memiliki kolom terpilih WAJIB disertai Keterangan/Alasan Penggunaan Data.');
-                e.preventDefault();
-                return false;
-            }
-            if (!confirm('PERHATIAN: Setelah mengajukan secara final (Submit), data pilihan Anda akan TERKUNCI dan TIDAK DAPAT DIUBAH LAGI.\n\nApakah Anda yakin ingin mengajukan pemilihan data ini?')) {
-                e.preventDefault();
-                return false;
-            }
-        }
-    }
-}">
+<div class="space-y-6" x-data="pemilihanData()">
 
     <!-- Action Bar & Header Page -->
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
@@ -218,14 +86,14 @@
     @endif
 
     <!-- Container Utama Form Pemilihan Data -->
-    <div class="bg-white rounded-xl shadow-sm border border-indigo-200 p-6">
+    <div class="bg-white rounded-xl shadow-sm border border-indigo-200 p-6 {{ $kerjasama->status_pemilihan_data === 'submitted' ? 'bg-gray-50/50 opacity-95' : '' }}">
         <form action="{{ route('mitra.kerjasama.pemilihan-data', $kerjasama->kerjasama_id) }}" method="POST" @submit="validateSubmit($event)">
             @csrf
             
             <!-- Toolbar Filter & Pencarian -->
             <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 mb-5 space-y-3">
-                <!-- Row 1: Database Dropdown + Search Input -->
-                <div class="flex flex-col sm:flex-row gap-3">
+                <!-- Row 1: Database Dropdown + Selected Filter + Search Input -->
+                <div class="flex flex-col sm:flex-row sm:items-center gap-3">
                     @if(isset($databaseList) && count($databaseList) > 0)
                     <div class="shrink-0">
                         <select x-model="selectedDb" class="w-full sm:w-auto border border-gray-300 rounded-lg px-3.5 py-2 text-xs bg-white focus:ring-2 focus:ring-indigo-500 font-medium shadow-2xs">
@@ -237,13 +105,12 @@
                     </div>
                     @endif
 
-                    <div class="shrink-0">
-                        <select x-model="selectedLetter" class="w-full sm:w-auto border border-gray-300 rounded-lg px-3 py-2 text-xs bg-white focus:ring-2 focus:ring-indigo-500 font-medium shadow-2xs">
-                            <option value="">-- Semua Abjad (A-Z) --</option>
-                            <template x-for="l in 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('')">
-                                <option :value="l" x-text="'Awalan ' + l"></option>
-                            </template>
-                        </select>
+                    <div class="shrink-0 flex items-center bg-white border border-gray-300 rounded-lg px-3.5 py-2 shadow-2xs h-[34px]">
+                        <label class="relative inline-flex items-center cursor-pointer select-none">
+                            <input type="checkbox" x-model="showAllTables" class="sr-only peer">
+                            <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600"></div>
+                            <span class="ms-2 text-xs font-semibold text-gray-700">Tampilkan Semua Tabel Katalog</span>
+                        </label>
                     </div>
 
                     <div class="relative flex-1">
@@ -283,8 +150,7 @@
             <!-- Daftar Accordion Tabel per Database -->
             <div class="space-y-5 max-h-[65vh] overflow-y-auto pr-1">
                 @foreach($catalogByDb as $dbName => $tablesInDb)
-                @php $tblNamesInDb = $tablesInDb->pluck('tbl_name')->toArray(); @endphp
-                <div x-show="(!selectedDb || selectedDb === '{{ $dbName }}') && dbHasVisibleTable('{{ $dbName }}', {{ json_encode($tblNamesInDb) }})" class="space-y-2.5">
+                <div x-show="dbHasVisibleTable('{{ $dbName }}')" class="space-y-2.5">
                     
                     <!-- Header Group Database -->
                     <div class="flex items-center gap-2 py-2 px-3.5 bg-slate-100 border border-slate-200 rounded-lg text-slate-800 font-mono font-bold text-xs sticky top-0 z-10 shadow-2xs">
@@ -321,6 +187,13 @@
                                         <span class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold"
                                               :class="checkedColCountInTable('{{ $dbName }}', '{{ $tbl->tbl_name }}') > 0 ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-200 text-gray-600'"
                                               x-text="checkedColCountInTable('{{ $dbName }}', '{{ $tbl->tbl_name }}') + ' / {{ $tbl->total_cols }} kolom terpilih'"></span>
+                                        
+                                        <!-- Warning Badge for missing reason -->
+                                        <template x-if="isTableSelected('{{ $dbName }}', '{{ $tbl->tbl_name }}') && (!alasan['{{ $tbl->tbl_name }}'] || !alasan['{{ $tbl->tbl_name }}'].trim())">
+                                            <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-red-100 text-red-700 border border-red-200 flex items-center gap-0.5 animate-pulse">
+                                                ⚠️ Alasan belum diisi
+                                            </span>
+                                        </template>
                                     </div>
                                 </div>
                             </div>
@@ -407,7 +280,7 @@
                                         <textarea :name="'alasan_table[{{ $tbl->tbl_name }}]'" x-model="alasan['{{ $tbl->tbl_name }}']" rows="2" 
                                                   placeholder="Tuliskan keterangan/alasan penggunaan data ini..." 
                                                   @if($kerjasama->status_pemilihan_data === 'submitted') readonly @endif
-                                                  class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white shadow-2xs readonly:bg-gray-100 readonly:text-gray-600"></textarea>
+                                                  class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white shadow-2xs read-only:bg-slate-100 read-only:text-slate-500 read-only:cursor-not-allowed"></textarea>
                                         
                                         <p x-show="checkedColCountInTable('{{ $dbName }}', '{{ $tbl->tbl_name }}') > 0 && (!alasan['{{ $tbl->tbl_name }}'] || !alasan['{{ $tbl->tbl_name }}'].trim())" 
                                            class="text-[11px] text-red-500 mt-1 font-medium flex items-center gap-1">
@@ -460,4 +333,206 @@
         </form>
     </div>
 </div>
+
+<script>
+function pemilihanData() {
+    return {
+        search: '',
+        selectedDb: '',
+        showAllTables: false,
+        openTables: {},
+        loadedCols: {},
+        loadingTable: {},
+        checkedCols: {!! json_encode($initChecked) !!},
+        alasan: {!! json_encode($initReasons) !!},
+        columnsApiUrl: '{{ route('mitra.api.metadata.columns') }}',
+        visibleTables: {},
+        visibleDbs: {},
+        colTableMap: {
+            @foreach($kerjasama->pemilihanData as $sel)
+                @if($sel->metadata)
+                    {!! json_encode((string)$sel->metadata_id) !!}: {!! json_encode($sel->metadata->db_name . '.' . $sel->metadata->tbl_name) !!},
+                @endif
+            @endforeach
+        },
+        allTables: [
+            @foreach($catalogByDb as $dbName => $tablesInDb)
+                @foreach($tablesInDb as $tbl)
+                    { db: {!! json_encode($dbName) !!}, name: {!! json_encode($tbl->tbl_name) !!} },
+                @endforeach
+            @endforeach
+        ],
+
+        init() {
+            // Default to showing all tables if no columns are checked yet (first time filling)
+            this.showAllTables = (this.totalCheckedCols === 0);
+
+            this.updateFilters();
+            this.$watch('search', () => this.updateFilters());
+            this.$watch('selectedDb', () => this.updateFilters());
+            this.$watch('showAllTables', () => this.updateFilters());
+            this.$watch('checkedCols', () => this.updateFilters());
+        },
+
+        updateFilters() {
+            let s = this.search.trim().toLowerCase();
+            let db = this.selectedDb;
+
+            let visibleTbls = {};
+            let visibleDbs = {};
+
+            this.allTables.forEach(t => {
+                let isVisible = true;
+                if (db && t.db !== db) isVisible = false;
+                if (s) {
+                    if (t.name.toLowerCase().indexOf(s) === -1 && t.db.toLowerCase().indexOf(s) === -1) {
+                        isVisible = false;
+                    }
+                }
+                if (!this.showAllTables && !this.isTableSelected(t.db, t.name)) {
+                    isVisible = false;
+                }
+                if (isVisible) {
+                    visibleTbls[t.db + '.' + t.name] = true;
+                    visibleDbs[t.db] = true;
+                }
+            });
+
+            this.visibleTables = visibleTbls;
+            this.visibleDbs = visibleDbs;
+        },
+
+        isTableSelected(dbName, tblName) {
+            let key = dbName + '.' + tblName;
+            return Object.keys(this.checkedCols).some(id => {
+                return !!this.checkedCols[id] && this.colTableMap[id] === key;
+            });
+        },
+
+        async loadColumns(dbName, tblName) {
+            let key = dbName + '.' + tblName;
+            if (this.loadedCols[key]) return;
+            this.loadingTable = {...this.loadingTable, [key]: true};
+            try {
+                let res = await fetch(this.columnsApiUrl + '?db_name=' + encodeURIComponent(dbName) + '&tbl_name=' + encodeURIComponent(tblName));
+                let cols = await res.json();
+                cols.forEach(c => {
+                    this.colTableMap[c.id] = dbName + '.' + tblName;
+                });
+                this.loadedCols = {...this.loadedCols, [key]: cols};
+            } catch(e) {
+                console.error('Failed to load columns for', key, e);
+            }
+            this.loadingTable = {...this.loadingTable, [key]: false};
+        },
+
+        async toggleAccordion(dbName, tblName) {
+            let key = dbName + '.' + tblName;
+            let isOpen = !!this.openTables[key];
+            this.openTables = {...this.openTables, [key]: !isOpen};
+            if (!isOpen) {
+                await this.loadColumns(dbName, tblName);
+            }
+        },
+
+        toggleTable(dbName, tblName) {
+            let key = dbName + '.' + tblName;
+            let cols = this.loadedCols[key] || [];
+            let allChecked = cols.length > 0 && cols.every(c => !!this.checkedCols[c.id]);
+            let updated = {...this.checkedCols};
+            cols.forEach(c => { updated[c.id] = !allChecked; });
+            this.checkedCols = updated;
+        },
+
+        isTableFullyChecked(dbName, tblName) {
+            let cols = this.loadedCols[dbName + '.' + tblName] || [];
+            return cols.length > 0 && cols.every(c => !!this.checkedCols[c.id]);
+        },
+
+        isTablePartiallyChecked(dbName, tblName) {
+            let cols = this.loadedCols[dbName + '.' + tblName] || [];
+            let count = cols.filter(c => !!this.checkedCols[c.id]).length;
+            return count > 0 && count < cols.length;
+        },
+
+        checkedColCountInTable(dbName, tblName) {
+            let cols = this.loadedCols[dbName + '.' + tblName] || [];
+            return cols.filter(c => !!this.checkedCols[c.id]).length;
+        },
+
+        get totalCheckedCols() {
+            return Object.values(this.checkedCols).filter(Boolean).length;
+        },
+
+        get totalSelectedTables() {
+            let count = 0;
+            for (let key in this.loadedCols) {
+                if (this.loadedCols[key].some(c => !!this.checkedCols[c.id])) count++;
+            }
+            return count;
+        },
+
+        hasMissingReason() {
+            if (this.totalCheckedCols === 0) return true;
+            let selectedTables = new Set();
+            Object.keys(this.checkedCols).forEach(id => {
+                if (this.checkedCols[id] && this.colTableMap[id]) {
+                    selectedTables.add(this.colTableMap[id]);
+                }
+            });
+            for (let tableKey of selectedTables) {
+                let tblName = tableKey.split('.').slice(1).join('.');
+                if (!this.alasan[tblName] || !this.alasan[tblName].trim()) {
+                    return true;
+                }
+            }
+            return false;
+        },
+
+        expandAll() {
+            let updated = {...this.openTables};
+            for (let key in updated) updated[key] = true;
+            this.openTables = updated;
+        },
+
+        collapseAll() {
+            let updated = {...this.openTables};
+            for (let key in updated) updated[key] = false;
+            this.openTables = updated;
+        },
+
+        clearAll() {
+            this.checkedCols = {};
+        },
+
+        matchesFilter(tblName, dbName) {
+            return !!this.visibleTables[dbName + '.' + tblName];
+        },
+
+        dbHasVisibleTable(dbName) {
+            return !!this.visibleDbs[dbName];
+        },
+
+        validateSubmit(e) {
+            let action = e.submitter ? e.submitter.value : 'save';
+            if (action === 'submit') {
+                if (this.totalCheckedCols === 0) {
+                    alert('Submit ditolak: Anda wajib memilih minimal 1 kolom data.');
+                    e.preventDefault();
+                    return false;
+                }
+                if (this.hasMissingReason()) {
+                    alert('Submit ditolak: Setiap tabel yang memiliki kolom terpilih WAJIB disertai Keterangan/Alasan Penggunaan Data.');
+                    e.preventDefault();
+                    return false;
+                }
+                if (!confirm('PERHATIAN: Setelah mengajukan secara final (Submit), data pilihan Anda akan TERKUNCI dan TIDAK DAPAT DIUBAH LAGI.\n\nApakah Anda yakin ingin mengajukan pemilihan data ini?')) {
+                    e.preventDefault();
+                    return false;
+                }
+            }
+        }
+    };
+}
+</script>
 @endsection

@@ -49,7 +49,6 @@
     openTables: {{ json_encode($initialOpen) }},
     search: '',
     selectedDb: '',
-    selectedLetter: '',
     selectedStatus: '',
 
     toggleTable(key) {
@@ -73,12 +72,6 @@
     matchesFilter(itemId, dbName, tblName, colName, alasan) {
         if (this.selectedDb && dbName !== this.selectedDb) return false;
         if (this.selectedStatus && (this.approval[itemId] || 'pending') !== this.selectedStatus) return false;
-        
-        if (this.selectedLetter) {
-            const cStart = colName ? colName.charAt(0).toUpperCase() : '';
-            const tStart = tblName ? tblName.charAt(0).toUpperCase() : '';
-            if (cStart !== this.selectedLetter && tStart !== this.selectedLetter) return false;
-        }
         
         if (this.search) {
             const q = this.search.toLowerCase();
@@ -111,6 +104,9 @@
     },
     get pendingCount() {
         return Object.values(this.approval).filter(v => v === 'pending').length;
+    },
+    get hasPending() {
+        return Object.values(this.approval).some(v => v === 'pending');
     }
 }">
 
@@ -213,14 +209,6 @@
                     </div>
                     @endif
 
-                    <div class="shrink-0">
-                        <select x-model="selectedLetter" class="w-full sm:w-auto border border-gray-300 rounded-lg px-3 py-2 text-xs bg-white focus:ring-2 focus:ring-indigo-500 font-medium shadow-2xs">
-                            <option value="">-- Semua Abjad (A-Z) --</option>
-                            <template x-for="l in 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('')">
-                                <option :value="l" x-text="'Awalan ' + l"></option>
-                            </template>
-                        </select>
-                    </div>
 
                     <div class="shrink-0">
                         <select x-model="selectedStatus" class="w-full sm:w-auto border border-gray-300 rounded-lg px-3.5 py-2 text-xs bg-white focus:ring-2 focus:ring-indigo-500 font-medium shadow-2xs">
@@ -451,9 +439,9 @@
                 <a href="{{ route('admin.kerjasama.review', $ks->kerjasama_id) }}" class="px-4 py-2 rounded-lg text-xs font-semibold text-gray-600 bg-white border border-gray-300 hover:bg-gray-50 transition-colors">
                     Batal
                 </a>
-                <button type="submit" class="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors shadow-sm">
+                <button type="submit" class="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors shadow-sm cursor-pointer">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg>
-                    Simpan Keputusan Persetujuan
+                    <span x-text="hasPending ? 'Simpan Keputusan Persetujuan' : 'Perbarui Keputusan Persetujuan'"></span>
                 </button>
             </div>
         </div>

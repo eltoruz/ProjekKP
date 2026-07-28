@@ -106,7 +106,7 @@
                     @elseif($ks->ks_status_dok)
                         @php
                             $sColors = [1 => 'bg-blue-100 text-blue-700', 3 => 'bg-orange-100 text-orange-700', 4 => 'bg-purple-100 text-purple-700', 5 => 'bg-green-100 text-green-700', 6 => 'bg-gray-100 text-gray-600'];
-                            $sLabels = [1 => 'Menunggu Review', 3 => 'Pembahasan', 4 => 'Penandatanganan', 5 => 'Selesai', 6 => 'Berakhir'];
+                            $sLabels = [1 => 'Menunggu Review', 3 => 'Pembahasan', 4 => 'Penandatanganan', 5 => 'Dokumen telah ditandatangani (Tahap Integrasi Data)', 6 => 'Berakhir'];
                         @endphp
                         <span class="px-2.5 py-0.5 rounded-full text-xs font-medium {{ $sColors[$ks->ks_status_dok] ?? 'bg-gray-100 text-gray-600' }}">
                             {{ $sLabels[$ks->ks_status_dok] ?? $ks->status_label }}

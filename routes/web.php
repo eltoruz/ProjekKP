@@ -58,6 +58,7 @@ Route::middleware(['web', \App\Http\Middleware\AutoLoginAdmin::class])
         Route::post('/kerjasama/{id}/lanjut-pembahasan', [AdminKerjasama::class, 'lanjutPembahasan'])->name('kerjasama.lanjutPembahasan');
         Route::post('/kerjasama/{id}/finalisasi', [AdminKerjasama::class, 'finalisasi'])->name('kerjasama.finalisasi');
         Route::post('/kerjasama/{id}/update-finalisasi', [AdminKerjasama::class, 'updateFinalisasi'])->name('kerjasama.updateFinalisasi');
+        Route::post('/kerjasama/{id}/unlock-pemilihan-data', [AdminKerjasama::class, 'unlockPemilihanData'])->name('kerjasama.unlockPemilihanData');
         Route::get('/kerjasama/{id}/persetujuan-data', [AdminKerjasama::class, 'persetujuanDataForm'])->name('kerjasama.persetujuan-data.form');
         Route::post('/kerjasama/{id}/persetujuan-data', [AdminKerjasama::class, 'simpanPersetujuanData'])->name('kerjasama.persetujuan-data');
         Route::get('/kerjasama/{id}/cetak-ringkasan', [AdminKerjasama::class, 'cetakRingkasan'])->name('kerjasama.cetak-ringkasan');

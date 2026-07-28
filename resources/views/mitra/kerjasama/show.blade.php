@@ -50,7 +50,7 @@
             4 => ['icon' => 'M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12', 'label' => 'Upload Undangan', 'desc' => 'Upload surat undangan'],
             5 => ['icon' => 'M8 12h.01M12 12h.01M16 12h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z', 'label' => 'Pembahasan', 'desc' => 'Proses pembahasan dokumen'],
             6 => ['icon' => 'M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z', 'label' => 'Penandatanganan', 'desc' => 'Proses TTD para pihak'],
-            7 => ['icon' => 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z', 'label' => 'Selesai', 'desc' => 'Dokumen ditandatangani'],
+            7 => ['icon' => 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z', 'label' => 'Dokumen telah ditandatangani (Tahap Integrasi Data)', 'desc' => 'Dokumen ditandatangani'],
         ];
     @endphp
 
@@ -598,22 +598,6 @@
             </div>
         </div>
         @endif
-    </div>
-    @else
-    <div class="bg-gray-50 rounded-lg border border-gray-200 p-5 mb-4 flex items-center justify-between text-xs text-gray-600">
-        <div class="flex items-center gap-3">
-            <div class="w-9 h-9 rounded-lg bg-gray-200 flex items-center justify-center shrink-0 text-gray-500">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
-                </svg>
-            </div>
-            <div>
-                <h4 class="font-semibold text-gray-800">Pemilihan Data yang Diperlukan (Terkunci)</h4>
-                <p class="text-[11px] text-gray-500">Fitur pemilihan data per-kolom akan terbuka setelah dokumen Nota Kesepakatan selesai dibahas & disetujui (Status Final/Selesai).</p>
-            </div>
-        </div>
-        <span class="px-3 py-1 bg-gray-200 text-gray-600 font-semibold rounded-full text-[11px] shrink-0">Terkunci</span>
-    </div>
     @endif
 
     <!-- Detail Data -->
