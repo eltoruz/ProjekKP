@@ -24,6 +24,39 @@
         icon='<svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>' />
 </div>
 
+@if(isset($earlyWarningList) && count($earlyWarningList) > 0)
+<div class="bg-gradient-to-r from-amber-500 to-orange-600 rounded-2xl shadow-md p-6 mb-6 text-white">
+    <div class="flex items-center justify-between border-b border-white/20 pb-3 mb-3">
+        <div class="flex items-center gap-2.5">
+            <svg class="w-5 h-5 animate-pulse text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
+            <h3 class="text-sm font-bold">Peringatan Masa Berlaku Kerja Sama (H-90 / H-60 / H-30)</h3>
+        </div>
+        <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-white/20 text-white">
+            {{ count($earlyWarningList) }} Berkas Perlu Perhatian
+        </span>
+    </div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        @foreach($earlyWarningList as $item)
+        <div class="bg-white/10 backdrop-blur-md rounded-xl p-3 border border-white/20 flex flex-col justify-between text-xs">
+            <div>
+                <div class="flex items-center justify-between mb-1">
+                    <span class="font-bold truncate">{{ $item['kerjasama']->nama_kl }}</span>
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold shadow-2xs {{ $item['level'] === 'danger' ? 'bg-red-500 text-white' : 'bg-amber-300 text-amber-950' }}">
+                        {{ $item['badge_text'] }}
+                    </span>
+                </div>
+                <p class="text-[11px] text-white/90 line-clamp-1">{{ $item['kerjasama']->tentang }}</p>
+            </div>
+            <div class="mt-2 pt-2 border-t border-white/15 flex items-center justify-between text-[11px]">
+                <span class="text-white/80">Berakhir: <strong>{{ $item['tanggal_selesai'] }}</strong></span>
+                <a href="{{ route('mitra.kerjasama.show', $item['kerjasama']->kerjasama_id) }}" class="underline font-semibold hover:text-white">Detail &rarr;</a>
+            </div>
+        </div>
+        @endforeach
+    </div>
+</div>
+@endif
+
 @if($upcoming->count())
 <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
     <h3 class="text-base font-semibold text-navy mb-3">Jadwal Pembahasan Mendatang</h3>

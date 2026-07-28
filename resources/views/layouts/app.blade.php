@@ -22,6 +22,7 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
         body { font-family: 'Poppins', sans-serif; }
+        [x-cloak] { display: none !important; }
     </style>
     <script>
         function formatJamInput(el) {
@@ -62,6 +63,11 @@
     </script>
 </head>
 <body class="bg-gray-50 text-gray-900 min-h-screen antialiased">
+    <!-- Skip to Main Content Link (WCAG 2.1 Keyboard Navigation) -->
+    <a href="#main-content" 
+       class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:px-4 focus:py-2 focus:bg-indigo-600 focus:text-white focus:rounded-lg focus:shadow-lg focus:outline-none">
+       Lompat ke Konten Utama
+    </a>
     @yield('content')
 </body>
 </html>

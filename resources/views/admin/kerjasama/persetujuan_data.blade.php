@@ -52,10 +52,6 @@
     selectedLetter: '',
     selectedStatus: '',
 
-    setLetter(letter) {
-        this.selectedLetter = (this.selectedLetter === letter) ? '' : letter;
-    },
-
     toggleTable(key) {
         this.openTables[key] = !this.openTables[key];
     },
@@ -79,19 +75,19 @@
         if (this.selectedStatus && (this.approval[itemId] || 'pending') !== this.selectedStatus) return false;
         
         if (this.selectedLetter) {
-            const letter = this.selectedLetter.toUpperCase();
-            const colStart = (colName || '').trim().toUpperCase().charAt(0);
-            const tblStart = (tblName || '').trim().toUpperCase().charAt(0);
-            if (colStart !== letter && tblStart !== letter) return false;
+            const cStart = colName ? colName.charAt(0).toUpperCase() : '';
+            const tStart = tblName ? tblName.charAt(0).toUpperCase() : '';
+            if (cStart !== this.selectedLetter && tStart !== this.selectedLetter) return false;
         }
         
-        if (this.search && this.search.trim() !== '') {
-            const q = this.search.toLowerCase().trim();
-            const c = (colName || '').toLowerCase();
-            const t = (tblName || '').toLowerCase();
-            const d = (dbName || '').toLowerCase();
-            const a = (alasan || '').toLowerCase();
-            if (!c.includes(q) && !t.includes(q) && !d.includes(q) && !a.includes(q)) return false;
+        if (this.search) {
+            const q = this.search.toLowerCase();
+            if ((!colName || colName.toLowerCase().indexOf(q) === -1) && 
+                (!tblName || tblName.toLowerCase().indexOf(q) === -1) && 
+                (!dbName || dbName.toLowerCase().indexOf(q) === -1) && 
+                (!alasan || alasan.toLowerCase().indexOf(q) === -1)) {
+                return false;
+            }
         }
         
         return true;
@@ -218,6 +214,15 @@
                     @endif
 
                     <div class="shrink-0">
+                        <select x-model="selectedLetter" class="w-full sm:w-auto border border-gray-300 rounded-lg px-3 py-2 text-xs bg-white focus:ring-2 focus:ring-indigo-500 font-medium shadow-2xs">
+                            <option value="">-- Semua Abjad (A-Z) --</option>
+                            <template x-for="l in 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('')">
+                                <option :value="l" x-text="'Awalan ' + l"></option>
+                            </template>
+                        </select>
+                    </div>
+
+                    <div class="shrink-0">
                         <select x-model="selectedStatus" class="w-full sm:w-auto border border-gray-300 rounded-lg px-3.5 py-2 text-xs bg-white focus:ring-2 focus:ring-indigo-500 font-medium shadow-2xs">
                             <option value="">-- Semua Status Persetujuan --</option>
                             <option value="pending">Status: Pending</option>
@@ -235,26 +240,7 @@
                     </div>
                 </div>
 
-                <!-- Row 2: Filter Abjad A-Z -->
-                <div class="pt-2.5 border-t border-slate-200/80">
-                    <div class="flex flex-wrap items-center gap-1">
-                        <span class="text-[11px] text-gray-500 font-semibold mr-1 shrink-0">Filter Abjad:</span>
-                        <button type="button" @click="selectedLetter = ''" 
-                                class="px-2.5 py-1 rounded-md text-[11px] font-bold transition-colors border shadow-2xs"
-                                :class="!selectedLetter ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-gray-600 border-gray-300 hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-300'">
-                            Semua
-                        </button>
-                        @foreach(range('A','Z') as $letter)
-                        <button type="button" @click="setLetter('{{ $letter }}')" 
-                                class="w-6 h-6 flex items-center justify-center rounded-md text-[11px] font-bold transition-colors border shadow-2xs"
-                                :class="selectedLetter === '{{ $letter }}' ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-gray-500 border-gray-200 hover:bg-indigo-50 hover:text-indigo-700 hover:border-indigo-300'">
-                            {{ $letter }}
-                        </button>
-                        @endforeach
-                    </div>
-                </div>
-
-                <!-- Row 3: Action Toolbar, Accordion Control & Status Counters -->
+                <!-- Row 2: Action Toolbar, Accordion Control & Status Counters -->
                 <div class="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-slate-200/80 text-xs">
                     <div class="flex items-center gap-3 flex-wrap">
                         <div class="flex items-center gap-1.5">

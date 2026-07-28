@@ -123,20 +123,16 @@
 
     matchesFilter(tblName, dbName) {
         if (this.selectedDb && this.selectedDb !== dbName) return false;
-        if (this.selectedLetter && !tblName.toUpperCase().startsWith(this.selectedLetter)) return false;
+        if (this.selectedLetter && tblName.charAt(0).toUpperCase() !== this.selectedLetter) return false;
         if (this.search) {
             let s = this.search.toLowerCase();
-            if (!tblName.toLowerCase().includes(s) && !dbName.toLowerCase().includes(s)) return false;
+            if (tblName.toLowerCase().indexOf(s) === -1 && dbName.toLowerCase().indexOf(s) === -1) return false;
         }
         return true;
     },
 
     dbHasVisibleTable(dbName, tables) {
         return tables.some(t => this.matchesFilter(t, dbName));
-    },
-
-    setLetter(letter) {
-        this.selectedLetter = this.selectedLetter === letter ? '' : letter;
     },
 
     validateSubmit(e) {
@@ -241,6 +237,15 @@
                     </div>
                     @endif
 
+                    <div class="shrink-0">
+                        <select x-model="selectedLetter" class="w-full sm:w-auto border border-gray-300 rounded-lg px-3 py-2 text-xs bg-white focus:ring-2 focus:ring-indigo-500 font-medium shadow-2xs">
+                            <option value="">-- Semua Abjad (A-Z) --</option>
+                            <template x-for="l in 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('')">
+                                <option :value="l" x-text="'Awalan ' + l"></option>
+                            </template>
+                        </select>
+                    </div>
+
                     <div class="relative flex-1">
                         <input type="text" x-model="search" placeholder="Cari nama tabel atau database..." 
                                class="w-full border border-gray-300 rounded-lg pl-9 pr-4 py-2 text-xs focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white shadow-2xs">
@@ -250,26 +255,7 @@
                     </div>
                 </div>
 
-                <!-- Row 2: Filter Abjad A-Z -->
-                <div class="pt-2.5 border-t border-slate-200/80">
-                    <div class="flex flex-wrap items-center gap-1">
-                        <span class="text-[11px] text-gray-500 font-semibold mr-1 shrink-0">Filter Abjad:</span>
-                        <button type="button" @click="selectedLetter = ''" 
-                                class="px-2.5 py-1 rounded-md text-[11px] font-bold transition-colors border shadow-2xs"
-                                :class="!selectedLetter ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-gray-600 border-gray-300 hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-300'">
-                            Semua
-                        </button>
-                        @foreach(range('A','Z') as $letter)
-                        <button type="button" @click="setLetter('{{ $letter }}')" 
-                                class="w-6 h-6 flex items-center justify-center rounded-md text-[11px] font-bold transition-colors border shadow-2xs"
-                                :class="selectedLetter === '{{ $letter }}' ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-gray-500 border-gray-200 hover:bg-indigo-50 hover:text-indigo-700 hover:border-indigo-300'">
-                            {{ $letter }}
-                        </button>
-                        @endforeach
-                    </div>
-                </div>
-
-                <!-- Row 3: Quick Actions & Counters -->
+                <!-- Row 2: Quick Actions & Counters -->
                 <div class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-200/80 text-xs">
                     <div class="flex items-center gap-3">
                         <button type="button" @click="expandAll()" class="inline-flex items-center gap-1 text-indigo-600 hover:text-indigo-800 font-medium hover:underline">

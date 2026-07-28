@@ -260,6 +260,9 @@
     </div>
     @endif
 
+    <!-- Widget Diskusi & Chat Interaktif Mitra ↔ Admin -->
+    <x-chat-widget :kerjasamaId="$kerjasama->kerjasama_id" currentRole="mitra" :senderName="$kerjasama->nama_kl ?? 'Mitra'" />
+
     <!-- Dedicated Card Pelaporan Berkala Penggunaan Data (Status >= 5) -->
     @if((int)$kerjasama->ks_status_dok >= 5)
     @php
@@ -279,17 +282,17 @@
                     <div class="flex items-center gap-2 flex-wrap">
                         <h3 class="text-base font-bold text-gray-900">Pelaporan Berkala Penggunaan Data</h3>
                         @if($isReportingActive)
-                            <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 flex items-center gap-1.5">
-                                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Pelaporan Aktif (2x/Tahun)
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-md border bg-emerald-100 text-emerald-800 border-emerald-300">
+                                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Pelaporan Aktif
                             </span>
                         @else
-                            <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-300 inline-flex items-center gap-1">
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-md border bg-amber-100 text-amber-800 border-amber-300">
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                                 Belum Aktif
                             </span>
                         @endif
                     </div>
-                    <p class="text-xs text-gray-500 mt-1">Mitra berkewajiban mengunggah laporan penggunaan data 2 kali dalam setahun (Semester 1 & 2).</p>
+                    <p class="text-xs text-gray-500 mt-1">Unggah laporan penggunaan data 2x/tahun.</p>
                 </div>
             </div>
 
@@ -299,7 +302,7 @@
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
                     </svg>
-                    Kelola & Unggah Pelaporan Berkala
+                    Kelola Laporan
                 </a>
             </div>
         </div>
@@ -350,23 +353,23 @@
                     <div class="flex items-center gap-2">
                         <h3 class="text-base font-semibold text-gray-900">Pemilihan Data yang Diperlukan (Per-Kolom)</h3>
                         @if($kerjasama->status_pemilihan_data === 'submitted')
-                            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-800 border border-green-300">
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-md border bg-green-100 text-green-800 border-green-300">
                                 <svg class="w-3.5 h-3.5 text-green-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
-                                Terkunci & Telah Diajukan ke Admin
+                                Diajukan (Terkunci)
                             </span>
                         @elseif($kerjasama->pemilihanData->isNotEmpty())
-                            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 border border-amber-300">
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-md border bg-amber-100 text-amber-800 border-amber-300">
                                 <svg class="w-3.5 h-3.5 text-amber-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-                                Draf Terisi (Belum Diajukan)
+                                Draf
                             </span>
                         @else
-                            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-600 border border-slate-300">
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-md border bg-slate-100 text-slate-600 border-slate-300">
                                 <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
                                 Belum Mengisi Data
                             </span>
                         @endif
                     </div>
-                    <p class="text-xs text-gray-500 mt-0.5">Tentukan tabel dan kolom data spesifik dari Pusdatin yang Anda perlukan untuk kerja sama ini.</p>
+                    <p class="text-xs text-gray-500 mt-0.5">Pilih tabel dan kolom data yang diajukan.</p>
                 </div>
             </div>
 
@@ -398,7 +401,7 @@
                     <a href="{{ route('mitra.kerjasama.pemilihan-data.form', $kerjasama->kerjasama_id) }}" 
                        class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-lg text-xs font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 border border-gray-300 transition-colors shadow-2xs">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                        Lihat Data Terpilih (Read-Only)
+                        Lihat Data Terpilih
                     </a>
                 @else
                     <a href="{{ route('mitra.kerjasama.pemilihan-data.form', $kerjasama->kerjasama_id) }}" 
@@ -744,8 +747,15 @@
     </div>
     @endif
 
-    <!-- Modal Konfirmasi Ajukan Pemilihan Data ke Admin -->
-    <div x-show="confirmAjukanData" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4" style="background: rgba(0,0,0,0.5)">
+    <!-- Modal Konfirmasi Ajukan Pemilihan Data ke Admin (WCAG 2.1 Accessible Modal) -->
+    <div x-show="confirmAjukanData" 
+         x-cloak 
+         role="dialog" 
+         aria-modal="true" 
+         aria-labelledby="modal-ajukan-data-title"
+         @keydown.escape.window="confirmAjukanData = false"
+         class="fixed inset-0 z-50 flex items-center justify-center p-4" 
+         style="background: rgba(0,0,0,0.5)">
         <div class="bg-white rounded-xl shadow-2xl w-full max-w-md p-6" @click.outside="confirmAjukanData = false">
             <div class="flex items-center gap-3 mb-4">
                 <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
@@ -754,7 +764,7 @@
                     </svg>
                 </div>
                 <div>
-                    <h3 class="text-lg font-semibold text-gray-800">Ajukan Pemilihan Data ke Admin?</h3>
+                    <h3 id="modal-ajukan-data-title" class="text-lg font-semibold text-gray-800">Ajukan Pemilihan Data ke Admin?</h3>
                     <p class="text-sm text-gray-500">Setelah diajukan, draf pemilihan data akan dikunci dan dikirim ke Admin Pusdatin untuk ditinjau. Data tidak dapat diubah lagi.</p>
                 </div>
             </div>
@@ -765,10 +775,10 @@
                 </div>
             </div>
             <div class="flex gap-3 justify-end">
-                <button @click="confirmAjukanData = false" class="border border-gray-300 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors">Batal</button>
+                <button @click="confirmAjukanData = false" class="border border-gray-300 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-400">Batal</button>
                 <form action="{{ route('mitra.kerjasama.ajukan-pemilihan-data', $kerjasama->kerjasama_id) }}" method="POST">
                     @csrf
-                    <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-green-700 transition-colors shadow-sm">Ya, Ajukan Sekarang</button>
+                    <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-green-700 transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">Ya, Ajukan Sekarang</button>
                 </form>
             </div>
         </div>
