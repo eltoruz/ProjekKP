@@ -62,3 +62,11 @@ Route::middleware(['web', \App\Http\Middleware\AutoLoginAdmin::class])
         Route::post('/kerjasama/{id}/persetujuan-data', [AdminKerjasama::class, 'simpanPersetujuanData'])->name('kerjasama.persetujuan-data');
         Route::get('/kerjasama/{id}/cetak-ringkasan', [AdminKerjasama::class, 'cetakRingkasan'])->name('kerjasama.cetak-ringkasan');
     });
+
+// Shared API Routes (Notifications & Chat)
+Route::middleware(['web'])->group(function () {
+    Route::get('/notifications/latest', [\App\Http\Controllers\NotificationController::class, 'getLatest'])->name('notifications.latest');
+    Route::post('/notifications/mark-read', [\App\Http\Controllers\NotificationController::class, 'markAllAsRead'])->name('notifications.mark-read');
+    Route::get('/kerjasama/{id}/chat', [\App\Http\Controllers\ChatController::class, 'getMessages'])->name('kerjasama.chat.get');
+    Route::post('/kerjasama/{id}/chat', [\App\Http\Controllers\ChatController::class, 'sendMessage'])->name('kerjasama.chat.send');
+});
