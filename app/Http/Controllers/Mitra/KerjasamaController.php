@@ -27,8 +27,8 @@ class KerjasamaController extends Controller
                    ->orWhere('pihak2', 'like', "%{$q}%");
             });
         }
-        if ($request->status) $query->where('ks_status_dok', $request->status);
-        if ($request->jenis) $query->where('ks_jenis', $request->jenis);
+        if ($request->status) $query->where('ks_status_dok', (int)$request->status);
+        if ($request->jenis) $query->where('ks_jenis', (int)$request->jenis);
 
         $kerjasamas = $query->orderBy('last_update', 'desc')->paginate(15);
         $jenisList = KsJenis::all();

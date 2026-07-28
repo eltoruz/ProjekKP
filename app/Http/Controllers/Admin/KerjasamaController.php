@@ -33,11 +33,11 @@ class KerjasamaController extends Controller
         }
 
         if ($request->filled('status')) {
-            $query->where('ks_status_dok', $request->status);
+            $query->where('ks_status_dok', (int)$request->status);
         }
 
         if ($request->filled('jenis')) {
-            $query->where('ks_jenis', $request->jenis);
+            $query->where('ks_jenis', (int)$request->jenis);
         }
 
         $kerjasamas = $query->paginate(15)->withQueryString();
