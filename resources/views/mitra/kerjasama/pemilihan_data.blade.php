@@ -343,22 +343,22 @@ function pemilihanData() {
         openTables: {},
         loadedCols: {},
         loadingTable: {},
-        checkedCols: {!! json_encode($initChecked) !!},
-        alasan: {!! json_encode($initReasons) !!},
+        checkedCols: @json($initChecked),
+        alasan: @json($initReasons),
         columnsApiUrl: '{{ route('mitra.api.metadata.columns') }}',
         visibleTables: {},
         visibleDbs: {},
         colTableMap: {
             @foreach($kerjasama->pemilihanData as $sel)
                 @if($sel->metadata)
-                    {!! json_encode((string)$sel->metadata_id) !!}: {!! json_encode($sel->metadata->db_name . '.' . $sel->metadata->tbl_name) !!},
+                    @json((string)$sel->metadata_id): @json($sel->metadata->db_name . '.' . $sel->metadata->tbl_name),
                 @endif
             @endforeach
         },
         allTables: [
             @foreach($catalogByDb as $dbName => $tablesInDb)
                 @foreach($tablesInDb as $tbl)
-                    { db: {!! json_encode($dbName) !!}, name: {!! json_encode($tbl->tbl_name) !!} },
+                    { db: @json($dbName), name: @json($tbl->tbl_name) },
                 @endforeach
             @endforeach
         ],
