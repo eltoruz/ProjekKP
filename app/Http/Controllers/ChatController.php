@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Kerjasama;
 use App\Models\KerjasamaChat;
-use App\Models\AppNotification;
 use Illuminate\Http\Request;
 
 class ChatController extends Controller
