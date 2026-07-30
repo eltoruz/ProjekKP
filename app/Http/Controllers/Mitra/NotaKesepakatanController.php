@@ -18,8 +18,16 @@ class NotaKesepakatanController extends Controller
         ]);
 
         $paths = [];
-        if ($request->hasFile('surat_permohonan')) $paths[] = $request->file('surat_permohonan')->store('dokumen/' . $id, 'public');
-        if ($request->hasFile('draft_nk')) $paths[] = $request->file('draft_nk')->store('dokumen/' . $id, 'public');
+        if ($request->hasFile('surat_permohonan')) {
+            $file = $request->file('surat_permohonan');
+            $name = \Illuminate\Support\Str::uuid() . '.' . $file->getClientOriginalExtension();
+            $paths[] = $file->storeAs('dokumen/' . $id, $name, 'public');
+        }
+        if ($request->hasFile('draft_nk')) {
+            $file = $request->file('draft_nk');
+            $name = \Illuminate\Support\Str::uuid() . '.' . $file->getClientOriginalExtension();
+            $paths[] = $file->storeAs('dokumen/' . $id, $name, 'public');
+        }
 
         $existing = $ks->folder_ks ? json_decode($ks->folder_ks, true) ?: [] : [];
         $ks->update([
@@ -54,8 +62,16 @@ class NotaKesepakatanController extends Controller
         ]);
 
         $paths = [];
-        if ($request->hasFile('surat_permohonan')) $paths[] = $request->file('surat_permohonan')->store('dokumen/' . $id, 'public');
-        if ($request->hasFile('draft_nk')) $paths[] = $request->file('draft_nk')->store('dokumen/' . $id, 'public');
+        if ($request->hasFile('surat_permohonan')) {
+            $file = $request->file('surat_permohonan');
+            $name = \Illuminate\Support\Str::uuid() . '.' . $file->getClientOriginalExtension();
+            $paths[] = $file->storeAs('dokumen/' . $id, $name, 'public');
+        }
+        if ($request->hasFile('draft_nk')) {
+            $file = $request->file('draft_nk');
+            $name = \Illuminate\Support\Str::uuid() . '.' . $file->getClientOriginalExtension();
+            $paths[] = $file->storeAs('dokumen/' . $id, $name, 'public');
+        }
         $ks->update([
             'folder_ks' => json_encode($paths),
             'ks_status_dok' => 1,
@@ -72,7 +88,10 @@ class NotaKesepakatanController extends Controller
             'surat_undangan' => 'required|file|mimes:pdf,docx,zip|max:20480',
         ]);
 
-        $path = $request->file('surat_undangan')->store('dokumen/' . $id, 'public');
+        $file = $request->file('surat_undangan');
+        $name = \Illuminate\Support\Str::uuid() . '.' . $file->getClientOriginalExtension();
+        $path = $file->storeAs('dokumen/' . $id, $name, 'public');
+
         $existing = $ks->folder_ks ? json_decode($ks->folder_ks, true) ?: [] : [];
         $existing[] = $path;
         $ks->update([
@@ -82,6 +101,27 @@ class NotaKesepakatanController extends Controller
         $ks->addReviewEntry('Undangan', 'Mitra mengupload surat undangan pembahasan');
 
         return redirect()->route('mitra.kerjasama.show', $id)->with('info', 'Surat undangan berhasil diupload. Silakan melakukan pembahasan dengan admin sesuai tanggal di surat undangan.');
+    }
+
+    /**
+     * Secure Download Controller untuk mencegah Stored XSS
+     */
+    public function downloadDokumen($id, $filename)
+    {
+        $ks = Kerjasama::where('kerjasama_id', $id)->notDeleted()->firstOrFail();
+
+        // Prevent path traversal
+        $safeFilename = basename($filename);
+        $filePath = storage_path('app/public/dokumen/' . $id . '/' . $safeFilename);
+
+        if (!file_exists($filePath)) {
+            abort(404, 'Dokumen tidak ditemukan.');
+        }
+
+        return response()->download($filePath, $safeFilename, [
+            'Content-Disposition' => 'attachment; filename="' . $safeFilename . '"',
+            'X-Content-Type-Options' => 'nosniff',
+        ]);
     }
 
     public function simpanPemilihanData(Request $request, $id, \App\Actions\Kerjasama\SimpanPemilihanDataAction $action)

@@ -16,15 +16,25 @@ class SimpanPemilihanDataAction
             // Clear existing selection for this kerjasama
             MetadataUser::where('kerjasama_id', $kerjasamaId)->delete();
 
-            // Insert new selection
+            // Insert new selection using Batch Insert (eliminates N+1 queries)
+            $now = \Carbon\Carbon::now();
+            $insertData = [];
             foreach ($selectedData as $metadataId) {
                 $reason = trim($reasons[$metadataId] ?? '');
-                MetadataUser::create([
-                    'kerjasama_id' => $kerjasamaId,
-                    'metadata_id' => $metadataId,
-                    'alasan' => $reason,
+                $insertData[] = [
+                    'kerjasama_id'    => $kerjasamaId,
+                    'metadata_id'     => $metadataId,
+                    'alasan'          => $reason,
                     'approval_status' => 'pending',
-                ]);
+                    'created_at'      => $now,
+                    'updated_at'      => $now,
+                ];
+            }
+
+            if (!empty($insertData)) {
+                foreach (array_chunk($insertData, 500) as $chunk) {
+                    MetadataUser::insert($chunk);
+                }
             }
 
             $isSubmitted = ($action === 'submit');

@@ -29,6 +29,9 @@
             if (this.isOpen) {
                 this.unreadCount = 0;
                 this.scrollToBottom();
+                this.$nextTick(() => {
+                    if (this.$refs.chatInput) this.$refs.chatInput.focus();
+                });
             }
         },
 
@@ -158,7 +161,11 @@
         </div>
 
         <!-- Chat Stream Body -->
-        <div x-ref="chatContainer" class="h-88 max-h-[50vh] overflow-y-auto p-4 space-y-3 bg-slate-50/70 text-xs">
+        <div x-ref="chatContainer" 
+             aria-live="polite" 
+             aria-relevant="additions" 
+             aria-label="Riwayat Obrolan" 
+             class="h-88 max-h-[50vh] overflow-y-auto p-4 space-y-3 bg-slate-50/70 text-xs">
             <template x-for="chat in messages" :key="chat.id">
                 <div class="flex flex-col" :class="chat.sender_role === '{{ $currentRole }}' ? 'items-end' : 'items-start'">
                     <div class="flex items-center gap-1.5 mb-1 text-[10px] text-slate-400 px-1">
@@ -222,8 +229,10 @@
             </button>
 
             <input type="text" 
+                   x-ref="chatInput" 
                    x-model="newMessage" 
                    placeholder="Tulis pesan..." 
+                   aria-label="Tulis Pesan Diskusi"
                    class="flex-1 px-3.5 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-slate-50 focus:bg-white transition-colors">
 
             <button type="submit" 

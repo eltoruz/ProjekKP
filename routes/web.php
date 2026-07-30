@@ -37,6 +37,7 @@ Route::middleware(['web'])
         Route::get('/kerjasama/{id}/laporan', [\App\Http\Controllers\Mitra\LaporanController::class, 'index'])->name('kerjasama.laporan');
         Route::post('/kerjasama/{id}/laporan', [\App\Http\Controllers\Mitra\LaporanController::class, 'store'])->name('kerjasama.laporan.store');
         Route::get('/kerjasama/{id}/cetak-ringkasan', [NotaKesepakatanController::class, 'cetakRingkasan'])->name('kerjasama.cetak-ringkasan');
+        Route::get('/kerjasama/{id}/download/{filename}', [NotaKesepakatanController::class, 'downloadDokumen'])->name('kerjasama.download-dokumen');
         Route::get('/api/metadata/columns', [MitraKerjasama::class, 'getTableColumns'])->name('api.metadata.columns');
     });
 
@@ -64,8 +65,8 @@ Route::middleware(['web', \App\Http\Middleware\AutoLoginAdmin::class])
         Route::get('/kerjasama/{id}/cetak-ringkasan', [AdminKerjasama::class, 'cetakRingkasan'])->name('kerjasama.cetak-ringkasan');
     });
 
-// Shared API Routes (Chat)
-Route::middleware(['web'])->group(function () {
+// Shared API Routes (Chat) - Throttled for Security
+Route::middleware(['web', 'throttle:30,1'])->group(function () {
     Route::get('/kerjasama/{id}/chat', [\App\Http\Controllers\ChatController::class, 'getMessages'])->name('kerjasama.chat.get');
     Route::post('/kerjasama/{id}/chat', [\App\Http\Controllers\ChatController::class, 'sendMessage'])->name('kerjasama.chat.send');
 });

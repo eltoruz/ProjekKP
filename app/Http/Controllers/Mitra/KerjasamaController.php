@@ -140,8 +140,14 @@ class KerjasamaController extends Controller
                 ->toArray();
         });
 
+        $etag = md5(json_encode($colsArray));
+        if ($request->header('If-None-Match') === $etag) {
+            return response('', 304)->header('ETag', $etag);
+        }
+
         return response()->json($colsArray)
-            ->header('Cache-Control', 'public, max-age=3600');
+            ->header('Cache-Control', 'private, max-age=86400')
+            ->header('ETag', $etag);
     }
 
     public function edit($id)
