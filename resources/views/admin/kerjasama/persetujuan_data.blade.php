@@ -55,12 +55,13 @@
         this.openTables[key] = !this.openTables[key];
     },
 
-    expandAll() {
-        for (let k in this.openTables) this.openTables[k] = true;
+    get anyOpen() {
+        return Object.values(this.openTables).some(Boolean);
     },
 
-    collapseAll() {
-        for (let k in this.openTables) this.openTables[k] = false;
+    toggleAll() {
+        let shouldOpen = !this.anyOpen;
+        for (let k in this.openTables) this.openTables[k] = shouldOpen;
     },
 
     setTableApproval(ids, status) {
@@ -249,14 +250,19 @@
                         <span class="text-gray-300 hidden sm:inline">•</span>
 
                         <div class="flex items-center gap-2">
-                            <button type="button" @click="expandAll()" class="inline-flex items-center gap-1 text-indigo-600 hover:text-indigo-800 font-medium hover:underline">
-                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-                                Buka Semua Accordion
-                            </button>
-                            <span class="text-gray-300">•</span>
-                            <button type="button" @click="collapseAll()" class="inline-flex items-center gap-1 text-gray-600 hover:text-gray-800 font-medium hover:underline">
-                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/></svg>
-                                Tutup Semua
+                            <button type="button" @click="toggleAll()" class="inline-flex items-center gap-1.5 text-indigo-600 hover:text-indigo-800 font-medium hover:underline font-semibold text-xs">
+                                <template x-if="anyOpen">
+                                    <span class="flex items-center gap-1.5">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/></svg>
+                                        Tutup Semua
+                                    </span>
+                                </template>
+                                <template x-if="!anyOpen">
+                                    <span class="flex items-center gap-1.5">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                                        Buka Semua Accordion
+                                    </span>
+                                </template>
                             </button>
                         </div>
                     </div>

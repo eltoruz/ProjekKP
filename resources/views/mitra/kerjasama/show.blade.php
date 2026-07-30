@@ -445,25 +445,39 @@
 
         <!-- Ringkasan Data Terpilih (Terstruktur per Database & Tabel) -->
         <div class="mt-4 space-y-3" x-data="{
-            openSelectedTables: {},
-            expandAll() {
-                for (let key in this.openSelectedTables) this.openSelectedTables[key] = true;
+            openSelectedTables: {
+                @foreach($groupedSelection as $dbName => $tables)
+                    @foreach($tables as $tblName => $items)
+                        {!! json_encode($dbName . '::' . $tblName) !!}: false,
+                    @endforeach
+                @endforeach
             },
-            collapseAll() {
-                for (let key in this.openSelectedTables) this.openSelectedTables[key] = false;
+            get anyOpen() {
+                return Object.values(this.openSelectedTables).some(Boolean);
+            },
+            toggleAll() {
+                let shouldOpen = !this.anyOpen;
+                for (let key in this.openSelectedTables) {
+                    this.openSelectedTables[key] = shouldOpen;
+                }
             }
         }">
             <!-- Quick Action Toolbar -->
             <div class="flex items-center justify-between gap-2 py-1.5 px-3 bg-gray-50 border border-gray-200 rounded-lg text-xs">
                 <div class="flex items-center gap-2">
-                    <button type="button" @click="expandAll()" class="inline-flex items-center gap-1 text-indigo-600 hover:text-indigo-800 font-medium hover:underline">
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 19a2 2 0 01-2-2V7a2 2 0 012-2h4l2 2h4a2 2 0 012 v1M5 19h14a2 2 0 002-2v-5a2 2 0 00-2-2H9a2 2 0 00-2-2M5 19l2-2"/></svg>
-                        Buka Semua Accordion
-                    </button>
-                    <span class="text-gray-300">•</span>
-                    <button type="button" @click="collapseAll()" class="inline-flex items-center gap-1 text-gray-600 hover:text-gray-800 font-medium hover:underline">
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
-                        Tutup Semua
+                    <button type="button" @click="toggleAll()" class="inline-flex items-center gap-1.5 text-indigo-600 hover:text-indigo-800 font-medium hover:underline">
+                        <template x-if="anyOpen">
+                            <span class="flex items-center gap-1.5">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
+                                Tutup Semua
+                            </span>
+                        </template>
+                        <template x-if="!anyOpen">
+                            <span class="flex items-center gap-1.5">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 19a2 2 0 01-2-2V7a2 2 0 012-2h4l2 2h4a2 2 0 012 v1M5 19h14a2 2 0 002-2v-5a2 2 0 00-2-2H9a2 2 0 00-2-2M5 19l2-2"/></svg>
+                                Buka Semua Accordion
+                            </span>
+                        </template>
                     </button>
                 </div>
                 <span class="text-gray-500 font-medium">Total: <strong class="text-indigo-600">{{ $groupedSelection->sum(fn($db) => $db->count()) }}</strong> tabel (<strong class="text-indigo-600">{{ $kerjasama->pemilihanData->count() }}</strong> kolom)</span>
