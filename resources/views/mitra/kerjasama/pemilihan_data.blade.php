@@ -69,6 +69,17 @@
             <strong class="font-bold text-amber-950">Pemilihan Data Diajukan & Terkunci (Read-Only)</strong> — Pilihan data telah dikirim secara final ke Admin Pusdatin dan tidak dapat diubah lagi. Anda dapat melihat kembali item yang telah diajukan di bawah ini.
         </span>
     </div>
+    @else
+    <div class="bg-slate-50 border border-slate-200 py-2.5 px-4 rounded-xl text-slate-700 text-[11px] flex items-start gap-2.5 shadow-2xs">
+        <svg class="w-4 h-4 text-amber-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+        </svg>
+        <span class="leading-relaxed">
+            <strong class="font-bold text-slate-900">Petunjuk Pengisian:</strong> 
+            Gunakan tombol <strong class="text-indigo-800 bg-indigo-50 border border-indigo-100 px-1 py-0.5 rounded text-[10px]">💾 Simpan Sebagai Draf</strong> untuk menyimpan tanpa mengunci form. 
+            Jika menekan <strong class="text-white bg-indigo-600 px-1 py-0.5 rounded text-[10px]">🚀 Ajukan / Submit Final</strong>, data akan terkirim resmi ke Admin Pusdatin dan <span class="text-red-600 font-semibold underline">form akan terkunci permanen</span>.
+        </span>
+    </div>
     @endif
 
     <!-- Container Utama Form Pemilihan Data -->
