@@ -22,12 +22,13 @@ class SimpanPemilihanDataAction
             foreach ($selectedData as $metadataId) {
                 $reason = trim($reasons[$metadataId] ?? '');
                 $insertData[] = [
+                    'id'              => (string) \Illuminate\Support\Str::uuid(),
                     'kerjasama_id'    => $kerjasamaId,
                     'metadata_id'     => $metadataId,
                     'alasan'          => $reason,
                     'approval_status' => 'pending',
-                    'created_at'      => $now,
-                    'updated_at'      => $now,
+                    'create_date'     => $now,
+                    'last_update'     => $now,
                 ];
             }
 
