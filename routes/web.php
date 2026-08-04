@@ -31,8 +31,14 @@ Route::middleware(['web'])
         Route::get('/kerjasama/{id}/upload-ulang', [NotaKesepakatanController::class, 'uploadUlangForm'])->name('kerjasama.upload-ulang');
         Route::post('/kerjasama/{id}/upload-ulang', [NotaKesepakatanController::class, 'uploadUlang'])->name('kerjasama.upload-ulang');
         Route::post('/kerjasama/{id}/upload-undangan', [NotaKesepakatanController::class, 'uploadUndangan'])->name('kerjasama.upload-undangan');
-        Route::get('/kerjasama/{id}/integrasi', [\App\Http\Controllers\Mitra\IntegrationController::class, 'index'])->name('kerjasama.integrasi');
-        Route::post('/kerjasama/{id}/integrasi', [\App\Http\Controllers\Mitra\IntegrationController::class, 'store'])->name('kerjasama.integrasi.store');
+        Route::get('/kerjasama/{id}/pemilihan-data', [MitraKerjasama::class, 'pemilihanDataForm'])->name('kerjasama.pemilihan-data.form');
+        Route::post('/kerjasama/{id}/pemilihan-data', [NotaKesepakatanController::class, 'simpanPemilihanData'])->name('kerjasama.pemilihan-data');
+        Route::post('/kerjasama/{id}/ajukan-pemilihan-data', [NotaKesepakatanController::class, 'ajukanPemilihanData'])->name('kerjasama.ajukan-pemilihan-data');
+        Route::get('/kerjasama/{id}/laporan', [\App\Http\Controllers\Mitra\LaporanController::class, 'index'])->name('kerjasama.laporan');
+        Route::post('/kerjasama/{id}/laporan', [\App\Http\Controllers\Mitra\LaporanController::class, 'store'])->name('kerjasama.laporan.store');
+        Route::get('/kerjasama/{id}/cetak-ringkasan', [NotaKesepakatanController::class, 'cetakRingkasan'])->name('kerjasama.cetak-ringkasan');
+        Route::get('/kerjasama/{id}/download/{filename}', [NotaKesepakatanController::class, 'downloadDokumen'])->name('kerjasama.download-dokumen');
+        Route::get('/api/metadata/columns', [MitraKerjasama::class, 'getTableColumns'])->name('api.metadata.columns');
     });
 
 // Admin
@@ -53,6 +59,14 @@ Route::middleware(['web', \App\Http\Middleware\AutoLoginAdmin::class])
         Route::post('/kerjasama/{id}/lanjut-pembahasan', [AdminKerjasama::class, 'lanjutPembahasan'])->name('kerjasama.lanjutPembahasan');
         Route::post('/kerjasama/{id}/finalisasi', [AdminKerjasama::class, 'finalisasi'])->name('kerjasama.finalisasi');
         Route::post('/kerjasama/{id}/update-finalisasi', [AdminKerjasama::class, 'updateFinalisasi'])->name('kerjasama.updateFinalisasi');
-        Route::get('/kerjasama/{id}/integrasi-review', [\App\Http\Controllers\Admin\IntegrationController::class, 'index'])->name('kerjasama.integrasi-review');
-        Route::post('/kerjasama/{id}/integrasi-review', [\App\Http\Controllers\Admin\IntegrationController::class, 'update'])->name('kerjasama.integrasi-review.update');
+        Route::post('/kerjasama/{id}/unlock-pemilihan-data', [AdminKerjasama::class, 'unlockPemilihanData'])->name('kerjasama.unlockPemilihanData');
+        Route::get('/kerjasama/{id}/persetujuan-data', [AdminKerjasama::class, 'persetujuanDataForm'])->name('kerjasama.persetujuan-data.form');
+        Route::post('/kerjasama/{id}/persetujuan-data', [AdminKerjasama::class, 'simpanPersetujuanData'])->name('kerjasama.persetujuan-data');
+        Route::get('/kerjasama/{id}/cetak-ringkasan', [AdminKerjasama::class, 'cetakRingkasan'])->name('kerjasama.cetak-ringkasan');
     });
+
+// Shared API Routes (Chat) - Throttled for Security
+Route::middleware(['web', 'throttle:30,1'])->group(function () {
+    Route::get('/kerjasama/{id}/chat', [\App\Http\Controllers\ChatController::class, 'getMessages'])->name('kerjasama.chat.get');
+    Route::post('/kerjasama/{id}/chat', [\App\Http\Controllers\ChatController::class, 'sendMessage'])->name('kerjasama.chat.send');
+});

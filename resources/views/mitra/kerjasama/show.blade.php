@@ -14,7 +14,7 @@
 <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4 text-sm">{{ session('error') }}</div>
 @endif
 
-<div class="space-y-6" x-data="{ confirmAjukan: false }">
+<div class="space-y-6" x-data="{ confirmAjukan: false, confirmAjukanData: false }">
     @php
         $reviewLogs = $kerjasama->review_log;
         $lastReject = collect($reviewLogs)->filter(fn($l) => ($l['label'] ?? '') === 'Ditolak')->last();
@@ -50,7 +50,7 @@
             4 => ['icon' => 'M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12', 'label' => 'Upload Undangan', 'desc' => 'Upload surat undangan'],
             5 => ['icon' => 'M8 12h.01M12 12h.01M16 12h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z', 'label' => 'Pembahasan', 'desc' => 'Proses pembahasan dokumen'],
             6 => ['icon' => 'M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z', 'label' => 'Penandatanganan', 'desc' => 'Proses TTD para pihak'],
-            7 => ['icon' => 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z', 'label' => 'Dokumen telah ditandatangani (Tahap Integrasi Data)', 'desc' => 'TTD selesai & Atur Integrasi'],
+            7 => ['icon' => 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z', 'label' => 'Dokumen telah ditandatangani (Tahap Integrasi Data)', 'desc' => 'Dokumen ditandatangani'],
         ];
     @endphp
 
@@ -105,13 +105,44 @@
         </div>
     </div>
 
-    <!-- Action Buttons -->
+    <!-- Upload Dokumen (langsung tampil, bukan modal) -->
+    @if($kerjasama->ks_jenis == 3 && !$kerjasama->ks_status_dok && !$kerjasama->folder_ks)
+    <div class="bg-white rounded-lg shadow-sm border-2 border-dashed border-primary/30 p-6">
+        <div class="flex items-center gap-2 mb-4">
+            <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+            </svg>
+            <h3 class="text-base font-semibold text-navy">Upload Dokumen Nota Kesepakatan</h3>
+        </div>
+        <p class="text-sm text-gray-500 mb-4">Upload dua dokumen yang diperlukan: Surat Permohonan dan Draft Nota Kesepakatan.</p>
+        <form action="{{ route('mitra.kerjasama.upload', $kerjasama->kerjasama_id) }}" method="POST" enctype="multipart/form-data">
+            @csrf
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">1. Surat Permohonan <span class="text-red-500">*</span></label>
+                    <input type="file" name="surat_permohonan" accept=".pdf,.docx,.zip" required class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                    <p class="text-xs text-gray-400 mt-1">Surat dari Kepala Daerah ke Sekjen Kemendikdasmen</p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">2. Draft Nota Kesepakatan <span class="text-red-500">*</span></label>
+                    <input type="file" name="draft_nk" accept=".pdf,.docx,.zip" required class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                    <p class="text-xs text-gray-400 mt-1">Draft NK yang akan dibahas bersama</p>
+                </div>
+            </div>
+            <p class="text-xs text-gray-400 mb-4">Format: PDF, DOCX, ZIP — Maks 20MB per file</p>
+            <button type="submit" class="bg-primary text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-blue-600">
+                Upload Dokumen
+            </button>
+        </form>
+    </div>
+    @endif
+
+    <!-- Action Buttons & Modal Konfirmasi -->
     @if($kerjasama->ks_jenis == 3 && !$kerjasama->ks_status_dok)
     <div class="flex gap-2">
         <a href="{{ route('mitra.kerjasama.edit', $kerjasama->kerjasama_id) }}" class="border border-gray-300 text-gray-700 px-4 py-2 rounded-lg text-sm hover:bg-gray-50">Edit</a>
         <button type="button" @click="confirmAjukan = true" class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-green-700">Ajukan ke Admin</button>
     </div>
-    @endif
 
     <!-- Modal Konfirmasi Ajukan -->
     <div x-show="confirmAjukan" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4" style="background: rgba(0,0,0,0.5)">
@@ -136,30 +167,46 @@
             </div>
         </div>
     </div>
+    @endif
 
     <!-- Jadwal Pembahasan -->
-    @if($kerjasama->tanggal_pembahasan && $kerjasama->ks_status_dok < 4)
-    <div class="bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg shadow-sm border-2 border-blue-300 p-6">
-        <div class="flex items-start gap-4">
-            <div class="w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center shrink-0">
-                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-            </div>
-            <div class="flex-1">
-                <p class="text-xs font-medium text-blue-500 uppercase tracking-wider mb-1">Jadwal Pembahasan</p>
-                <p class="text-xl font-bold text-blue-800">{{ \Carbon\Carbon::parse($kerjasama->tanggal_pembahasan)->format('d M Y') }}</p>
-                <p class="text-lg text-blue-700">{{ \Carbon\Carbon::parse($kerjasama->tanggal_pembahasan)->format('H:i') }} WIB</p>
-                @if($kerjasama->ks_status_dok == 2 && !$kerjasama->hasSuratUndangan())
-                <p class="text-sm text-blue-600 mt-2 pt-2 border-t border-blue-300">Silakan upload surat undangan sesuai tanggal di atas.</p>
-                @endif
-                <p class="text-xs text-amber-600 mt-2 font-medium">Jika jadwal kurang sesuai, silakan hubungi Admin Pusdatin untuk penyesuaian.</p>
+    @if($kerjasama->tanggal_pembahasan)
+        @if(in_array((int)$kerjasama->ks_status_dok, [2, 3]))
+        <!-- Desain Utama Prominen (Selama proses undangan & pembahasan) -->
+        <div class="bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg shadow-sm border-2 border-blue-300 p-6 mb-4">
+            <div class="flex items-start gap-4">
+                <div class="w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center shrink-0">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                </div>
+                <div class="flex-1">
+                    <p class="text-xs font-medium text-blue-500 uppercase tracking-wider mb-1">Jadwal Pembahasan</p>
+                    <p class="text-xl font-bold text-blue-800">{{ \Carbon\Carbon::parse($kerjasama->tanggal_pembahasan)->format('d M Y') }}</p>
+                    <p class="text-lg text-blue-700">{{ \Carbon\Carbon::parse($kerjasama->tanggal_pembahasan)->format('H:i') }} WIB</p>
+                    @if((int)$kerjasama->ks_status_dok === 2)
+                        @if(!$kerjasama->hasSuratUndangan())
+                        <p class="text-sm text-blue-600 mt-2 pt-2 border-t border-blue-300">Silakan upload surat undangan sesuai tanggal di atas.</p>
+                        @endif
+                        <p class="text-xs text-amber-600 mt-2 font-medium">Jika jadwal kurang sesuai, silakan hubungi Admin Pusdatin untuk penyesuaian.</p>
+                    @endif
+                </div>
             </div>
         </div>
-    </div>
+        @elseif((int)$kerjasama->ks_status_dok >= 4)
+        <!-- Desain Ringkas Biasa (Setelah proses pembahasan selesai) -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4 flex items-center justify-between">
+            <div class="flex items-center gap-2 text-gray-600 text-sm">
+                <svg class="w-4 h-4 text-blue-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                <span>Jadwal Pembahasan:</span>
+                <span class="font-semibold text-gray-800">{{ \Carbon\Carbon::parse($kerjasama->tanggal_pembahasan)->format('d M Y, H:i') }} WIB</span>
+            </div>
+            <span class="text-xs font-medium px-2.5 py-0.5 rounded bg-gray-100 text-gray-600">Selesai Dibahas</span>
+        </div>
+        @endif
     @endif
 
     <!-- Upload Surat Undangan (Status 2, sudah ada jadwal) -->
     @if($kerjasama->ks_status_dok == 2 && $kerjasama->tanggal_pembahasan && !$kerjasama->hasSuratUndangan())
-    <div class="bg-white rounded-lg shadow-sm border-2 border-dashed border-primary/30 p-6">
+    <div class="bg-white rounded-lg shadow-sm border-2 border-dashed border-primary/30 p-6 mb-4">
         <div class="flex items-center gap-2 mb-4">
             <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
@@ -182,9 +229,16 @@
     @endif
 
     <!-- Data Final (setelah TTD) -->
-    @if($kerjasama->ks_status_dok == 5)
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <h3 class="text-base font-semibold text-navy mb-3">Data Final Kerja Sama</h3>
+    @if((int)$kerjasama->ks_status_dok >= 5)
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-4">
+        <div class="flex items-center justify-between mb-3 border-b border-gray-100 pb-3">
+            <h3 class="text-base font-semibold text-navy">Data Final Kerja Sama</h3>
+            <a href="{{ route('mitra.kerjasama.cetak-ringkasan', $kerjasama->kerjasama_id) }}" target="_blank"
+               class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 transition-colors shadow-2xs">
+                <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+                Cetak Lampiran Data MoU
+            </a>
+        </div>
         <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm">
             <div><span class="text-gray-500">Jangka Waktu:</span> <span class="font-medium">{{ $kerjasama->jangka_waktu_thn ? $kerjasama->jangka_waktu_thn.' tahun' : '-' }}</span></div>
             <div><span class="text-gray-500">Tanggal Mulai:</span> <span class="font-medium">{{ $kerjasama->tanggal_mulai_ks?->format('d M Y') ?? '-' }}</span></div>
@@ -203,95 +257,361 @@
         @if(!$kerjasama->ks_metode && !$kerjasama->jangka_waktu_thn)
         <p class="text-xs text-yellow-600 mt-3">Menunggu finalisasi data oleh Admin Pusdatin.</p>
         @endif
+    </div>
+    @endif
 
-        <!-- Integration Catalog Section -->
-        <div class="mt-6 pt-6 border-t border-gray-100">
-            @php
-                $statusInt = $kerjasama->status_integrasi ?? 'belum_diajukan';
-                // Resolve user
-                $user = auth()->user() ?? \App\Models\User::where('role', 'mitra')->first() ?? \App\Models\User::first();
-                $userSelections = \App\Models\MetadataUser::with('metadata')
-                    ->where('user_id', $user->id)
-                    ->where('soft_delete', 0)
-                    ->get();
-                $groupedUserSelections = $userSelections->groupBy(function($item) {
-                    return $item->metadata->tbl_name ?? 'Lainnya';
-                });
-                $hasSelections = $userSelections->count() > 0;
-            @endphp
+    <!-- Widget Diskusi & Chat Interaktif Mitra ↔ Admin -->
+    <x-chat-widget :kerjasamaId="$kerjasama->kerjasama_id" currentRole="mitra" :senderName="$kerjasama->nama_kl ?? 'Mitra'" />
 
-            <div class="bg-gray-50 rounded-xl p-5 border border-gray-200">
-                <div class="flex items-center justify-between mb-3">
-                    <div class="flex items-center space-x-2">
-                        <svg class="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
-                        <h4 class="text-sm font-bold text-gray-800">Katalog Data Integrasi Pusdatin</h4>
+    <!-- Dedicated Card Pelaporan Berkala Penggunaan Data (Status >= 5) -->
+    @if((int)$kerjasama->ks_status_dok >= 5)
+    @php
+        $reportsCount = $kerjasama->reports->count();
+        $latestReport = $kerjasama->reports->first();
+        $isReportingActive = $kerjasama->is_reporting_active;
+    @endphp
+    <div class="bg-white rounded-xl shadow-sm border border-emerald-200 p-6 mb-4 overflow-hidden relative">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-5 border-b border-gray-100 pb-5">
+            <div class="flex items-start gap-3.5">
+                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shrink-0 shadow-md text-white">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <h3 class="text-base font-bold text-gray-900">Pelaporan Berkala Penggunaan Data</h3>
+                        @if($isReportingActive)
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-md border bg-emerald-100 text-emerald-800 border-emerald-300">
+                                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Pelaporan Aktif
+                            </span>
+                        @else
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-md border bg-amber-100 text-amber-800 border-amber-300">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                Belum Aktif
+                            </span>
+                        @endif
                     </div>
-                    @if($statusInt === 'pending')
-                        <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 border border-amber-200 animate-pulse">Menunggu Persetujuan Admin</span>
-                    @elseif($statusInt === 'approved')
-                        <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-800 border border-green-200">Aktif / Disetujui</span>
+                    <p class="text-xs text-gray-500 mt-1">Unggah laporan penggunaan data 2x/tahun.</p>
+                </div>
+            </div>
+
+            <div class="shrink-0 flex items-center">
+                <a href="{{ route('mitra.kerjasama.laporan', $kerjasama->kerjasama_id) }}" 
+                   class="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 transition-colors shadow-sm">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+                    </svg>
+                    Kelola Laporan
+                </a>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4">
+            <div class="bg-slate-50 border border-slate-200 rounded-lg p-3.5 flex items-center gap-3">
+                <div class="w-9 h-9 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0 font-bold text-sm">
+                    {{ $reportsCount }}
+                </div>
+                <div>
+                    <span class="text-[11px] font-semibold text-gray-500 block">Total Laporan Terunggah</span>
+                    <span class="text-xs font-bold text-gray-800">{{ $reportsCount }} Dokumen Laporan</span>
+                </div>
+            </div>
+
+            <div class="bg-slate-50 border border-slate-200 rounded-lg p-3.5 flex items-center gap-3 sm:col-span-2">
+                <div class="w-9 h-9 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center shrink-0">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                </div>
+                <div>
+                    <span class="text-[11px] font-semibold text-gray-500 block">Status / Laporan Terakhir</span>
+                    @if($latestReport)
+                        <span class="text-xs font-bold text-gray-800">
+                            {{ $latestReport->periode }} {{ $latestReport->tahun }} — Diunggah {{ $latestReport->created_at?->format('d M Y') ?? '-' }}
+                        </span>
                     @else
-                        <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-700 border border-gray-200">Belum Diajukan</span>
+                        <span class="text-xs font-medium text-amber-700">
+                            Belum ada laporan diunggah untuk kerja sama ini.
+                        </span>
                     @endif
                 </div>
-
-                @if(!$hasSelections)
-                    <p class="text-xs text-gray-600 mb-4">Silakan pilih tabel dan kolom data dari Katalog Pusdatin yang Anda butuhkan untuk mengaktifkan integrasi sistem Anda.</p>
-                    <a href="{{ route('mitra.kerjasama.integrasi', $kerjasama->kerjasama_id) }}" class="inline-flex items-center justify-center px-4 py-2 bg-primary hover:bg-blue-600 text-white text-xs font-semibold rounded-lg shadow-sm transition">
-                        Pilih Katalog Data &rarr;
-                    </a>
-                @elseif($statusInt === 'pending')
-                    <p class="text-xs text-gray-600 mb-4">Pengajuan data Anda sedang ditinjau oleh Admin Pusdatin. Berikut adalah ringkasan kolom data yang Anda minta:</p>
-                    
-                    <div class="bg-white rounded-lg border border-gray-200 divide-y divide-gray-100 overflow-hidden mb-4">
-                        @foreach($groupedUserSelections as $tblName => $items)
-                        <div class="p-3.5">
-                            <div class="flex items-center space-x-2 mb-1.5">
-                                <span class="text-[10px] px-1.5 py-0.5 bg-blue-100 text-blue-800 font-mono font-semibold rounded">Tabel</span>
-                                <span class="text-xs font-bold font-mono text-gray-800">{{ $tblName }}</span>
-                            </div>
-                            <div class="flex flex-wrap gap-1.5">
-                                @foreach($items as $item)
-                                <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-mono border bg-gray-50 text-gray-700 border-gray-200">
-                                    {{ $item->metadata->name }}
-                                </span>
-                                @endforeach
-                            </div>
-                        </div>
-                        @endforeach
-                    </div>
-
-                    <a href="{{ route('mitra.kerjasama.integrasi', $kerjasama->kerjasama_id) }}" class="inline-flex items-center justify-center px-4 py-2 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 text-xs font-semibold rounded-lg shadow-sm transition">
-                        Ubah Pilihan Katalog Data
-                    </a>
-                @else
-                    <p class="text-xs text-gray-600 mb-4">Pengajuan integrasi data Anda telah disetujui! Berikut adalah ringkasan skema tabel yang resmi diakses oleh sistem Anda:</p>
-                    
-                    <div class="bg-white rounded-lg border border-gray-200 divide-y divide-gray-100 overflow-hidden mb-4">
-                        @foreach($groupedUserSelections as $tblName => $items)
-                        <div class="p-3.5">
-                            <div class="flex items-center space-x-2 mb-1.5">
-                                <span class="text-[10px] px-1.5 py-0.5 bg-blue-100 text-blue-800 font-mono font-semibold rounded">Tabel</span>
-                                <span class="text-xs font-bold font-mono text-gray-800">{{ $tblName }}</span>
-                            </div>
-                            <div class="flex flex-wrap gap-1.5">
-                                @foreach($items as $item)
-                                <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-mono border bg-gray-50 text-gray-700 border-gray-200">
-                                    {{ $item->metadata->name }}
-                                </span>
-                                @endforeach
-                            </div>
-                        </div>
-                        @endforeach
-                    </div>
-
-                    <a href="{{ route('mitra.kerjasama.integrasi', $kerjasama->kerjasama_id) }}" class="inline-flex items-center justify-center px-4 py-2 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 text-xs font-semibold rounded-lg shadow-sm transition">
-                        Ubah Pilihan Katalog Data
-                    </a>
-                @endif
             </div>
         </div>
     </div>
+    @endif
+
+    <!-- Fitur Pemilihan Data yang Diperlukan oleh Mitra (Kartu Akses Halaman Terpisah) -->
+    @if((int)$kerjasama->ks_status_dok >= 5)
+    <div class="bg-white rounded-lg shadow-sm border border-indigo-200 p-6 mb-4 space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 pb-4">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-indigo-100 flex items-center justify-center shrink-0">
+                    <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
+                    </svg>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h3 class="text-base font-semibold text-gray-900">Pemilihan Data yang Diperlukan (Per-Kolom)</h3>
+                        @if($kerjasama->status_pemilihan_data === 'submitted')
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-md border bg-green-100 text-green-800 border-green-300">
+                                <svg class="w-3.5 h-3.5 text-green-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                                Diajukan (Terkunci)
+                            </span>
+                        @elseif($kerjasama->pemilihanData->isNotEmpty())
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-md border bg-amber-100 text-amber-800 border-amber-300">
+                                <svg class="w-3.5 h-3.5 text-amber-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                                Draf
+                            </span>
+                        @else
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-md border bg-slate-100 text-slate-600 border-slate-300">
+                                <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
+                                Belum Mengisi Data
+                            </span>
+                        @endif
+                    </div>
+                    <p class="text-xs text-gray-500 mt-0.5">Pilih tabel dan kolom data yang diajukan.</p>
+                </div>
+            </div>
+
+            <div class="shrink-0 flex items-center gap-2 flex-wrap">
+                @if($kerjasama->status_pemilihan_data === 'submitted')
+                    @php
+                        $allApproved = $kerjasama->pemilihanData->where('approval_status', 'approved')->count();
+                        $allRejected = $kerjasama->pemilihanData->where('approval_status', 'rejected')->count();
+                        $allPending = $kerjasama->pemilihanData->filter(fn($i) => !$i->approval_status || $i->approval_status === 'pending')->count();
+                    @endphp
+                    @if($allApproved > 0)
+                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-green-100 text-green-700 border border-green-200">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                        {{ $allApproved }} Disetujui
+                    </span>
+                    @endif
+                    @if($allRejected > 0)
+                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-red-100 text-red-700 border border-red-200">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                        {{ $allRejected }} Ditolak
+                    </span>
+                    @endif
+                    @if($allPending > 0)
+                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-gray-100 text-gray-600 border border-gray-200">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        {{ $allPending }} Pending
+                    </span>
+                    @endif
+                    <a href="{{ route('mitra.kerjasama.pemilihan-data.form', $kerjasama->kerjasama_id) }}" 
+                       class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-lg text-xs font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 border border-gray-300 transition-colors shadow-2xs">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                        Lihat Data Terpilih
+                    </a>
+                @else
+                    <a href="{{ route('mitra.kerjasama.pemilihan-data.form', $kerjasama->kerjasama_id) }}" 
+                       class="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-xs font-semibold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 transition-colors shadow-2xs">
+                        @if($kerjasama->pemilihanData->isNotEmpty())
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                            </svg>
+                            Edit Draf Pemilihan Data
+                        @else
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                            </svg>
+                            Pilih Data yang Diperlukan
+                        @endif
+                    </a>
+
+                    @if($kerjasama->pemilihanData->isNotEmpty())
+                        <button type="button" @click="confirmAjukanData = true" 
+                                class="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-xs font-bold text-white bg-green-600 hover:bg-green-700 transition-colors shadow-sm cursor-pointer">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+                            </svg>
+                            Ajukan Pemilihan Data ke Admin
+                        </button>
+                    @endif
+                @endif
+            </div>
+        </div>
+
+        @if($kerjasama->pemilihanData->isNotEmpty())
+        @php
+            $groupedSelection = $kerjasama->pemilihanData->groupBy(function($item) {
+                return $item->metadata->db_name ?? 'Database';
+            })->map(function($itemsInDb) {
+                return $itemsInDb->groupBy(function($item) {
+                    return $item->metadata->tbl_name ?? 'Tabel';
+                });
+            });
+        @endphp
+
+        <!-- Ringkasan Data Terpilih (Terstruktur per Database & Tabel) -->
+        <div class="mt-4 space-y-3" x-data="{
+            openSelectedTables: {
+                @foreach($groupedSelection as $dbName => $tables)
+                    @foreach($tables as $tblName => $items)
+                        '{{ $dbName }}.{{ $tblName }}': false,
+                    @endforeach
+                @endforeach
+            },
+            get anyOpen() {
+                return Object.values(this.openSelectedTables).some(Boolean);
+            },
+            toggleAll() {
+                let shouldOpen = !this.anyOpen;
+                for (let key in this.openSelectedTables) {
+                    this.openSelectedTables[key] = shouldOpen;
+                }
+            }
+        }">
+            <!-- Quick Action Toolbar -->
+            <div class="flex items-center justify-between gap-2 py-1.5 px-3 bg-gray-50 border border-gray-200 rounded-lg text-xs">
+                <div class="flex items-center gap-2">
+                    <button type="button" @click="toggleAll()" class="inline-flex items-center gap-1.5 text-indigo-600 hover:text-indigo-800 font-medium hover:underline">
+                        <template x-if="anyOpen">
+                            <span class="flex items-center gap-1.5">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
+                                Tutup Semua
+                            </span>
+                        </template>
+                        <template x-if="!anyOpen">
+                            <span class="flex items-center gap-1.5">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 19a2 2 0 01-2-2V7a2 2 0 012-2h4l2 2h4a2 2 0 012 v1M5 19h14a2 2 0 002-2v-5a2 2 0 00-2-2H9a2 2 0 00-2-2M5 19l2-2"/></svg>
+                                Buka Semua Accordion
+                            </span>
+                        </template>
+                    </button>
+                </div>
+                <span class="text-gray-500 font-medium">Total: <strong class="text-indigo-600">{{ $groupedSelection->sum(fn($db) => $db->count()) }}</strong> tabel (<strong class="text-indigo-600">{{ $kerjasama->pemilihanData->count() }}</strong> kolom)</span>
+            </div>
+
+            @foreach($groupedSelection as $dbName => $tables)
+            <div class="space-y-2">
+                <!-- Group Header Database -->
+                <div class="flex items-center gap-2 py-1.5 px-3 bg-slate-100 border border-slate-200 rounded-lg text-slate-800 font-mono font-bold text-xs">
+                    <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s-8-1.79-8-4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"/>
+                    </svg>
+                    <span>DATABASE: {{ $dbName }}</span>
+                    <span class="text-[11px] font-normal text-slate-500">({{ count($tables) }} tabel terpilih)</span>
+                </div>
+
+                @foreach($tables as $tblName => $selCols)
+                @php
+                    $firstSel = $selCols->first();
+                    $schemaName = $firstSel->metadata->schema_name ?? 'dbo';
+                    $alasanText = $firstSel->alasan ?? '-';
+                    $tblKey = $dbName . '.' . $tblName;
+                @endphp
+                <div x-init="openSelectedTables['{{ $tblKey }}'] = false" 
+                     class="rounded-xl border border-indigo-200 bg-white overflow-hidden shadow-2xs ml-2">
+                    
+                    <!-- Table Card Header -->
+                    <div class="p-3 bg-indigo-50/40 border-b border-indigo-100 flex items-center justify-between cursor-pointer select-none"
+                         @click="openSelectedTables['{{ $tblKey }}'] = !openSelectedTables['{{ $tblKey }}']">
+                        
+                        <div class="flex items-center gap-2.5 flex-wrap">
+                            <span class="font-mono text-sm font-bold text-slate-800">{{ $tblName }}</span>
+                            <span class="px-2 py-0.5 rounded-md bg-white text-slate-600 font-mono text-[11px] font-medium border border-slate-200">{{ $dbName }}.{{ $schemaName }}</span>
+                            @php
+                                $tblApproved = $selCols->where('approval_status', 'approved')->count();
+                                $tblRejected = $selCols->where('approval_status', 'rejected')->count();
+                                $tblPending = $selCols->filter(fn($i) => !$i->approval_status || $i->approval_status === 'pending')->count();
+                            @endphp
+                            <span class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-indigo-100 text-indigo-700">
+                                {{ count($selCols) }} kolom
+                            </span>
+                            @if($tblApproved > 0)
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-green-100 text-green-700 border border-green-200">{{ $tblApproved }} disetujui</span>
+                            @endif
+                            @if($tblRejected > 0)
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-red-100 text-red-700 border border-red-200">{{ $tblRejected }} ditolak</span>
+                            @endif
+                            @if($tblPending > 0)
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-gray-100 text-gray-600 border border-gray-200">{{ $tblPending }} pending</span>
+                            @endif
+                        </div>
+
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs text-gray-500 font-medium">Detail Kolom</span>
+                            <svg class="w-4 h-4 text-gray-400 transition-transform duration-200" 
+                                 :class="openSelectedTables['{{ $tblKey }}'] ? 'rotate-180 text-indigo-600' : ''" 
+                                 fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                            </svg>
+                        </div>
+                    </div>
+
+                    <!-- Accordion Body: List Kolom & Alasan -->
+                    <div x-show="openSelectedTables['{{ $tblKey }}']" x-collapse class="p-4 bg-white border-t border-gray-100 space-y-3">
+                        <div class="overflow-x-auto border border-gray-200 rounded-lg">
+                            <table class="w-full text-left text-xs border-collapse">
+                                <thead>
+                                    <tr class="bg-gray-50 border-b border-gray-200 text-gray-600 font-semibold uppercase">
+                                        <th class="py-2 px-3 w-10 text-center">No</th>
+                                        <th class="py-2 px-3">Nama Kolom</th>
+                                        <th class="py-2 px-3">Tipe Data</th>
+                                        <th class="py-2 px-3">Deskripsi</th>
+                                        <th class="py-2 px-3 text-center">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100">
+                                    @foreach($selCols as $colIdx => $selItem)
+                                    <tr class="hover:bg-indigo-50/30 transition-colors
+                                        {{ $selItem->approval_status === 'approved' ? 'bg-green-50/40' : ($selItem->approval_status === 'rejected' ? 'bg-red-50/40' : '') }}">
+                                        <td class="py-2 px-3 text-center text-gray-500 font-medium">{{ $colIdx + 1 }}</td>
+                                        <td class="py-2 px-3 font-mono font-bold text-slate-800">{{ $selItem->metadata->name ?? '-' }}</td>
+                                        <td class="py-2 px-3 font-mono text-gray-500">
+                                            <span class="px-1.5 py-0.5 rounded bg-gray-100 text-gray-600 text-[11px] font-mono">
+                                                {{ $selItem->metadata->type_name ?? $selItem->metadata->type ?? '-' }}
+                                            </span>
+                                        </td>
+                                        <td class="py-2 px-3 text-gray-500 text-[11px]">{{ $selItem->metadata->description ?? '-' }}</td>
+                                        <td class="py-2 px-3 text-center">
+                                            @if($selItem->approval_status === 'approved')
+                                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-green-100 text-green-700 border border-green-200">
+                                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                                    Disetujui
+                                                </span>
+                                            @elseif($selItem->approval_status === 'rejected')
+                                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-red-100 text-red-700 border border-red-200">
+                                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                                                    Ditolak
+                                                </span>
+                                            @else
+                                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-gray-100 text-gray-500 border border-gray-200">
+                                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                                    Pending
+                                                </span>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Alasan / Keterangan Penggunaan Data -->
+                        <div class="pt-2 border-t border-gray-100">
+                            <span class="text-[11px] font-bold text-indigo-950 uppercase tracking-wider">Keterangan / Alasan Penggunaan Data:</span>
+                            <div class="text-xs text-gray-700 bg-slate-50 p-2.5 rounded-lg border border-slate-200 mt-1 leading-relaxed font-medium">
+                                {{ $alasanText }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                @endforeach
+            </div>
+            @endforeach
+        </div>
+        @else
+        <div class="mt-4 p-4 bg-amber-50/60 border border-amber-200/70 rounded-lg flex items-center justify-between text-xs text-amber-800">
+            <div class="flex items-center gap-2">
+                <svg class="w-5 h-5 text-amber-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <span>Nota Kesepakatan telah selesai. Klik tombol <strong>"Pilih Data yang Diperlukan"</strong> di atas untuk menentukan tabel & kolom data yang dibutuhkan.</span>
+            </div>
+        </div>
+        @endif
     @endif
 
     <!-- Detail Data -->
@@ -424,37 +744,43 @@
         </div>
     </div>
     @endif
-</div>
 
-    <!-- Upload Dokumen (langsung tampil, bukan modal) -->
-    @if($kerjasama->ks_jenis == 3 && !$kerjasama->ks_status_dok && !$kerjasama->folder_ks)
-    <div class="bg-white rounded-lg shadow-sm border-2 border-dashed border-primary/30 p-6">
-        <div class="flex items-center gap-2 mb-4">
-            <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
-            </svg>
-            <h3 class="text-base font-semibold text-navy">Upload Dokumen Nota Kesepakatan</h3>
-        </div>
-        <p class="text-sm text-gray-500 mb-4">Upload dua dokumen yang diperlukan: Surat Permohonan dan Draft Nota Kesepakatan.</p>
-        <form action="{{ route('mitra.kerjasama.upload', $kerjasama->kerjasama_id) }}" method="POST" enctype="multipart/form-data">
-            @csrf
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">1. Surat Permohonan <span class="text-red-500">*</span></label>
-                    <input type="file" name="surat_permohonan" accept=".pdf,.docx,.zip" required class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
-                    <p class="text-xs text-gray-400 mt-1">Surat dari Kepala Daerah ke Sekjen Kemendikdasmen</p>
+    <!-- Modal Konfirmasi Ajukan Pemilihan Data ke Admin (WCAG 2.1 Accessible Modal) -->
+    <div x-show="confirmAjukanData" 
+         x-cloak 
+         role="dialog" 
+         aria-modal="true" 
+         aria-labelledby="modal-ajukan-data-title"
+         @keydown.escape.window="confirmAjukanData = false"
+         class="fixed inset-0 z-50 flex items-center justify-center p-4" 
+         style="background: rgba(0,0,0,0.5)">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md p-6" @click.outside="confirmAjukanData = false">
+            <div class="flex items-center gap-3 mb-4">
+                <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+                    <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+                    </svg>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">2. Draft Nota Kesepakatan <span class="text-red-500">*</span></label>
-                    <input type="file" name="draft_nk" accept=".pdf,.docx,.zip" required class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
-                    <p class="text-xs text-gray-400 mt-1">Draft NK yang akan dibahas bersama</p>
+                    <h3 id="modal-ajukan-data-title" class="text-lg font-semibold text-gray-800">Ajukan Pemilihan Data ke Admin?</h3>
+                    <p class="text-sm text-gray-500">Setelah diajukan, draf pemilihan data akan dikunci dan dikirim ke Admin Pusdatin untuk ditinjau. Data tidak dapat diubah lagi.</p>
                 </div>
             </div>
-            <p class="text-xs text-gray-400 mb-4">Format: PDF, DOCX, ZIP — Maks 20MB per file</p>
-            <button type="submit" class="bg-primary text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-blue-600">
-                Upload Dokumen
-            </button>
-        </form>
+            <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4">
+                <div class="flex items-start gap-2">
+                    <svg class="w-4 h-4 text-amber-600 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
+                    <p class="text-xs text-amber-800">Pastikan semua kolom data dan alasan penggunaan telah diisi dengan lengkap sebelum mengajukan.</p>
+                </div>
+            </div>
+            <div class="flex gap-3 justify-end">
+                <button @click="confirmAjukanData = false" class="border border-gray-300 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-400">Batal</button>
+                <form action="{{ route('mitra.kerjasama.ajukan-pemilihan-data', $kerjasama->kerjasama_id) }}" method="POST">
+                    @csrf
+                    <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-green-700 transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">Ya, Ajukan Sekarang</button>
+                </form>
+            </div>
+        </div>
     </div>
-    @endif
+
+</div>
 @endsection

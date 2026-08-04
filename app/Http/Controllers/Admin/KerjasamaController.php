@@ -32,11 +32,11 @@ class KerjasamaController extends Controller
         }
 
         if ($request->filled('status')) {
-            $query->where('ks_status_dok', $request->status);
+            $query->where('ks_status_dok', (int)$request->status);
         }
 
         if ($request->filled('jenis')) {
-            $query->where('ks_jenis', $request->jenis);
+            $query->where('ks_jenis', (int)$request->jenis);
         }
 
         $kerjasamas = $query->paginate(15)->withQueryString();
@@ -56,7 +56,7 @@ class KerjasamaController extends Controller
         return view('admin.kerjasama.create', compact('jenisList', 'tingkatList', 'statusList', 'metodeList', 'implementasiList'));
     }
 
-    public function store(Request $request)
+    public function store(Request $request, \App\Actions\Kerjasama\CreateKerjasamaAction $action)
     {
         $validated = $request->validate([
             'ks_jenis' => 'required|exists:ks_jenis,id',
@@ -85,23 +85,7 @@ class KerjasamaController extends Controller
             'ks_implementasi' => 'nullable|exists:ks_implementasi,id',
         ]);
 
-        if (empty($validated['ks_status_dok'])) {
-            $validated['ks_status_dok'] = 1;
-        }
-
-        $ks = Kerjasama::create($validated);
-
-        if ($request->hasFile('dokumen_ks')) {
-            $path = $request->file('dokumen_ks')->store('dokumen/' . $ks->kerjasama_id, 'public');
-            $ks->update(['dokumen_ks' => $path]);
-        }
-
-        if ($request->hasFile('dokumen_pendukung')) {
-            $path = $request->file('dokumen_pendukung')->store('dokumen/' . $ks->kerjasama_id, 'public');
-            $ks->update(['dokumen_pendukung' => $path]);
-        }
-
-        $ks->addReviewEntry('Dibuat', 'Data dibuat oleh Admin');
+        $ks = $action->execute($validated, $request);
 
         return redirect()->route('admin.kerjasama.review', $ks->kerjasama_id)->with('success', 'Data berhasil ditambahkan.');
     }
@@ -134,7 +118,7 @@ class KerjasamaController extends Controller
 
     public function review($id)
     {
-        $ks = Kerjasama::with(['jenis', 'tingkat', 'statusDok', 'metode', 'implementasi', 'reviewLogs'])
+        $ks = Kerjasama::with(['jenis', 'tingkat', 'statusDok', 'metode', 'implementasi', 'reviewLogs', 'pemilihanData.metadata', 'reports'])
             ->where('kerjasama_id', $id)->notDeleted()->firstOrFail();
 
         $metodeList = KsMetode::pluck('nama_metode', 'id');
@@ -159,17 +143,19 @@ class KerjasamaController extends Controller
         return redirect()->route('admin.kerjasama.index')->with('success', count($ids) . ' data berhasil dihapus.');
     }
 
-    public function setujui(Request $request, $id)
+    public function setujui(Request $request, $id, \App\Actions\Kerjasama\ApproveKerjasamaAction $action)
     {
         $request->validate(['tanggal_pembahasan' => 'required|date']);
-        $ks = Kerjasama::where('kerjasama_id', $id)->notDeleted()->firstOrFail();
+        
+        $ks = $action->execute($id, 2, 'Disetujui', 'Pengajuan disetujui, pembahasan dijadwalkan');
+
         $ks->update([
-            'ks_status_dok' => 2,
             'tanggal_pembahasan' => $request->tanggal_pembahasan,
         ]);
+        
         $tglFormatted = \Carbon\Carbon::parse($request->tanggal_pembahasan)->format('d M Y, H:i');
-        $ks->addReviewEntry('Disetujui', 'Pengajuan disetujui, pembahasan dijadwalkan');
         $ks->addReviewEntry('Jadwal', 'Pembahasan: ' . $tglFormatted);
+        
         return redirect()->route('admin.kerjasama.review', $id);
     }
 
@@ -241,5 +227,96 @@ class KerjasamaController extends Controller
         $ks->addReviewEntry('Update Final', 'Data final diperbarui');
 
         return redirect()->route('admin.kerjasama.review', $id)->with('success', 'Data final diperbarui.');
+    }
+
+    public function persetujuanDataForm($id)
+    {
+        $ks = Kerjasama::with(['jenis', 'tingkat', 'statusDok', 'metode', 'implementasi', 'pemilihanData.metadata'])
+            ->where('kerjasama_id', $id)->notDeleted()->firstOrFail();
+
+        if ($ks->status_pemilihan_data !== 'submitted') {
+            return redirect()->route('admin.kerjasama.review', $id)
+                ->with('error', 'Gagal membuka persetujuan data: Pemilihan data masih berstatus draf dan belum diajukan secara resmi oleh Mitra.');
+        }
+
+        $metodeList = KsMetode::pluck('nama_metode', 'id');
+        $implementasiList = KsImplementasi::pluck('nama_status', 'id');
+
+        return view('admin.kerjasama.persetujuan_data', compact('ks', 'metodeList', 'implementasiList'));
+    }
+
+    public function simpanPersetujuanData(Request $request, $id)
+    {
+        $ks = Kerjasama::where('kerjasama_id', $id)->notDeleted()->firstOrFail();
+
+        if ($ks->status_pemilihan_data !== 'submitted') {
+            return redirect()->route('admin.kerjasama.review', $id)
+                ->with('error', 'Gagal menyimpan persetujuan: Pemilihan data masih berstatus draf dan belum diajukan secara resmi oleh Mitra.');
+        }
+
+        // 1. Update overall metode and status implementasi (pengaktifan) if provided
+        $updateData = [];
+        if ($request->filled('ks_metode')) {
+            $updateData['ks_metode'] = $request->ks_metode;
+        }
+        if ($request->filled('ks_implementasi')) {
+            $updateData['ks_implementasi'] = $request->ks_implementasi;
+        }
+        if (!empty($updateData)) {
+            $ks->update($updateData);
+        }
+
+        // 2. Update approval status & notes per metadata item
+        $approvalStatuses = $request->input('approval_status', []); // [item_id => 'approved'|'rejected'|'pending']
+        $catatanAdmin = $request->input('catatan_admin', []); // [item_id => 'catatan...']
+
+        $existingItems = $ks->pemilihanData;
+        $approvedCount = 0;
+        $rejectedCount = 0;
+        $pendingCount = 0;
+
+        foreach ($existingItems as $item) {
+            $status = $approvalStatuses[$item->id] ?? 'pending';
+            if (!in_array($status, ['pending', 'approved', 'rejected'])) {
+                $status = 'pending';
+            }
+            $catatan = $catatanAdmin[$item->id] ?? null;
+
+            $item->update([
+                'approval_status' => $status,
+                'catatan_admin' => $catatan,
+            ]);
+
+            if ($status === 'approved') $approvedCount++;
+            elseif ($status === 'rejected') $rejectedCount++;
+            else $pendingCount++;
+        }
+
+        $logMsg = "Admin memperbarui persetujuan data: {$approvedCount} Disetujui, {$rejectedCount} Ditolak, {$pendingCount} Pending";
+        $ks->addReviewEntry('Persetujuan Data', $logMsg);
+
+        return redirect()->route('admin.kerjasama.review', $id)
+            ->with('success', "Keputusan persetujuan data tersimpan: {$approvedCount} disetujui, {$rejectedCount} ditolak, {$pendingCount} pending.");
+    }
+
+    public function cetakRingkasan($id)
+    {
+        $ks = Kerjasama::with(['jenis', 'tingkat', 'statusDok', 'metode', 'implementasi', 'pemilihanData.metadata'])
+            ->where('kerjasama_id', $id)->notDeleted()->firstOrFail();
+
+        return view('admin.kerjasama.cetak_ringkasan', compact('ks'));
+    }
+
+    public function unlockPemilihanData($id)
+    {
+        $ks = Kerjasama::where('kerjasama_id', $id)->notDeleted()->firstOrFail();
+
+        $ks->update([
+            'status_pemilihan_data' => 'draft',
+        ]);
+
+        $ks->addReviewEntry('Buka Kunci Data', 'Admin membuka kembali akses pemilihan data kamus untuk Mitra');
+
+        return redirect()->back()->with('success', 'Form pemilihan data Mitra berhasil dibuka kunci.');
     }
 }

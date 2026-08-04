@@ -35,3 +35,4 @@ Homestead.yaml
 Thumbs.db
 /.commandcode/
 /.agents/
+/graphify-out/

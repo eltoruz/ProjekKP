@@ -25,7 +25,7 @@ class Kerjasama extends Model
         'dokumen_ks', 'dokumen_pendukung', 'folder_ks', 'unit_utama_terlibat',
         'pusdatin_kirim_data', 'pusdatin_terima_data', 'soft_delete',
         'create_date', 'last_update',
-        'tanggal_pembahasan', 'status_integrasi',
+        'tanggal_pembahasan', 'status_pemilihan_data',
     ];
 
     protected $casts = [
@@ -60,6 +60,16 @@ class Kerjasama extends Model
     public function metode() { return $this->belongsTo(KsMetode::class, 'ks_metode'); }
     public function implementasi() { return $this->belongsTo(KsImplementasi::class, 'ks_implementasi'); }
     public function reviewLogs() { return $this->hasMany(ReviewLog::class, 'kerjasama_id', 'kerjasama_id')->orderBy('id'); }
+    public function pemilihanData() { return $this->hasMany(MetadataUser::class, 'kerjasama_id', 'kerjasama_id')->where('soft_delete', false)->with('metadata'); }
+    public function reports() { return $this->hasMany(MitraReport::class, 'kerjasama_id', 'kerjasama_id')->orderBy('created_at', 'desc'); }
+
+    public function getIsReportingActiveAttribute(): bool
+    {
+        // Must be status_implementasi == 3 (Aktif) AND have at least 1 approved data item
+        $isAktif = (int)$this->ks_implementasi === 3;
+        $hasApprovedItem = $this->pemilihanData()->where('approval_status', 'approved')->exists();
+        return $isAktif && $hasApprovedItem;
+    }
 
     public function scopeNotDeleted($query) { return $query->where('soft_delete', false); }
     public function scopeByStatus($query, int $status) { return $query->where('ks_status_dok', $status); }
@@ -73,7 +83,7 @@ class Kerjasama extends Model
         ])->toArray();
     }
 
-    public function addReviewEntry(string $label, ?string $catatan = null): void
+    public function addReviewEntry(string $label, string $catatan): void
     {
         $this->reviewLogs()->create([
             'label' => $label,
