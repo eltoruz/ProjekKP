@@ -219,7 +219,7 @@
 
         <!-- Chat Input Footer Form -->
         <form @submit.prevent="send()" class="p-3 bg-white border-t border-slate-100 flex items-center gap-2">
-            <input type="file" x-ref="fileRef" @change="handleFileSelect($event)" class="hidden" accept=".pdf,.docx,.zip,.png,.jpg,.jpeg">
+            <input type="file" x-ref="fileRef" @change="handleFileSelect($event)" class="hidden" accept=".pdf">
 
             <button type="button" 
                     @click="$refs.fileRef.click()" 

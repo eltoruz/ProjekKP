@@ -13,8 +13,8 @@ class NotaKesepakatanController extends Controller
     {
         $ks = Kerjasama::where('kerjasama_id', $id)->notDeleted()->firstOrFail();
         $request->validate([
-            'surat_permohonan' => 'required|file|mimes:pdf,docx,zip|max:20480',
-            'draft_nk' => 'required|file|mimes:pdf,docx,zip|max:20480',
+            'surat_permohonan' => 'required|file|mimes:pdf|max:20480',
+            'draft_nk' => 'required|file|mimes:pdf|max:20480',
         ]);
 
         $paths = [];
@@ -57,8 +57,8 @@ class NotaKesepakatanController extends Controller
     {
         $ks = Kerjasama::where('kerjasama_id', $id)->notDeleted()->firstOrFail();
         $request->validate([
-            'surat_permohonan' => 'required|file|mimes:pdf,docx,zip|max:20480',
-            'draft_nk' => 'required|file|mimes:pdf,docx,zip|max:20480',
+            'surat_permohonan' => 'required|file|mimes:pdf|max:20480',
+            'draft_nk' => 'required|file|mimes:pdf|max:20480',
         ]);
 
         $paths = [];
@@ -85,7 +85,7 @@ class NotaKesepakatanController extends Controller
     {
         $ks = Kerjasama::where('kerjasama_id', $id)->notDeleted()->firstOrFail();
         $request->validate([
-            'surat_undangan' => 'required|file|mimes:pdf,docx,zip|max:20480',
+            'surat_undangan' => 'required|file|mimes:pdf|max:20480',
         ]);
 
         $file = $request->file('surat_undangan');

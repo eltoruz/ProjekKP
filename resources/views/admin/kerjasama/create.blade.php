@@ -171,11 +171,11 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-xs font-medium text-gray-500 mb-1">Dokumen Final</label>
-                        <input type="file" name="dokumen_ks" accept=".pdf,.docx,.zip" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-xs">
+                        <input type="file" name="dokumen_ks" accept=".pdf" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-xs">
                     </div>
                     <div>
                         <label class="block text-xs font-medium text-gray-500 mb-1">Dokumen Pendukung</label>
-                        <input type="file" name="dokumen_pendukung" accept=".pdf,.docx,.zip" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-xs">
+                        <input type="file" name="dokumen_pendukung" accept=".pdf" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-xs">
                     </div>
                 </div>
             </div>

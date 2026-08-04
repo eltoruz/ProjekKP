@@ -59,14 +59,14 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">1. Surat Permohonan</label>
-                        <input type="file" name="surat_permohonan" accept=".pdf,.docx,.zip" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                        <input type="file" name="surat_permohonan" accept=".pdf" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">2. Draft Nota Kesepakatan</label>
-                        <input type="file" name="draft_nk" accept=".pdf,.docx,.zip" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                        <input type="file" name="draft_nk" accept=".pdf" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
                     </div>
                 </div>
-                <p class="text-xs text-gray-400 mt-3">Format: PDF, DOCX, ZIP — Maks 20MB per file</p>
+                <p class="text-xs text-gray-400 mt-3">Format: PDF — Maks 20MB per file</p>
             </div>
 
             <div class="border-b border-gray-100 pb-4 mb-4">

@@ -24,8 +24,8 @@ class StoreKerjasamaRequest extends FormRequest
         ];
 
         if ($this->input('ks_jenis') == 3) {
-            $rules['surat_permohonan'] = 'required|file|mimes:pdf,docx,zip|max:20480';
-            $rules['draft_nk'] = 'required|file|mimes:pdf,docx,zip|max:20480';
+            $rules['surat_permohonan'] = 'required|file|mimes:pdf|max:20480';
+            $rules['draft_nk'] = 'required|file|mimes:pdf|max:20480';
         }
 
         return $rules;

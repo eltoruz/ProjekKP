@@ -18,13 +18,13 @@
 
         <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">Surat Permohonan (Revisi) <span class="text-red-500">*</span></label>
-            <input type="file" name="surat_permohonan" accept=".pdf,.docx,.zip" required class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+            <input type="file" name="surat_permohonan" accept=".pdf" required class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
         </div>
         <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">Draft Nota Kesepakatan (Revisi) <span class="text-red-500">*</span></label>
-            <input type="file" name="draft_nk" accept=".pdf,.docx,.zip" required class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+            <input type="file" name="draft_nk" accept=".pdf" required class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
         </div>
-        <p class="text-xs text-gray-400">Format: PDF, DOCX — Maks 20MB</p>
+        <p class="text-xs text-gray-400">Format: PDF — Maks 20MB</p>
 
         <div class="flex gap-3 pt-4">
             <button type="submit" class="bg-blue-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-blue-700">

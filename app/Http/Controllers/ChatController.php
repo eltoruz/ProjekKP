@@ -40,7 +40,7 @@ class ChatController extends Controller
             'sender_role' => 'required|in:admin,mitra',
             'sender_name' => 'required|string|max:100',
             'pesan' => 'required_without:attachment|nullable|string',
-            'attachment' => 'nullable|file|mimes:pdf,docx,zip,png,jpg,jpeg|max:10240',
+            'attachment' => 'nullable|file|mimes:pdf|max:10240',
         ]);
 
         $pesan = $request->pesan ?? 'Mengirimkan berkas lampiran revisi.';
