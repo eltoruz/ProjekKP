@@ -100,7 +100,7 @@
             <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
             Upload Laporan Berkala Baru
         </h3>
-        <p class="text-xs text-gray-500 mb-4">Silakan pilih tahun, periode semester, dan unggah file laporan penggunaan data (pdf, docx, xlsx, zip max 20MB).</p>
+        <p class="text-xs text-gray-500 mb-4">Silakan pilih tahun, periode semester, dan unggah file laporan penggunaan data (PDF max 20MB).</p>
 
         <form action="{{ route('mitra.kerjasama.laporan.store', $ks->kerjasama_id) }}" method="POST" enctype="multipart/form-data" class="space-y-4">
             @csrf
@@ -126,9 +126,9 @@
 
             <div>
                 <label class="block text-xs font-semibold text-gray-700 mb-1">File Laporan Berkala <span class="text-red-500">*</span></label>
-                <input type="file" name="file_laporan" accept=".pdf,.docx,.xlsx,.zip" required
+                <input type="file" name="file_laporan" accept=".pdf" required
                        class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-500 bg-white text-gray-700">
-                <p class="text-[11px] text-gray-400 mt-1">Format yang diizinkan: .pdf, .docx, .xlsx, .zip (Maksimal 20MB)</p>
+                <p class="text-[11px] text-gray-400 mt-1">Format yang diizinkan: .pdf (Maksimal 20MB)</p>
             </div>
 
             <div>

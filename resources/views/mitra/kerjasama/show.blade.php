@@ -120,16 +120,16 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">1. Surat Permohonan <span class="text-red-500">*</span></label>
-                    <input type="file" name="surat_permohonan" accept=".pdf,.docx,.zip" required class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                    <input type="file" name="surat_permohonan" accept=".pdf" required class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
                     <p class="text-xs text-gray-400 mt-1">Surat dari Kepala Daerah ke Sekjen Kemendikdasmen</p>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">2. Draft Nota Kesepakatan <span class="text-red-500">*</span></label>
-                    <input type="file" name="draft_nk" accept=".pdf,.docx,.zip" required class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                    <input type="file" name="draft_nk" accept=".pdf" required class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
                     <p class="text-xs text-gray-400 mt-1">Draft NK yang akan dibahas bersama</p>
                 </div>
             </div>
-            <p class="text-xs text-gray-400 mb-4">Format: PDF, DOCX, ZIP — Maks 20MB per file</p>
+            <p class="text-xs text-gray-400 mb-4">Format: PDF — Maks 20MB per file</p>
             <button type="submit" class="bg-primary text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-blue-600">
                 Upload Dokumen
             </button>
@@ -191,16 +191,6 @@
                 </div>
             </div>
         </div>
-        @elseif((int)$kerjasama->ks_status_dok >= 4)
-        <!-- Desain Ringkas Biasa (Setelah proses pembahasan selesai) -->
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4 flex items-center justify-between">
-            <div class="flex items-center gap-2 text-gray-600 text-sm">
-                <svg class="w-4 h-4 text-blue-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                <span>Jadwal Pembahasan:</span>
-                <span class="font-semibold text-gray-800">{{ \Carbon\Carbon::parse($kerjasama->tanggal_pembahasan)->format('d M Y, H:i') }} WIB</span>
-            </div>
-            <span class="text-xs font-medium px-2.5 py-0.5 rounded bg-gray-100 text-gray-600">Selesai Dibahas</span>
-        </div>
         @endif
     @endif
 
@@ -218,8 +208,8 @@
             @csrf
             <div class="mb-4">
                 <label class="block text-sm font-medium text-gray-700 mb-1">Surat Undangan <span class="text-red-500">*</span></label>
-                <input type="file" name="surat_undangan" accept=".pdf,.docx,.zip" required class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
-                <p class="text-xs text-gray-400 mt-1">Format: PDF, DOCX, ZIP — Maks 20MB</p>
+                <input type="file" name="surat_undangan" accept=".pdf" required class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                <p class="text-xs text-gray-400 mt-1">Format: PDF — Maks 20MB</p>
             </div>
             <button type="submit" class="bg-primary text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-blue-600">
                 Upload Surat Undangan
@@ -228,116 +218,92 @@
     </div>
     @endif
 
-    <!-- Data Final (setelah TTD) -->
-    @if((int)$kerjasama->ks_status_dok >= 5)
+    <!-- Data Final / Informasi Kerja Sama -->
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-4">
         <div class="flex items-center justify-between mb-3 border-b border-gray-100 pb-3">
             <h3 class="text-base font-semibold text-navy">Data Final Kerja Sama</h3>
+            @if((int)$kerjasama->ks_status_dok >= 5)
             <a href="{{ route('mitra.kerjasama.cetak-ringkasan', $kerjasama->kerjasama_id) }}" target="_blank"
                class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 transition-colors shadow-2xs">
                 <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
                 Cetak Lampiran Data MoU
             </a>
+            @endif
         </div>
-        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm">
-            <div><span class="text-gray-500">Jangka Waktu:</span> <span class="font-medium">{{ $kerjasama->jangka_waktu_thn ? $kerjasama->jangka_waktu_thn.' tahun' : '-' }}</span></div>
-            <div><span class="text-gray-500">Tanggal Mulai:</span> <span class="font-medium">{{ $kerjasama->tanggal_mulai_ks?->format('d M Y') ?? '-' }}</span></div>
-            <div><span class="text-gray-500">Tanggal Berakhir:</span> <span class="font-medium">{{ $kerjasama->tanggal_selesai_ks?->format('d M Y') ?? '-' }}</span></div>
-            @if($kerjasama->metode)
-            <div><span class="text-gray-500">Metode:</span> <span class="font-medium">{{ $kerjasama->metode->nama_metode }}</span></div>
-            @endif
-            @if($kerjasama->implementasi)
-            <div><span class="text-gray-500">Implementasi:</span> <span class="font-medium">{{ $kerjasama->implementasi->nama_status }}</span></div>
-            @endif
-            @if($kerjasama->nomor_pihak1 || $kerjasama->nomor_pihak2)
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
+            <div><span class="text-gray-500">Jenis:</span> <span class="font-medium">{{ $kerjasama->jenis?->nama_jenis }}</span></div>
+            <div><span class="text-gray-500">Tingkat:</span> <span class="font-medium">{{ $kerjasama->tingkat?->nama_tingkat }}</span></div>
+            <div><span class="text-gray-500">Kode Wilayah:</span> <span class="font-medium">{{ $kerjasama->kode_wilayah ?? '-' }}</span></div>
+            <div><span class="text-gray-500">Instansi:</span> <span class="font-medium">{{ $kerjasama->nama_kl ?? '-' }}</span></div>
+            <div><span class="text-gray-500">Jml K/L:</span> <span class="font-medium">{{ $kerjasama->jumlah_kl_terlibat }}</span></div>
+            <div class="sm:col-span-2 lg:col-span-3">
+                <span class="text-gray-500">Tentang:</span> <span class="font-medium">{{ $kerjasama->tentang ?? '-' }}</span>
+            </div>
+            <div><span class="text-gray-500">Pihak 1:</span> <span class="font-medium">{{ $kerjasama->pihak1 ?? '-' }}</span></div>
+            <div><span class="text-gray-500">Pihak 2:</span> <span class="font-medium">{{ $kerjasama->pihak2 ?? '-' }}</span></div>
             <div><span class="text-gray-500">Nomor Pihak 1:</span> <span class="font-medium">{{ $kerjasama->nomor_pihak1 ?? '-' }}</span></div>
             <div><span class="text-gray-500">Nomor Pihak 2:</span> <span class="font-medium">{{ $kerjasama->nomor_pihak2 ?? '-' }}</span></div>
+            <div><span class="text-gray-500">Jangka Waktu:</span> <span class="font-medium">{{ $kerjasama->jangka_waktu_thn ? $kerjasama->jangka_waktu_thn.' tahun' : '-' }}</span></div>
+            <div><span class="text-gray-500">Tgl Mulai:</span> <span class="font-medium">{{ $kerjasama->tanggal_mulai_ks?->format('d M Y') ?? '-' }}</span></div>
+            <div><span class="text-gray-500">Tgl Berakhir:</span> <span class="font-medium">{{ $kerjasama->tanggal_selesai_ks?->format('d M Y') ?? '-' }}</span></div>
+            @if($kerjasama->sisa_masa_berlaku_hari !== null)
+                @php $sisaHari = (int) round($kerjasama->sisa_masa_berlaku_hari); @endphp
+                <div><span class="text-gray-500">Sisa Masa Berlaku:</span> <span class="font-medium {{ $sisaHari < 30 ? 'text-red-600' : '' }}">{{ $sisaHari }} hari</span></div>
+            @endif
+            <div><span class="text-gray-500">Narahubung Adm:</span> <span class="font-medium">{{ $kerjasama->narahubung_adm ?? '-' }}</span></div>
+            <div><span class="text-gray-500">Kontak Adm:</span> <span class="font-medium">{{ $kerjasama->nomor_cp_adm ?? '-' }}</span></div>
+            <div><span class="text-gray-500">Narahubung Teknis:</span> <span class="font-medium">{{ $kerjasama->narahubung_teknis ?? '-' }}</span></div>
+            <div><span class="text-gray-500">Kontak Teknis:</span> <span class="font-medium">{{ $kerjasama->nomor_cp_teknis ?? '-' }}</span></div>
+            @if($kerjasama->metode)
+                <div><span class="text-gray-500">Metode:</span> <span class="font-medium">{{ $kerjasama->metode->nama_metode }}</span></div>
+            @endif
+            @if($kerjasama->implementasi)
+                <div><span class="text-gray-500">Implementasi:</span> <span class="font-medium">{{ $kerjasama->implementasi->nama_status }}</span></div>
             @endif
         </div>
-        @if(!$kerjasama->ks_metode && !$kerjasama->jangka_waktu_thn)
+        @if((int)$kerjasama->ks_status_dok >= 5 && !$kerjasama->ks_metode && !$kerjasama->jangka_waktu_thn)
         <p class="text-xs text-yellow-600 mt-3">Menunggu finalisasi data oleh Admin Pusdatin.</p>
         @endif
+    </div>
+
+    <!-- Dokumen -->
+    @php $files = $kerjasama->folder_ks ? (json_decode($kerjasama->folder_ks, true) ?: []) : []; @endphp
+    @if(count($files))
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-4" x-data="{ open: false, src: '' }">
+        <div class="px-6 py-4 border-b border-gray-100">
+            <h3 class="text-base font-semibold text-gray-800">Dokumen</h3>
+        </div>
+        <div class="p-6">
+            <ul class="divide-y divide-gray-100">
+                @foreach($files as $i => $file)
+                @php
+                    $labels = ['Surat Permohonan', 'Draft Nota Kesepakatan', 'Surat Undangan'];
+                    $label = $labels[$i] ?? 'Dokumen ke-'.($i + 1);
+                @endphp
+                <li class="flex items-center gap-2 py-2">
+                    <span class="text-sm">{{ $label }}</span>
+                    <span class="text-gray-300">—</span>
+                    <button type="button" @click="open = true; src = '{{ Storage::disk('public')->url($file) }}'" class="text-primary text-xs hover:underline">Lihat</button>
+                </li>
+                @endforeach
+            </ul>
+        </div>
+
+        <!-- Modal -->
+        <div x-show="open" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4" style="background: rgba(0,0,0,0.6)">
+            <div class="bg-white rounded-xl shadow-2xl w-full max-w-4xl h-[85vh] flex flex-col" @click.outside="open = false">
+                <div class="flex justify-between items-center px-6 py-3 border-b">
+                    <span class="font-semibold text-gray-700">Pratinjau Dokumen</span>
+                    <button @click="open = false" class="text-gray-400 hover:text-gray-600 text-xl leading-none">&times;</button>
+                </div>
+                <iframe :src="src" class="flex-1 w-full rounded-b-xl" frameborder="0"></iframe>
+            </div>
+        </div>
     </div>
     @endif
 
     <!-- Widget Diskusi & Chat Interaktif Mitra ↔ Admin -->
     <x-chat-widget :kerjasamaId="$kerjasama->kerjasama_id" currentRole="mitra" :senderName="$kerjasama->nama_kl ?? 'Mitra'" />
-
-    <!-- Dedicated Card Pelaporan Berkala Penggunaan Data (Status >= 5) -->
-    @if((int)$kerjasama->ks_status_dok >= 5)
-    @php
-        $reportsCount = $kerjasama->reports->count();
-        $latestReport = $kerjasama->reports->first();
-        $isReportingActive = $kerjasama->is_reporting_active;
-    @endphp
-    <div class="bg-white rounded-xl shadow-sm border border-emerald-200 p-6 mb-4 overflow-hidden relative">
-        <div class="flex flex-col md:flex-row md:items-center justify-between gap-5 border-b border-gray-100 pb-5">
-            <div class="flex items-start gap-3.5">
-                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shrink-0 shadow-md text-white">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                    </svg>
-                </div>
-                <div>
-                    <div class="flex items-center gap-2 flex-wrap">
-                        <h3 class="text-base font-bold text-gray-900">Pelaporan Berkala Penggunaan Data</h3>
-                        @if($isReportingActive)
-                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-md border bg-emerald-100 text-emerald-800 border-emerald-300">
-                                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Pelaporan Aktif
-                            </span>
-                        @else
-                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-md border bg-amber-100 text-amber-800 border-amber-300">
-                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                                Belum Aktif
-                            </span>
-                        @endif
-                    </div>
-                    <p class="text-xs text-gray-500 mt-1">Unggah laporan penggunaan data 2x/tahun.</p>
-                </div>
-            </div>
-
-            <div class="shrink-0 flex items-center">
-                <a href="{{ route('mitra.kerjasama.laporan', $kerjasama->kerjasama_id) }}" 
-                   class="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 transition-colors shadow-sm">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
-                    </svg>
-                    Kelola Laporan
-                </a>
-            </div>
-        </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4">
-            <div class="bg-slate-50 border border-slate-200 rounded-lg p-3.5 flex items-center gap-3">
-                <div class="w-9 h-9 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0 font-bold text-sm">
-                    {{ $reportsCount }}
-                </div>
-                <div>
-                    <span class="text-[11px] font-semibold text-gray-500 block">Total Laporan Terunggah</span>
-                    <span class="text-xs font-bold text-gray-800">{{ $reportsCount }} Dokumen Laporan</span>
-                </div>
-            </div>
-
-            <div class="bg-slate-50 border border-slate-200 rounded-lg p-3.5 flex items-center gap-3 sm:col-span-2">
-                <div class="w-9 h-9 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center shrink-0">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                </div>
-                <div>
-                    <span class="text-[11px] font-semibold text-gray-500 block">Status / Laporan Terakhir</span>
-                    @if($latestReport)
-                        <span class="text-xs font-bold text-gray-800">
-                            {{ $latestReport->periode }} {{ $latestReport->tahun }} — Diunggah {{ $latestReport->created_at?->format('d M Y') ?? '-' }}
-                        </span>
-                    @else
-                        <span class="text-xs font-medium text-amber-700">
-                            Belum ada laporan diunggah untuk kerja sama ini.
-                        </span>
-                    @endif
-                </div>
-            </div>
-        </div>
-    </div>
-    @endif
 
     <!-- Fitur Pemilihan Data yang Diperlukan oleh Mitra (Kartu Akses Halaman Terpisah) -->
     @if((int)$kerjasama->ks_status_dok >= 5)
@@ -612,76 +578,6 @@
             </div>
         </div>
         @endif
-    @endif
-
-    <!-- Detail Data -->
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200">
-        <div class="px-6 py-4 border-b border-gray-100">
-            <h3 class="text-base font-semibold text-gray-800">Informasi Kerja Sama</h3>
-        </div>
-        <div class="p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
-            <div><span class="text-gray-500">Jenis:</span> <span class="font-medium">{{ $kerjasama->jenis?->nama_jenis }}</span></div>
-            <div><span class="text-gray-500">Tingkat:</span> <span class="font-medium">{{ $kerjasama->tingkat?->nama_tingkat }}</span></div>
-            <div><span class="text-gray-500">Kode Wilayah:</span> <span class="font-medium">{{ $kerjasama->kode_wilayah ?? '-' }}</span></div>
-            <div><span class="text-gray-500">Instansi:</span> <span class="font-medium">{{ $kerjasama->nama_kl ?? '-' }}</span></div>
-            <div><span class="text-gray-500">Jml K/L:</span> <span class="font-medium">{{ $kerjasama->jumlah_kl_terlibat }}</span></div>
-            <div class="sm:col-span-2 lg:col-span-3">
-                <span class="text-gray-500">Tentang:</span> <span class="font-medium">{{ $kerjasama->tentang ?? '-' }}</span>
-            </div>
-            <div><span class="text-gray-500">Pihak 1:</span> <span class="font-medium">{{ $kerjasama->pihak1 ?? '-' }}</span></div>
-            <div><span class="text-gray-500">Pihak 2:</span> <span class="font-medium">{{ $kerjasama->pihak2 ?? '-' }}</span></div>
-            <div><span class="text-gray-500">Jangka Waktu:</span> <span class="font-medium">{{ $kerjasama->jangka_waktu_thn ? $kerjasama->jangka_waktu_thn.' tahun' : '-' }}</span></div>
-            <div><span class="text-gray-500">Tgl Mulai:</span> <span class="font-medium">{{ $kerjasama->tanggal_mulai_ks?->format('d M Y') ?? '-' }}</span></div>
-            <div><span class="text-gray-500">Tgl Berakhir:</span> <span class="font-medium">{{ $kerjasama->tanggal_selesai_ks?->format('d M Y') ?? '-' }}</span></div>
-            @if($kerjasama->sisa_masa_berlaku_hari !== null)
-                <div><span class="text-gray-500">Sisa Masa Berlaku:</span> <span class="font-medium {{ $kerjasama->sisa_masa_berlaku_hari < 30 ? 'text-red-600' : '' }}">{{ $kerjasama->sisa_masa_berlaku_hari }} hari</span></div>
-            @endif
-            <div><span class="text-gray-500">Narahubung Adm:</span> <span class="font-medium">{{ $kerjasama->narahubung_adm ?? '-' }}</span></div>
-            <div><span class="text-gray-500">Kontak Adm:</span> <span class="font-medium">{{ $kerjasama->nomor_cp_adm ?? '-' }}</span></div>
-            <div><span class="text-gray-500">Narahubung Teknis:</span> <span class="font-medium">{{ $kerjasama->narahubung_teknis ?? '-' }}</span></div>
-            <div><span class="text-gray-500">Kontak Teknis:</span> <span class="font-medium">{{ $kerjasama->nomor_cp_teknis ?? '-' }}</span></div>
-            @if($kerjasama->metode)
-                <div><span class="text-gray-500">Metode:</span> <span class="font-medium">{{ $kerjasama->metode->nama_metode }}</span></div>
-            @endif
-            @if($kerjasama->implementasi)
-                <div><span class="text-gray-500">Implementasi:</span> <span class="font-medium">{{ $kerjasama->implementasi->nama_status }}</span></div>
-            @endif
-        </div>
-    </div>
-
-    <!-- Dokumen -->
-    @php $files = $kerjasama->folder_ks ? (json_decode($kerjasama->folder_ks, true) ?: []) : []; @endphp
-    @if(count($files))
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200" x-data="{ open: false, src: '' }">
-        <div class="px-6 py-4 border-b border-gray-100">
-            <h3 class="text-base font-semibold text-gray-800">Dokumen</h3>
-        </div>
-        <div class="p-6">
-            <ul class="divide-y divide-gray-100">
-                @foreach($files as $i => $file)
-                @php
-                    $labels = ['Surat Permohonan', 'Draft Nota Kesepakatan', 'Surat Undangan'];
-                    $label = $labels[$i] ?? 'Dokumen ke-'.($i + 1);
-                @endphp
-                <li class="flex items-center gap-2 py-2">
-                    <span class="text-sm">{{ $label }}</span>
-                    <span class="text-gray-300">—</span>
-                    <button type="button" @click="open = true; src = '{{ Storage::disk('public')->url($file) }}'" class="text-primary text-xs hover:underline">Lihat</button>
-                </li>
-                @endforeach
-            </ul>
-        </div>
-
-        <!-- Modal -->
-        <div x-show="open" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4" style="background: rgba(0,0,0,0.6)">
-            <div class="bg-white rounded-xl shadow-2xl w-full max-w-4xl h-[85vh] flex flex-col" @click.outside="open = false">
-                <div class="flex justify-between items-center px-6 py-3 border-b">
-                    <span class="font-semibold text-gray-700">Pratinjau Dokumen</span>
-                    <button @click="open = false" class="text-gray-400 hover:text-gray-600 text-xl leading-none">&times;</button>
-                </div>
-                <iframe :src="src" class="flex-1 w-full rounded-b-xl" frameborder="0"></iframe>
-            </div>
-        </div>
     </div>
     @endif
 
