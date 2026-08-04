@@ -20,6 +20,14 @@
         }
     }
     $initReasons = !empty($tableReasons) ? $tableReasons : new stdClass();
+
+    // Tabel yang sudah memiliki seleksi sebelumnya. Kolomnya di-preload saat init
+    // agar status tercentang langsung tampil tanpa perlu hover ke tabel dulu.
+    $preselectedTables = $kerjasama->pemilihanData
+        ->filter(fn($sel) => $sel->metadata)
+        ->map(fn($sel) => ['db' => $sel->metadata->db_name, 'tbl' => $sel->metadata->tbl_name])
+        ->unique(fn($t) => $t['db'] . '.' . $t['tbl'])
+        ->values();
 @endphp
 
 <div class="space-y-6" x-data="pemilihanData()">
@@ -346,6 +354,7 @@ function pemilihanData() {
                 @endif
             @endforeach
         },
+        preselectedTables: @json($preselectedTables),
         allTables: [
             @foreach($catalogByDb as $dbName => $tablesInDb)
                 @foreach($tablesInDb as $tbl)
@@ -357,6 +366,10 @@ function pemilihanData() {
         init() {
             // Default to showing all tables if no columns are checked yet (first time filling)
             this.showAllTables = (this.totalCheckedCols === 0);
+
+            // Preload kolom untuk tabel yang sudah dipilih sebelumnya, agar checkbox
+            // & badge "x / y kolom terpilih" langsung tampil tercentang tanpa hover.
+            this.preselectedTables.forEach(t => this.loadColumns(t.db, t.tbl));
 
             this.updateFilters();
             this.$watch('search', () => this.updateFilters());
