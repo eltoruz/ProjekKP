@@ -174,9 +174,19 @@
             </div>
             <div class="flex items-center gap-3">
                 @if($ks->status_pemilihan_data === 'submitted')
+                    @php
+                        $approvedCount = $ks->pemilihanData->where('approval_status', 'approved')->count();
+                        $rejectedCount = $ks->pemilihanData->where('approval_status', 'rejected')->count();
+                        $pendingCount = $ks->pemilihanData->filter(fn($i) => !$i->approval_status || $i->approval_status === 'pending')->count();
+                    @endphp
                     <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700 border border-green-200">
                         <svg class="w-3.5 h-3.5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                         Telah Diajukan ({{ $ks->pemilihanData->count() }} Kolom)
+                    </span>
+                    <span class="inline-flex items-center gap-1.5 text-[11px] font-semibold">
+                        <span class="px-2 py-0.5 rounded-full bg-green-100 text-green-800 border border-green-200">{{ $approvedCount }} disetujui</span>
+                        <span class="px-2 py-0.5 rounded-full bg-red-100 text-red-800 border border-red-200">{{ $rejectedCount }} ditolak</span>
+                        <span class="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200">{{ $pendingCount }} pending</span>
                     </span>
                     <a href="{{ route('admin.kerjasama.persetujuan-data.form', $ks->kerjasama_id) }}" 
                        class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors shadow-2xs">
@@ -209,6 +219,131 @@
                 @endif
             </div>
         </div>
+
+        {{-- Body Section: Rincian Data Terpilih Mitra (read-only, per Database → Tabel → Kolom) --}}
+        @if($ks->pemilihanData->isNotEmpty())
+        @php
+            $groupedSelection = $ks->pemilihanData
+                ->groupBy(fn($item) => $item->metadata->db_name ?? 'Database')
+                ->map(fn($itemsInDb) => $itemsInDb->groupBy(fn($item) => $item->metadata->tbl_name ?? 'Tabel'));
+        @endphp
+        <div class="border-t border-gray-100 p-5 space-y-3" x-data="{
+            openTables: {
+                @foreach($groupedSelection as $dbName => $tables)
+                    @foreach($tables as $tblName => $items)
+                        '{{ $dbName }}.{{ $tblName }}': false,
+                    @endforeach
+                @endforeach
+            },
+            get anyOpen() { return Object.values(this.openTables).some(Boolean); },
+            toggleAll() { let shouldOpen = !this.anyOpen; for (let k in this.openTables) this.openTables[k] = shouldOpen; }
+        }">
+            <div class="flex items-center justify-between text-xs">
+                <span class="text-gray-500 font-medium">Total: <strong class="text-indigo-600">{{ $groupedSelection->sum(fn($db) => $db->count()) }}</strong> tabel (<strong class="text-indigo-600">{{ $ks->pemilihanData->count() }}</strong> kolom)</span>
+                <button type="button" @click="toggleAll()" class="inline-flex items-center gap-1.5 text-indigo-600 hover:text-indigo-800 font-semibold hover:underline">
+                    <span x-text="anyOpen ? 'Tutup Semua' : 'Buka Semua'"></span>
+                </button>
+            </div>
+
+            @foreach($groupedSelection as $dbName => $tables)
+            <div class="space-y-2">
+                <div class="flex items-center gap-2 py-1.5 px-3 bg-slate-100 border border-slate-200 rounded-lg text-slate-800 font-mono font-bold text-xs">
+                    <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"/>
+                    </svg>
+                    <span>DATABASE: {{ $dbName }}</span>
+                    <span class="text-[11px] font-normal text-slate-500">({{ count($tables) }} tabel terpilih)</span>
+                </div>
+
+                @foreach($tables as $tblName => $selCols)
+                @php
+                    $firstSel = $selCols->first();
+                    $schemaName = $firstSel->metadata->schema_name ?? 'dbo';
+                    $alasanText = $firstSel->alasan ?? '-';
+                    $tblKey = $dbName . '.' . $tblName;
+                    $tblApproved = $selCols->where('approval_status', 'approved')->count();
+                    $tblRejected = $selCols->where('approval_status', 'rejected')->count();
+                    $tblPending = $selCols->filter(fn($i) => !$i->approval_status || $i->approval_status === 'pending')->count();
+                @endphp
+                <div class="rounded-xl border border-indigo-200 bg-white overflow-hidden shadow-2xs ml-2">
+                    <div class="p-3 bg-indigo-50/40 border-b border-indigo-100 flex items-center justify-between cursor-pointer select-none"
+                         @click="openTables['{{ $tblKey }}'] = !openTables['{{ $tblKey }}']">
+                        <div class="flex items-center gap-2.5 flex-wrap">
+                            <span class="font-mono text-sm font-bold text-slate-800">{{ $tblName }}</span>
+                            <span class="px-2 py-0.5 rounded-md bg-white text-slate-600 font-mono text-[11px] font-medium border border-slate-200">{{ $dbName }}.{{ $schemaName }}</span>
+                            <span class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-indigo-100 text-indigo-700">{{ count($selCols) }} kolom</span>
+                            @if($tblApproved > 0)<span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-green-100 text-green-700 border border-green-200">{{ $tblApproved }} disetujui</span>@endif
+                            @if($tblRejected > 0)<span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-red-100 text-red-700 border border-red-200">{{ $tblRejected }} ditolak</span>@endif
+                            @if($tblPending > 0)<span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-gray-100 text-gray-600 border border-gray-200">{{ $tblPending }} pending</span>@endif
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs text-gray-500 font-medium">Detail Kolom</span>
+                            <svg class="w-4 h-4 text-gray-400 transition-transform duration-200"
+                                 :class="openTables['{{ $tblKey }}'] ? 'rotate-180 text-indigo-600' : ''"
+                                 fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                            </svg>
+                        </div>
+                    </div>
+
+                    <div x-show="openTables['{{ $tblKey }}']" x-collapse class="p-4 bg-white border-t border-gray-100 space-y-3">
+                        <div class="overflow-x-auto border border-gray-200 rounded-lg">
+                            <table class="w-full text-left text-xs border-collapse">
+                                <thead>
+                                    <tr class="bg-gray-50 border-b border-gray-200 text-gray-600 font-semibold uppercase">
+                                        <th class="py-2 px-3 w-10 text-center">No</th>
+                                        <th class="py-2 px-3">Nama Kolom</th>
+                                        <th class="py-2 px-3">Tipe Data</th>
+                                        <th class="py-2 px-3">Deskripsi</th>
+                                        <th class="py-2 px-3 text-center">Status</th>
+                                        <th class="py-2 px-3">Catatan Admin</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100">
+                                    @foreach($selCols as $colIdx => $selItem)
+                                    <tr class="{{ $selItem->approval_status === 'approved' ? 'bg-green-50/40' : ($selItem->approval_status === 'rejected' ? 'bg-red-50/40' : '') }}">
+                                        <td class="py-2 px-3 text-center text-gray-500 font-medium">{{ $colIdx + 1 }}</td>
+                                        <td class="py-2 px-3 font-mono font-bold text-slate-800">{{ $selItem->metadata->name ?? '-' }}</td>
+                                        <td class="py-2 px-3 font-mono text-gray-500">
+                                            <span class="px-1.5 py-0.5 rounded bg-gray-100 text-gray-600 text-[11px] font-mono">{{ $selItem->metadata->type_name ?? $selItem->metadata->type ?? '-' }}</span>
+                                        </td>
+                                        <td class="py-2 px-3 text-gray-500 text-[11px]">{{ $selItem->metadata->description ?? '-' }}</td>
+                                        <td class="py-2 px-3 text-center">
+                                            @if($selItem->approval_status === 'approved')
+                                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-green-100 text-green-700 border border-green-200">
+                                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                                    Disetujui
+                                                </span>
+                                            @elseif($selItem->approval_status === 'rejected')
+                                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-red-100 text-red-700 border border-red-200">
+                                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                                                    Ditolak
+                                                </span>
+                                            @else
+                                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-gray-100 text-gray-500 border border-gray-200">
+                                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                                    Pending
+                                                </span>
+                                            @endif
+                                        </td>
+                                        <td class="py-2 px-3 text-gray-500 text-[11px]">{{ $selItem->catatan_admin ?: '-' }}</td>
+                                    </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="pt-2 border-t border-gray-100">
+                            <span class="text-[11px] font-bold text-indigo-950 uppercase tracking-wider">Alasan Penggunaan Data:</span>
+                            <div class="text-xs text-gray-700 bg-slate-50 p-2.5 rounded-lg border border-slate-200 mt-1 leading-relaxed font-medium">{{ $alasanText }}</div>
+                        </div>
+                    </div>
+                </div>
+                @endforeach
+            </div>
+            @endforeach
+        </div>
+        @endif
 
     </div>
     @endif

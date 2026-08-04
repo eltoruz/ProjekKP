@@ -295,8 +295,8 @@ class KerjasamaController extends Controller
         $logMsg = "Admin memperbarui persetujuan data: {$approvedCount} Disetujui, {$rejectedCount} Ditolak, {$pendingCount} Pending";
         $ks->addReviewEntry('Persetujuan Data', $logMsg);
 
-        return redirect()->route('admin.kerjasama.persetujuan-data.form', $id)
-            ->with('success', 'Status persetujuan per item data berhasil disimpan.');
+        return redirect()->route('admin.kerjasama.review', $id)
+            ->with('success', "Keputusan persetujuan data tersimpan: {$approvedCount} disetujui, {$rejectedCount} ditolak, {$pendingCount} pending.");
     }
 
     public function cetakRingkasan($id)
