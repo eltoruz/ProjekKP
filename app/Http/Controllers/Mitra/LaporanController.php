@@ -9,6 +9,26 @@ use Illuminate\Http\Request;
 
 class LaporanController extends Controller
 {
+    public function daftar(Request $request)
+    {
+        $query = Kerjasama::notDeleted()
+            ->where('ks_status_dok', '>=', 5)
+            ->with(['jenis', 'implementasi', 'reports', 'pemilihanData'])
+            ->orderBy('last_update', 'desc');
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('nama_kl', 'like', "%{$search}%")
+                  ->orWhere('tentang', 'like', "%{$search}%");
+            });
+        }
+
+        $items = $query->paginate(15)->withQueryString();
+
+        return view('mitra.pelaporan.index', compact('items'));
+    }
+
     public function index($id)
     {
         $ks = Kerjasama::with(['reports', 'pemilihanData.metadata', 'implementasi'])
@@ -31,11 +51,11 @@ class LaporanController extends Controller
         $validated = $request->validate([
             'tahun' => 'required|integer|min:2020|max:2099',
             'periode' => 'required|string|in:Semester 1,Semester 2',
-            'file_laporan' => 'required|file|mimes:pdf,docx,xlsx,zip|max:20480',
+            'file_laporan' => 'required|file|mimes:pdf|max:20480',
             'catatan' => 'nullable|string|max:1000',
         ], [
             'file_laporan.required' => 'File laporan berkala wajib diunggah.',
-            'file_laporan.mimes' => 'Format file yang diizinkan hanya: PDF, DOCX, XLSX, atau ZIP.',
+            'file_laporan.mimes' => 'Format file yang diizinkan hanya: PDF.',
             'file_laporan.max' => 'Ukuran file laporan maksimal 20MB.',
             'tahun.required' => 'Tahun laporan wajib dipilih.',
             'periode.required' => 'Periode semester laporan wajib dipilih.',

@@ -40,22 +40,44 @@
                 <div>
                     <p class="px-3 text-[11px] font-extrabold text-slate-400 uppercase tracking-widest mb-2.5">KERJA SAMA</p>
                     <div class="space-y-1">
-                        <a href="{{ route('mitra.kerjasama.index') }}"
-                            class="flex items-center gap-3.5 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 {{ request()->routeIs('mitra.kerjasama.index') && !request('status') ? 'bg-[#5B46F6] text-white shadow-lg shadow-indigo-600/30' : (request()->routeIs('mitra.kerjasama.show') || request()->routeIs('mitra.kerjasama.edit') || request()->routeIs('mitra.kerjasama.pemilihan-data.*') ? 'bg-[#5B46F6] text-white shadow-lg shadow-indigo-600/30' : 'text-slate-300 hover:bg-white/5 hover:text-white') }}">
-                            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                            </svg>
-                            <span>Daftar Kerja Sama</span>
-                        </a>
-                        <a href="{{ route('mitra.kerjasama.create') }}"
-                            class="flex items-center gap-3.5 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 {{ request()->routeIs('mitra.kerjasama.create') ? 'bg-[#5B46F6] text-white shadow-lg shadow-indigo-600/30' : 'text-slate-300 hover:bg-white/5 hover:text-white' }}">
-                            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                            </svg>
-                            <span>Tambah Baru</span>
-                        </a>
-                        <a href="{{ route('mitra.kerjasama.index', ['status' => 5]) }}"
-                            class="flex items-center gap-3.5 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 {{ request()->routeIs('mitra.kerjasama.laporan') || request('status') == 5 ? 'bg-[#5B46F6] text-white shadow-lg shadow-indigo-600/30' : 'text-slate-300 hover:bg-white/5 hover:text-white' }}">
+                        @php
+                            $ksGroupActive = request()->routeIs('mitra.kerjasama.*');
+                            $ksParentActive = ($ksGroupActive && !request()->routeIs('mitra.kerjasama.create')) || (request()->routeIs('mitra.kerjasama.index') && !request('status'));
+                        @endphp
+                        <div x-data="{ open: {{ $ksGroupActive ? 'true' : 'false' }} }">
+                            <!-- Parent: Daftar Kerja Sama (toggle dropdown) -->
+                            <button type="button" @click="open = !open"
+                                class="w-full flex items-center gap-3.5 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 {{ $ksParentActive ? 'bg-[#5B46F6] text-white shadow-lg shadow-indigo-600/30' : 'text-slate-300 hover:bg-white/5 hover:text-white' }}">
+                                <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                </svg>
+                                <span class="flex-1 text-left">Daftar Kerja Sama</span>
+                                <svg class="w-4 h-4 shrink-0 transition-transform duration-200" :class="open ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                </svg>
+                            </button>
+
+                            <!-- Submenu -->
+                            <div x-show="open" x-collapse class="mt-1 ml-4 pl-3 border-l border-slate-700/60 space-y-1">
+                                <a href="{{ route('mitra.kerjasama.index') }}"
+                                    class="flex items-center gap-3 px-4 py-2 rounded-lg text-sm transition-all duration-200 {{ request()->routeIs('mitra.kerjasama.index') && !request('status') ? 'bg-[#5B46F6] text-white font-semibold shadow-lg shadow-indigo-600/30' : 'text-slate-300 hover:bg-white/5 hover:text-white' }}">
+                                    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
+                                    </svg>
+                                    <span>Lihat Semua</span>
+                                </a>
+                                <a href="{{ route('mitra.kerjasama.create') }}"
+                                    class="flex items-center gap-3 px-4 py-2 rounded-lg text-sm transition-all duration-200 {{ request()->routeIs('mitra.kerjasama.create') ? 'bg-[#5B46F6] text-white font-semibold shadow-lg shadow-indigo-600/30' : 'text-slate-300 hover:bg-white/5 hover:text-white' }}">
+                                    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                                    </svg>
+                                    <span>Tambah Baru</span>
+                                </a>
+                            </div>
+                        </div>
+
+                        <a href="{{ route('mitra.pelaporan.index') }}"
+                            class="flex items-center gap-3.5 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 {{ request()->routeIs('mitra.pelaporan.*') || request()->routeIs('mitra.kerjasama.laporan') ? 'bg-[#5B46F6] text-white shadow-lg shadow-indigo-600/30' : 'text-slate-300 hover:bg-white/5 hover:text-white' }}">
                             <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                             </svg>

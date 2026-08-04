@@ -34,6 +34,7 @@ Route::middleware(['web'])
         Route::get('/kerjasama/{id}/pemilihan-data', [MitraKerjasama::class, 'pemilihanDataForm'])->name('kerjasama.pemilihan-data.form');
         Route::post('/kerjasama/{id}/pemilihan-data', [NotaKesepakatanController::class, 'simpanPemilihanData'])->name('kerjasama.pemilihan-data');
         Route::post('/kerjasama/{id}/ajukan-pemilihan-data', [NotaKesepakatanController::class, 'ajukanPemilihanData'])->name('kerjasama.ajukan-pemilihan-data');
+        Route::get('/pelaporan', [\App\Http\Controllers\Mitra\LaporanController::class, 'daftar'])->name('pelaporan.index');
         Route::get('/kerjasama/{id}/laporan', [\App\Http\Controllers\Mitra\LaporanController::class, 'index'])->name('kerjasama.laporan');
         Route::post('/kerjasama/{id}/laporan', [\App\Http\Controllers\Mitra\LaporanController::class, 'store'])->name('kerjasama.laporan.store');
         Route::get('/kerjasama/{id}/cetak-ringkasan', [NotaKesepakatanController::class, 'cetakRingkasan'])->name('kerjasama.cetak-ringkasan');
