@@ -448,7 +448,7 @@
             openSelectedTables: {
                 @foreach($groupedSelection as $dbName => $tables)
                     @foreach($tables as $tblName => $items)
-                        {!! json_encode($dbName . '::' . $tblName) !!}: false,
+                        '{{ $dbName }}.{{ $tblName }}': false,
                     @endforeach
                 @endforeach
             },
