@@ -19,6 +19,13 @@
     $groupedData = [];
     $initialOpen = [];
 
+    // Penanda apakah admin sudah pernah menyimpan keputusan sebelumnya
+    // (ada item yang sudah approved/rejected saat halaman dimuat). Dipakai untuk
+    // label tombol: "Simpan" saat pertama kali, "Perbarui" saat sudah pernah disimpan.
+    $hasExistingDecision = $ks->pemilihanData->contains(
+        fn($item) => in_array($item->approval_status, ['approved', 'rejected'], true)
+    );
+
     foreach($ks->pemilihanData as $item) {
         $initialApprovals[$item->id] = $item->approval_status ?? 'pending';
         $meta = $item->metadata;
@@ -105,9 +112,6 @@
     },
     get pendingCount() {
         return Object.values(this.approval).filter(v => v === 'pending').length;
-    },
-    get hasPending() {
-        return Object.values(this.approval).some(v => v === 'pending');
     }
 }">
 
@@ -447,7 +451,7 @@
                 </a>
                 <button type="submit" class="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors shadow-sm cursor-pointer">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg>
-                    <span x-text="hasPending ? 'Simpan Keputusan Persetujuan' : 'Perbarui Keputusan Persetujuan'"></span>
+                    <span>{{ $hasExistingDecision ? 'Perbarui Keputusan Persetujuan' : 'Simpan Keputusan Persetujuan' }}</span>
                 </button>
             </div>
         </div>
