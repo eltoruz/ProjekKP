@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboard;
+use App\Http\Controllers\Admin\JadwalPembahasanController as AdminJadwalPembahasan;
 use App\Http\Controllers\Admin\KerjasamaController as AdminKerjasama;
 use App\Http\Controllers\Mitra\DashboardController as MitraDashboard;
 use App\Http\Controllers\Mitra\KerjasamaController as MitraKerjasama;
@@ -46,6 +47,7 @@ Route::middleware(['web'])
 Route::middleware(['web', \App\Http\Middleware\AutoLoginAdmin::class])
     ->prefix('admin')->name('admin.')->group(function () {
         Route::get('/', [AdminDashboard::class, 'index'])->name('dashboard');
+        Route::get('/jadwal-pembahasan', [AdminJadwalPembahasan::class, 'index'])->name('jadwal-pembahasan.index');
         Route::get('/kerjasama', [AdminKerjasama::class, 'index'])->name('kerjasama.index');
         Route::get('/kerjasama/create', [AdminKerjasama::class, 'create'])->name('kerjasama.create');
         Route::post('/kerjasama', [AdminKerjasama::class, 'store'])->name('kerjasama.store');

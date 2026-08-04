@@ -72,11 +72,11 @@
                     </div>
                     <div>
                         <label class="block text-xs font-medium text-gray-500 mb-1">Tgl Mulai</label>
-                        <input type="date" name="tanggal_mulai_ks" value="{{ $ks->tanggal_mulai_ks?->format('Y-m-d') }}" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                        <x-date-picker name="tanggal_mulai_ks" :value="$ks->tanggal_mulai_ks?->format('Y-m-d')" />
                     </div>
                     <div>
                         <label class="block text-xs font-medium text-gray-500 mb-1">Tgl Berakhir</label>
-                        <input type="date" name="tanggal_selesai_ks" value="{{ $ks->tanggal_selesai_ks?->format('Y-m-d') }}" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                        <x-date-picker name="tanggal_selesai_ks" :value="$ks->tanggal_selesai_ks?->format('Y-m-d')" />
                     </div>
                 </div>
 

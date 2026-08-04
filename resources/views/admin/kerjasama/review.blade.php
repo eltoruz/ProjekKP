@@ -465,14 +465,14 @@
                 <div class="space-y-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Pembahasan <span class="text-red-500">*</span></label>
-                        <input type="date" x-model="tgl" required class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white">
+                        <x-date-picker model="tgl" />
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Jam Pembahasan (24 Jam) <span class="text-red-500">*</span></label>
                         <input type="text" x-model="jam" placeholder="21:45 atau ketik 2145" maxlength="5" required
                                oninput="formatJamInput(this)" onblur="validateJamOnBlur(this)"
                                class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white font-mono text-base tracking-wider">
-                         
+
                     </div>
                 </div>
                 <div class="flex justify-end gap-2 mt-5">
@@ -511,14 +511,14 @@
                 <div class="space-y-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Pembahasan <span class="text-red-500">*</span></label>
-                        <input type="date" x-model="tgl" required class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white">
+                        <x-date-picker model="tgl" />
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Jam Pembahasan (24 Jam) <span class="text-red-500">*</span></label>
                         <input type="text" x-model="jam" placeholder="21:45 atau ketik 2145" maxlength="5" required
                                oninput="formatJamInput(this)" onblur="validateJamOnBlur(this)"
                                class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white font-mono text-base tracking-wider">
-                         
+
                     </div>
                 </div>
                 <div class="flex justify-end gap-2 mt-5">
@@ -581,11 +581,11 @@
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-gray-500 mb-1">Tgl Mulai</label>
-                            <input type="date" name="tanggal_mulai_ks" value="{{ $ks->tanggal_mulai_ks?->format('Y-m-d') }}" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                            <x-date-picker name="tanggal_mulai_ks" :value="$ks->tanggal_mulai_ks?->format('Y-m-d')" />
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-gray-500 mb-1">Tgl Berakhir</label>
-                            <input type="date" name="tanggal_selesai_ks" value="{{ $ks->tanggal_selesai_ks?->format('Y-m-d') }}" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                            <x-date-picker name="tanggal_selesai_ks" :value="$ks->tanggal_selesai_ks?->format('Y-m-d')" />
                         </div>
                     </div>
                     <div class="grid grid-cols-2 gap-3">

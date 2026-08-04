@@ -147,6 +147,80 @@
     </div>
     @endif
 
+    <!-- Kartu Laporan Berkala per Periode -->
+    <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+        <div class="p-5 border-b border-gray-200 bg-slate-50 flex flex-wrap items-center justify-between gap-3">
+            <div>
+                <h3 class="text-sm font-bold text-gray-900">Laporan Berkala per Periode</h3>
+                <p class="text-xs text-gray-500 mt-0.5">
+                    @if(count($periodeList) > 0)
+                        Jangka waktu {{ $ks->jangka_waktu_thn }} tahun &times; 2 semester = {{ count($periodeList) }} periode pelaporan
+                    @else
+                        Jumlah periode dihitung dari Jangka Waktu dan Tanggal Mulai kerja sama
+                    @endif
+                </p>
+            </div>
+            @if(count($periodeList) > 0)
+            @php $sudahTerkirim = collect($periodeList)->where('status', 'terkirim')->count(); @endphp
+            <span class="px-3 py-1.5 rounded-lg text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">
+                {{ $sudahTerkirim }} / {{ count($periodeList) }} Terkirim
+            </span>
+            @endif
+        </div>
+
+        @if(count($periodeList) === 0)
+            <div class="p-8 text-center text-gray-500 text-xs">
+                <p class="font-medium text-gray-700 mb-1">Periode pelaporan belum dapat ditentukan.</p>
+                <p>Kartu periode akan muncul otomatis setelah Admin mengisi Jangka Waktu dan Tanggal Mulai pada tahap finalisasi kerja sama.</p>
+            </div>
+        @else
+            <div class="p-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                @foreach($periodeList as $item)
+                @php
+                    $kartuClass = match($item['status']) {
+                        'terkirim' => 'border-green-200 bg-green-50/50',
+                        'terlewat' => 'border-red-200 bg-red-50/50',
+                        'berjalan' => 'border-amber-200 bg-amber-50/50',
+                        default => 'border-gray-200 bg-white',
+                    };
+                    $badge = match($item['status']) {
+                        'terkirim' => ['Terkirim', 'bg-green-100 text-green-800 border-green-300'],
+                        'terlewat' => ['Terlewat', 'bg-red-100 text-red-800 border-red-300'],
+                        'berjalan' => ['Berjalan', 'bg-amber-100 text-amber-800 border-amber-300'],
+                        default => ['Mendatang', 'bg-gray-100 text-gray-600 border-gray-300'],
+                    };
+                @endphp
+                <div class="border rounded-xl p-4 {{ $kartuClass }} transition-colors">
+                    <div class="flex items-start justify-between gap-2 mb-2">
+                        <div>
+                            <p class="text-sm font-bold text-gray-900">{{ $item['periode'] }}</p>
+                            <p class="text-xs text-gray-500">{{ $item['tahun'] }} &middot; {{ $item['rentang'] }}</p>
+                        </div>
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold border shrink-0 {{ $badge[1] }}">{{ $badge[0] }}</span>
+                    </div>
+
+                    @if($item['laporan'])
+                        <div class="mt-3 pt-3 border-t border-gray-200/70 space-y-1.5">
+                            <p class="text-[11px] text-gray-600 truncate" title="{{ $item['laporan']->nama_file }}">{{ $item['laporan']->nama_file }}</p>
+                            <p class="text-[11px] text-gray-400">Diunggah {{ $item['laporan']->created_at?->format('d M Y, H:i') ?? '-' }}</p>
+                            <a href="{{ Storage::disk('public')->url($item['laporan']->file_path) }}" target="_blank"
+                               class="inline-flex items-center gap-1 mt-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold text-indigo-600 bg-white hover:bg-indigo-50 border border-indigo-200 transition-colors">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                                Unduh File
+                            </a>
+                        </div>
+                    @else
+                        <div class="mt-3 pt-3 border-t border-gray-200/70">
+                            <p class="text-[11px] text-gray-500">Belum ada laporan diunggah</p>
+                            <p class="text-[11px] text-gray-400 mt-0.5">Batas periode: {{ $item['batas_akhir']->format('d M Y') }}</p>
+                        </div>
+                    @endif
+                </div>
+                @endforeach
+            </div>
+        @endif
+    </div>
+
     <!-- Riwayat Laporan Berkala yang Diunggah -->
     <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
         <div class="p-5 border-b border-gray-200 flex items-center justify-between bg-slate-50">

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Mitra;
 use App\Http\Controllers\Controller;
 use App\Models\Kerjasama;
 use App\Models\MitraReport;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class LaporanController extends Controller
@@ -36,8 +37,67 @@ class LaporanController extends Controller
 
         $isReportingActive = $ks->is_reporting_active;
         $approvedItems = $ks->pemilihanData->where('approval_status', 'approved');
+        $periodeList = $this->susunPeriodeLaporan($ks);
 
-        return view('mitra.kerjasama.laporan', compact('ks', 'isReportingActive', 'approvedItems'));
+        return view('mitra.kerjasama.laporan', compact('ks', 'isReportingActive', 'approvedItems', 'periodeList'));
+    }
+
+    /**
+     * Susun daftar periode laporan berkala sepanjang masa berlaku kerja sama.
+     *
+     * Kewajiban pelaporan 2x per tahun (Semester 1 & Semester 2), sehingga jumlah
+     * periode = jangka_waktu_thn x 2, dihitung mulai dari tahun tanggal_mulai_ks.
+     * Mengembalikan array kosong bila jangka waktu / tanggal mulai belum diisi Admin.
+     */
+    private function susunPeriodeLaporan(Kerjasama $ks): array
+    {
+        $jangkaWaktu = (int) $ks->jangka_waktu_thn;
+
+        if ($jangkaWaktu < 1 || !$ks->tanggal_mulai_ks) {
+            return [];
+        }
+
+        // Petakan laporan terunggah dengan kunci "tahun|periode" untuk pencocokan cepat
+        $laporanTerunggah = $ks->reports->keyBy(fn ($rep) => $rep->tahun . '|' . $rep->periode);
+
+        $tahunMulai = (int) $ks->tanggal_mulai_ks->year;
+        $semesterList = [
+            'Semester 1' => ['rentang' => 'Januari - Juni', 'bulanMulai' => 1, 'bulanAkhir' => 6],
+            'Semester 2' => ['rentang' => 'Juli - Desember', 'bulanMulai' => 7, 'bulanAkhir' => 12],
+        ];
+
+        $periodeList = [];
+
+        for ($i = 0; $i < $jangkaWaktu; $i++) {
+            $tahun = $tahunMulai + $i;
+
+            foreach ($semesterList as $periode => $info) {
+                $laporan = $laporanTerunggah->get($tahun . '|' . $periode);
+                $mulaiPeriode = Carbon::create($tahun, $info['bulanMulai'], 1)->startOfMonth();
+                $batasAkhir = Carbon::create($tahun, $info['bulanAkhir'], 1)->endOfMonth();
+
+                if ($laporan) {
+                    $status = 'terkirim';
+                } elseif (now()->greaterThan($batasAkhir)) {
+                    $status = 'terlewat';
+                } elseif (now()->greaterThanOrEqualTo($mulaiPeriode)) {
+                    $status = 'berjalan';
+                } else {
+                    $status = 'mendatang';
+                }
+
+                $periodeList[] = [
+                    'tahun' => $tahun,
+                    'periode' => $periode,
+                    'rentang' => $info['rentang'],
+                    'batas_akhir' => $batasAkhir,
+                    'laporan' => $laporan,
+                    'status' => $status,
+                ];
+            }
+        }
+
+        return $periodeList;
     }
 
     public function store(Request $request, $id)

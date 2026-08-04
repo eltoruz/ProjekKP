@@ -61,6 +61,92 @@
                 el.value = (h < 10 ? '0' + h : h) + ':00';
             }
         }
+
+        // Nama bulan Bahasa Indonesia, dipakai date picker & kalender jadwal pembahasan
+        window.KS_BULAN = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+
+        /**
+         * State Alpine untuk components/date-picker.blade.php
+         * Nilai disimpan sebagai string Y-m-d agar cocok dengan validasi 'date' di server.
+         */
+        function ksDatePicker(initial, minDate, maxDate) {
+            return {
+                open: false,
+                value: initial || '',
+                viewY: null,
+                viewM: null,
+                dayNames: ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'],
+
+                toggle() {
+                    this.open = !this.open;
+                    if (this.open) this.resetView();
+                },
+                resetView() {
+                    const base = this.parse(this.value) || new Date();
+                    this.viewY = base.getFullYear();
+                    this.viewM = base.getMonth();
+                },
+                parse(iso) {
+                    if (!iso) return null;
+                    const p = String(iso).slice(0, 10).split('-');
+                    if (p.length !== 3) return null;
+                    const d = new Date(+p[0], +p[1] - 1, +p[2]);
+                    return isNaN(d.getTime()) ? null : d;
+                },
+                iso(y, m, d) {
+                    return y + '-' + String(m + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+                },
+                shiftMonth(delta) {
+                    let m = this.viewM + delta, y = this.viewY;
+                    if (m < 0) { m = 11; y--; }
+                    if (m > 11) { m = 0; y++; }
+                    this.viewM = m;
+                    this.viewY = y;
+                },
+                pick(iso) {
+                    this.value = iso;
+                    this.open = false;
+                },
+                pickToday() {
+                    const t = new Date();
+                    this.viewY = t.getFullYear();
+                    this.viewM = t.getMonth();
+                    this.pick(this.iso(t.getFullYear(), t.getMonth(), t.getDate()));
+                },
+                get monthLabel() {
+                    if (this.viewY === null) return '';
+                    return window.KS_BULAN[this.viewM] + ' ' + this.viewY;
+                },
+                get display() {
+                    const d = this.parse(this.value);
+                    if (!d) return '';
+                    return d.getDate() + ' ' + window.KS_BULAN[d.getMonth()] + ' ' + d.getFullYear();
+                },
+                get cells() {
+                    if (this.viewY === null) this.resetView();
+                    const first = new Date(this.viewY, this.viewM, 1);
+                    // Senin sebagai kolom pertama (getDay: 0 = Minggu)
+                    const lead = (first.getDay() + 6) % 7;
+                    const total = new Date(this.viewY, this.viewM + 1, 0).getDate();
+                    const today = new Date();
+                    const todayIso = this.iso(today.getFullYear(), today.getMonth(), today.getDate());
+                    const selected = String(this.value).slice(0, 10);
+                    const out = [];
+                    for (let i = 0; i < lead; i++) out.push(null);
+                    for (let d = 1; d <= total; d++) {
+                        const iso = this.iso(this.viewY, this.viewM, d);
+                        out.push({
+                            day: d,
+                            iso: iso,
+                            isToday: iso === todayIso,
+                            isSelected: iso === selected,
+                            disabled: (minDate && iso < minDate) || (maxDate && iso > maxDate),
+                        });
+                    }
+                    return out;
+                },
+            };
+        }
     </script>
 </head>
 <body class="bg-gray-50 text-gray-900 min-h-screen antialiased">
