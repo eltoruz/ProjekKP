@@ -96,6 +96,22 @@
                 iso(y, m, d) {
                     return y + '-' + String(m + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
                 },
+                init() {
+                    this.resetView();
+                },
+                setYear(year) {
+                    this.viewY = parseInt(year);
+                },
+                get yearRange() {
+                    const current = this.viewY || new Date().getFullYear();
+                    const start = current - 5;
+                    const end = current + 10;
+                    const years = [];
+                    for (let y = start; y <= end; y++) {
+                        years.push(y);
+                    }
+                    return years;
+                },
                 shiftMonth(delta) {
                     let m = this.viewM + delta, y = this.viewY;
                     if (m < 0) { m = 11; y--; }

@@ -36,16 +36,26 @@
          role="dialog" aria-label="Pilih tanggal"
          class="absolute left-0 z-50 mt-2 w-[21rem] bg-white rounded-xl shadow-xl border border-gray-200 p-4">
 
-        <!-- Navigasi Bulan -->
-        <div class="flex items-center justify-between mb-3">
+        <!-- Navigasi Bulan & Tahun -->
+        <div class="flex items-center justify-between mb-3 gap-1">
             <button type="button" @click="shiftMonth(-1)" aria-label="Bulan sebelumnya"
-                    class="w-9 h-9 flex items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100 hover:text-gray-800 transition-colors">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+                    class="w-8 h-8 flex items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100 hover:text-gray-800 transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
             </button>
-            <p class="text-sm font-bold text-gray-900" x-text="monthLabel" aria-live="polite"></p>
+            
+            <div class="flex items-center gap-1.5">
+                <span class="text-xs font-bold text-gray-900" x-text="window.KS_BULAN[viewM]"></span>
+                <select :value="viewY" @change="setYear($event.target.value)"
+                        class="text-xs font-bold text-gray-900 bg-gray-50 border border-gray-200 rounded-md px-1.5 py-0.5 focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer">
+                    <template x-for="y in yearRange" :key="y">
+                        <option :value="y" x-text="y" :selected="y === viewY"></option>
+                    </template>
+                </select>
+            </div>
+
             <button type="button" @click="shiftMonth(1)" aria-label="Bulan berikutnya"
-                    class="w-9 h-9 flex items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100 hover:text-gray-800 transition-colors">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                    class="w-8 h-8 flex items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100 hover:text-gray-800 transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
             </button>
         </div>
 

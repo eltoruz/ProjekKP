@@ -45,9 +45,9 @@ class LaporanController extends Controller
     /**
      * Susun daftar periode laporan berkala sepanjang masa berlaku kerja sama.
      *
-     * Kewajiban pelaporan 2x per tahun (Semester 1 & Semester 2), sehingga jumlah
+     * Kewajiban pelaporan 2x per tahun (Tengah Tahun & Akhir Tahun), sehingga jumlah
      * periode = jangka_waktu_thn x 2, dihitung mulai dari tahun tanggal_mulai_ks.
-     * Mengembalikan array kosong bila jangka waktu / tanggal mulai belum diisi Admin.
+     * Mengembalikan array kartu tahun bila jangka waktu / tanggal mulai tersedia.
      */
     private function susunPeriodeLaporan(Kerjasama $ks): array
     {
@@ -61,43 +61,43 @@ class LaporanController extends Controller
         $laporanTerunggah = $ks->reports->keyBy(fn ($rep) => $rep->tahun . '|' . $rep->periode);
 
         $tahunMulai = (int) $ks->tanggal_mulai_ks->year;
-        $semesterList = [
-            'Semester 1' => ['rentang' => 'Januari - Juni', 'bulanMulai' => 1, 'bulanAkhir' => 6],
-            'Semester 2' => ['rentang' => 'Juli - Desember', 'bulanMulai' => 7, 'bulanAkhir' => 12],
+        $periodeDefinitions = [
+            'Tengah Tahun' => ['rentang' => 'Januari - Juni'],
+            'Akhir Tahun' => ['rentang' => 'Juli - Desember'],
         ];
 
-        $periodeList = [];
+        $tahunCards = [];
 
         for ($i = 0; $i < $jangkaWaktu; $i++) {
             $tahun = $tahunMulai + $i;
+            $tahunIndex = $i + 1;
 
-            foreach ($semesterList as $periode => $info) {
-                $laporan = $laporanTerunggah->get($tahun . '|' . $periode);
-                $mulaiPeriode = Carbon::create($tahun, $info['bulanMulai'], 1)->startOfMonth();
-                $batasAkhir = Carbon::create($tahun, $info['bulanAkhir'], 1)->endOfMonth();
-
-                if ($laporan) {
-                    $status = 'terkirim';
-                } elseif (now()->greaterThan($batasAkhir)) {
-                    $status = 'terlewat';
-                } elseif (now()->greaterThanOrEqualTo($mulaiPeriode)) {
-                    $status = 'berjalan';
-                } else {
-                    $status = 'mendatang';
+            $periodes = [];
+            foreach ($periodeDefinitions as $periodeName => $info) {
+                $laporan = $laporanTerunggah->get($tahun . '|' . $periodeName);
+                if (!$laporan && $periodeName === 'Tengah Tahun') {
+                    $laporan = $laporanTerunggah->get($tahun . '|Semester 1');
+                }
+                if (!$laporan && $periodeName === 'Akhir Tahun') {
+                    $laporan = $laporanTerunggah->get($tahun . '|Semester 2');
                 }
 
-                $periodeList[] = [
-                    'tahun' => $tahun,
-                    'periode' => $periode,
+                $periodes[$periodeName] = [
+                    'nama' => $periodeName,
                     'rentang' => $info['rentang'],
-                    'batas_akhir' => $batasAkhir,
                     'laporan' => $laporan,
-                    'status' => $status,
+                    'status' => $laporan ? 'terkirim' : 'belum',
                 ];
             }
+
+            $tahunCards[] = [
+                'tahun_ke' => $tahunIndex,
+                'tahun' => $tahun,
+                'periodes' => $periodes,
+            ];
         }
 
-        return $periodeList;
+        return $tahunCards;
     }
 
     public function store(Request $request, $id)
@@ -110,33 +110,40 @@ class LaporanController extends Controller
 
         $validated = $request->validate([
             'tahun' => 'required|integer|min:2020|max:2099',
-            'periode' => 'required|string|in:Semester 1,Semester 2',
-            'file_laporan' => 'required|file|mimes:pdf|max:20480',
+            'periode' => 'required|string|in:Tengah Tahun,Akhir Tahun,Semester 1,Semester 2',
+            'file_laporan' => 'nullable|file|mimes:pdf|max:20480',
             'catatan' => 'nullable|string|max:1000',
+            'peran1' => 'nullable|string',
+            'peran2' => 'nullable|string',
+            'peran3' => 'nullable|string',
         ], [
-            'file_laporan.required' => 'File laporan berkala wajib diunggah.',
             'file_laporan.mimes' => 'Format file yang diizinkan hanya: PDF.',
             'file_laporan.max' => 'Ukuran file laporan maksimal 20MB.',
             'tahun.required' => 'Tahun laporan wajib dipilih.',
-            'periode.required' => 'Periode semester laporan wajib dipilih.',
+            'periode.required' => 'Periode laporan wajib dipilih.',
         ]);
 
-        $filePath = $request->file('file_laporan')->store('laporan/' . $id, 'public');
-        $originalName = $request->file('file_laporan')->getClientOriginalName();
+        $filePath = null;
+        $originalName = null;
+
+        if ($request->hasFile('file_laporan')) {
+            $filePath = $request->file('file_laporan')->store('laporan/' . $id, 'public');
+            $originalName = $request->file('file_laporan')->getClientOriginalName();
+        }
 
         MitraReport::create([
             'kerjasama_id' => $id,
             'tahun' => $validated['tahun'],
             'periode' => $validated['periode'],
-            'file_path' => $filePath,
-            'nama_file' => $originalName,
+            'file_path' => $filePath ?? '',
+            'nama_file' => $originalName ?? 'Laporan ' . $validated['periode'],
             'catatan' => $validated['catatan'] ?? null,
             'status' => 'dikirim',
         ]);
 
-        $ks->addReviewEntry('Laporan Berkala', "Mitra mengunggah laporan berkala {$validated['periode']} {$validated['tahun']}");
+        $ks->addReviewEntry('Laporan Berkala', "Mitra mengisi/mengunggah laporan berkala {$validated['periode']} {$validated['tahun']}");
 
         return redirect()->route('mitra.kerjasama.laporan', $id)
-            ->with('success', "Laporan berkala {$validated['periode']} {$validated['tahun']} berhasil diunggah.");
+            ->with('success', "Laporan berkala {$validated['periode']} {$validated['tahun']} berhasil dikirim.");
     }
 }

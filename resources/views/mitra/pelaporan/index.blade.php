@@ -8,7 +8,7 @@
     <div class="px-6 py-4 border-b border-gray-100 flex flex-wrap gap-3 justify-between items-center">
         <div>
             <h2 class="text-base font-bold text-gray-900">Daftar Kerja Sama yang Dapat Dilaporkan</h2>
-            <p class="text-xs text-gray-500 mt-0.5">Kerja sama berstatus Selesai. Unggah laporan penggunaan data 2x/tahun (Semester 1 &amp; Semester 2).</p>
+            <p class="text-xs text-gray-500 mt-0.5">Kerja sama berstatus Selesai. Unggah/Isi laporan penggunaan data 2x/tahun (Tengah Tahun &amp; Akhir Tahun).</p>
         </div>
         <form method="GET" class="flex flex-wrap gap-3 items-center">
             <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari nama mitra atau tentang..."
