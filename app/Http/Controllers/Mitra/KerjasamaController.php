@@ -84,7 +84,6 @@ class KerjasamaController extends Controller
                 ->with('error', 'Pemilihan data hanya dapat dilakukan setelah Nota Kesepakatan berstatus Selesai.');
         }
 
-        // Cache static table catalog as plain array for 24 hours (prevents unserialize errors)
         $tableCatalogArray = \Illuminate\Support\Facades\Cache::remember('metadata_table_catalog_v3', 86400, function () {
             return \App\Models\Metadata::selectRaw('db_name, schema_name, tbl_name, COUNT(*) as total_cols')
                 ->groupBy('db_name', 'schema_name', 'tbl_name')
@@ -101,7 +100,6 @@ class KerjasamaController extends Controller
             return $tableCatalog->pluck('db_name')->filter()->unique()->values()->toArray();
         });
 
-        // Previously selected columns and reasons
         $existingSelections = $ks->pemilihanData;
         $selectedColIds = $existingSelections->pluck('metadata_id')->toArray();
         $tableReasons = [];
@@ -120,9 +118,6 @@ class KerjasamaController extends Controller
         ]);
     }
 
-    /**
-     * AJAX: Load columns for a specific table (cached 130x speedup, ~3ms latency)
-     */
     public function getTableColumns(Request $request)
     {
         $request->validate([

@@ -103,14 +103,10 @@ class NotaKesepakatanController extends Controller
         return redirect()->route('mitra.kerjasama.show', $id)->with('info', 'Surat undangan berhasil diupload. Silakan melakukan pembahasan dengan admin sesuai tanggal di surat undangan.');
     }
 
-    /**
-     * Secure Download Controller untuk mencegah Stored XSS
-     */
     public function downloadDokumen($id, $filename)
     {
         $ks = Kerjasama::where('kerjasama_id', $id)->notDeleted()->firstOrFail();
 
-        // Prevent path traversal
         $safeFilename = basename($filename);
         $filePath = storage_path('app/public/dokumen/' . $id . '/' . $safeFilename);
 
@@ -131,7 +127,6 @@ class NotaKesepakatanController extends Controller
             return back()->with('error', 'Pemilihan data hanya dapat dilakukan setelah Nota Kesepakatan berstatus Selesai/Final.');
         }
 
-        // Read-only check: cannot edit if already submitted
         if ($ks->status_pemilihan_data === 'submitted') {
             return back()->with('error', 'Pemilihan data telah diajukan dan terkunci. Anda tidak dapat mengubah data yang sudah final.');
         }
@@ -139,7 +134,6 @@ class NotaKesepakatanController extends Controller
         $selectedData = [];
         $reasons = [];
 
-        // 1. Per-column selection (selected_data containing metadata UUIDs)
         if ($request->has('selected_data') && is_array($request->selected_data) && count($request->selected_data) > 0) {
             $request->validate([
                 'selected_data' => 'required|array|min:1',
@@ -160,7 +154,6 @@ class NotaKesepakatanController extends Controller
                 }
             }
         }
-        // 2. Whole table selection (selected_tables)
         elseif ($request->has('selected_tables') && is_array($request->selected_tables) && count($request->selected_tables) > 0) {
             $request->validate([
                 'selected_tables' => 'required|array|min:1',
@@ -181,7 +174,6 @@ class NotaKesepakatanController extends Controller
             }
         }
         else {
-            // If saving draft with 0 items
             $action->execute($id, [], [], 'draft');
             return redirect()->route('mitra.kerjasama.show', $id)->with('success', 'Draf pemilihan data disimpan.');
         }

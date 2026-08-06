@@ -17,13 +17,9 @@ class SimpanPemilihanDataAction
 
             $now = Carbon::now();
 
-            // Rekonsiliasi (bukan hapus-total): seleksi lama dipertahankan agar keputusan
-            // persetujuan admin (approval_status + catatan_admin) tidak hilang saat Mitra
-            // menyimpan ulang setelah form dibuka kunci.
             $existing = MetadataUser::where('kerjasama_id', $kerjasamaId)->get()->keyBy('metadata_id');
             $selectedSet = array_fill_keys($selectedData, true);
 
-            // 1. Hapus item yang tidak lagi dipilih Mitra.
             $toRemove = $existing->keys()->diff(array_keys($selectedSet))->all();
             if (! empty($toRemove)) {
                 MetadataUser::where('kerjasama_id', $kerjasamaId)
@@ -31,10 +27,6 @@ class SimpanPemilihanDataAction
                     ->delete();
             }
 
-            // 2. Item baru disisipkan sebagai 'pending' (batch insert, hindari N+1).
-            //    Item lama yang alasannya tidak berubah mempertahankan status persetujuan;
-            //    bila alasannya berubah, di-reset ke 'pending' untuk ditinjau ulang admin
-            //    karena justifikasi yang dulu disetujui sudah berbeda.
             $insertData = [];
             $seen = [];
             foreach ($selectedData as $metadataId) {

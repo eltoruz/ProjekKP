@@ -254,7 +254,6 @@ class KerjasamaController extends Controller
                 ->with('error', 'Gagal menyimpan persetujuan: Pemilihan data masih berstatus draf dan belum diajukan secara resmi oleh Mitra.');
         }
 
-        // 1. Update overall metode and status implementasi (pengaktifan) if provided
         $updateData = [];
         if ($request->filled('ks_metode')) {
             $updateData['ks_metode'] = $request->ks_metode;
@@ -266,9 +265,8 @@ class KerjasamaController extends Controller
             $ks->update($updateData);
         }
 
-        // 2. Update approval status & notes per metadata item
-        $approvalStatuses = $request->input('approval_status', []); // [item_id => 'approved'|'rejected'|'pending']
-        $catatanAdmin = $request->input('catatan_admin', []); // [item_id => 'catatan...']
+        $approvalStatuses = $request->input('approval_status', []);
+        $catatanAdmin = $request->input('catatan_admin', []);
 
         $existingItems = $ks->pemilihanData;
         $approvedCount = 0;

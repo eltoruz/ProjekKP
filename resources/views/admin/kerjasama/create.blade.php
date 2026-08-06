@@ -12,7 +12,6 @@
                 <h2 class="text-sm font-semibold text-slate-800">Tambah Data Baru</h2>
             </div>
             <div class="p-6 space-y-5">
-                <!-- Baris 1: Jenis, Tingkat, Kode Wilayah, No Input -->
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div>
                         <label class="block text-xs font-medium text-gray-500 mb-1">Jenis <span class="text-red-500">*</span></label>
@@ -44,7 +43,6 @@
                     </div>
                 </div>
 
-                <!-- Baris 2: Instansi, Jml K/L -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div class="md:col-span-2">
                         <label class="block text-xs font-medium text-gray-500 mb-1">Nama Kementerian / Lembaga / Instansi <span class="text-red-500">*</span></label>
@@ -56,7 +54,6 @@
                     </div>
                 </div>
 
-                <!-- Baris 3: Pihak 1, Pihak 2 -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-xs font-medium text-gray-500 mb-1">Pihak 1</label>
@@ -68,7 +65,6 @@
                     </div>
                 </div>
 
-                <!-- Baris 4: No Pihak 1, No Pihak 2, TTD 1, TTD 2 -->
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div>
                         <label class="block text-xs font-medium text-gray-500 mb-1">No. Pihak 1</label>
@@ -88,13 +84,11 @@
                     </div>
                 </div>
 
-                <!-- Baris 5: Perihal -->
                 <div>
                     <label class="block text-xs font-medium text-gray-500 mb-1">Perihal</label>
                     <textarea name="tentang" rows="2" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">{{ old('tentang') }}</textarea>
                 </div>
 
-                <!-- Baris 6: Jangka, Tgl Mulai, Tgl Berakhir -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
                         <label class="block text-xs font-medium text-gray-500 mb-1">Jangka (thn)</label>
@@ -110,7 +104,6 @@
                     </div>
                 </div>
 
-                <!-- Baris 7: Kontak -->
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div>
                         <label class="block text-xs font-medium text-gray-500 mb-1">Narahubung Adm</label>
@@ -130,7 +123,6 @@
                     </div>
                 </div>
 
-                <!-- Baris 8: Status, Metode, Implementasi -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
                         <label class="block text-xs font-medium text-gray-500 mb-1">Status Dok</label>
@@ -161,7 +153,6 @@
                     </div>
                 </div>
 
-                <!-- Baris 9: Unit Utama, Dokumen -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-xs font-medium text-gray-500 mb-1">Unit Utama Terlibat</label>

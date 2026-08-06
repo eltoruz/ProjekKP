@@ -23,7 +23,6 @@
         $hasJadwal = (bool) $kerjasama->tanggal_pembahasan;
     @endphp
 
-    <!-- Progress Stepper -->
     @php
         $currentStep = 1;
         if ($isRejected) {
@@ -105,7 +104,6 @@
         </div>
     </div>
 
-    <!-- Upload Dokumen (langsung tampil, bukan modal) -->
     @if($kerjasama->ks_jenis == 3 && !$kerjasama->ks_status_dok && !$kerjasama->folder_ks)
     <div class="bg-white rounded-lg shadow-sm border-2 border-dashed border-primary/30 p-6">
         <div class="flex items-center gap-2 mb-4">
@@ -137,14 +135,12 @@
     </div>
     @endif
 
-    <!-- Action Buttons & Modal Konfirmasi -->
     @if($kerjasama->ks_jenis == 3 && !$kerjasama->ks_status_dok)
     <div class="flex gap-2">
         <a href="{{ route('mitra.kerjasama.edit', $kerjasama->kerjasama_id) }}" class="border border-gray-300 text-gray-700 px-4 py-2 rounded-lg text-sm hover:bg-gray-50">Edit</a>
         <button type="button" @click="confirmAjukan = true" class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-green-700">Ajukan ke Admin</button>
     </div>
 
-    <!-- Modal Konfirmasi Ajukan -->
     <div x-show="confirmAjukan" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4" style="background: rgba(0,0,0,0.5)">
         <div class="bg-white rounded-xl shadow-2xl w-full max-w-md p-6" @click.outside="confirmAjukan = false">
             <div class="flex items-center gap-3 mb-4">
@@ -169,10 +165,9 @@
     </div>
     @endif
 
-    <!-- Jadwal Pembahasan -->
     @if($kerjasama->tanggal_pembahasan)
         @if(in_array((int)$kerjasama->ks_status_dok, [2, 3]))
-        <!-- Desain Utama Prominen (Selama proses undangan & pembahasan) -->
+        
         <div class="bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg shadow-sm border-2 border-blue-300 p-6 mb-4">
             <div class="flex items-start gap-4">
                 <div class="w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center shrink-0">
@@ -194,7 +189,6 @@
         @endif
     @endif
 
-    <!-- Upload Surat Undangan (Status 2, sudah ada jadwal) -->
     @if($kerjasama->ks_status_dok == 2 && $kerjasama->tanggal_pembahasan && !$kerjasama->hasSuratUndangan())
     <div class="bg-white rounded-lg shadow-sm border-2 border-dashed border-primary/30 p-6 mb-4">
         <div class="flex items-center gap-2 mb-4">
@@ -218,7 +212,6 @@
     </div>
     @endif
 
-    <!-- Data Final / Informasi Kerja Sama -->
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-4">
         <div class="flex items-center justify-between mb-3 border-b border-gray-100 pb-3">
             <h3 class="text-base font-semibold text-navy">Data Final Kerja Sama</h3>
@@ -266,7 +259,6 @@
         @endif
     </div>
 
-    <!-- Dokumen -->
     @php $files = $kerjasama->folder_ks ? (json_decode($kerjasama->folder_ks, true) ?: []) : []; @endphp
     @if(count($files))
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-4" x-data="{ open: false, src: '' }">
@@ -289,7 +281,6 @@
             </ul>
         </div>
 
-        <!-- Modal -->
         <div x-show="open" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4" style="background: rgba(0,0,0,0.6)">
             <div class="bg-white rounded-xl shadow-2xl w-full max-w-4xl h-[85vh] flex flex-col" @click.outside="open = false">
                 <div class="flex justify-between items-center px-6 py-3 border-b">
@@ -302,10 +293,8 @@
     </div>
     @endif
 
-    <!-- Widget Diskusi & Chat Interaktif Mitra ↔ Admin -->
     <x-chat-widget :kerjasamaId="$kerjasama->kerjasama_id" currentRole="mitra" :senderName="$kerjasama->nama_kl ?? 'Mitra'" />
 
-    <!-- Fitur Pemilihan Data yang Diperlukan oleh Mitra (Kartu Akses Halaman Terpisah) -->
     @if((int)$kerjasama->ks_status_dok >= 5)
     <div class="bg-white rounded-lg shadow-sm border border-indigo-200 p-6 mb-4 space-y-4">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 pb-4">
@@ -409,7 +398,6 @@
             });
         @endphp
 
-        <!-- Ringkasan Data Terpilih (Terstruktur per Database & Tabel) -->
         <div class="mt-4 space-y-3" x-data="{
             openSelectedTables: {
                 @foreach($groupedSelection as $dbName => $tables)
@@ -428,7 +416,7 @@
                 }
             }
         }">
-            <!-- Quick Action Toolbar -->
+            
             <div class="flex items-center justify-between gap-2 py-1.5 px-3 bg-gray-50 border border-gray-200 rounded-lg text-xs">
                 <div class="flex items-center gap-2">
                     <button type="button" @click="toggleAll()" class="inline-flex items-center gap-1.5 text-indigo-600 hover:text-indigo-800 font-medium hover:underline">
@@ -451,7 +439,7 @@
 
             @foreach($groupedSelection as $dbName => $tables)
             <div class="space-y-2">
-                <!-- Group Header Database -->
+                
                 <div class="flex items-center gap-2 py-1.5 px-3 bg-slate-100 border border-slate-200 rounded-lg text-slate-800 font-mono font-bold text-xs">
                     <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s-8-1.79-8-4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"/>
@@ -469,8 +457,7 @@
                 @endphp
                 <div x-init="openSelectedTables['{{ $tblKey }}'] = false" 
                      class="rounded-xl border border-indigo-200 bg-white overflow-hidden shadow-2xs ml-2">
-                    
-                    <!-- Table Card Header -->
+
                     <div class="p-3 bg-indigo-50/40 border-b border-indigo-100 flex items-center justify-between cursor-pointer select-none"
                          @click="openSelectedTables['{{ $tblKey }}'] = !openSelectedTables['{{ $tblKey }}']">
                         
@@ -506,7 +493,6 @@
                         </div>
                     </div>
 
-                    <!-- Accordion Body: List Kolom & Alasan -->
                     <div x-show="openSelectedTables['{{ $tblKey }}']" x-collapse class="p-4 bg-white border-t border-gray-100 space-y-3">
                         <div class="overflow-x-auto border border-gray-200 rounded-lg">
                             <table class="w-full text-left text-xs border-collapse">
@@ -555,7 +541,6 @@
                             </table>
                         </div>
 
-                        <!-- Alasan / Keterangan Penggunaan Data -->
                         <div class="pt-2 border-t border-gray-100">
                             <span class="text-[11px] font-bold text-indigo-950 uppercase tracking-wider">Keterangan / Alasan Penggunaan Data:</span>
                             <div class="text-xs text-gray-700 bg-slate-50 p-2.5 rounded-lg border border-slate-200 mt-1 leading-relaxed font-medium">
@@ -581,7 +566,6 @@
     </div>
     @endif
 
-    <!-- Review Logs -->
     @if(count($reviewLogs))
     <div class="bg-white rounded-lg shadow-sm border border-gray-200" x-data="{ openRiwayat: false }">
         <div class="px-5 py-3 border-b border-gray-100 flex items-center justify-between cursor-pointer" @click="openRiwayat = !openRiwayat">
@@ -641,7 +625,6 @@
     </div>
     @endif
 
-    <!-- Modal Konfirmasi Ajukan Pemilihan Data ke Admin (WCAG 2.1 Accessible Modal) -->
     <div x-show="confirmAjukanData" 
          x-cloak 
          role="dialog" 

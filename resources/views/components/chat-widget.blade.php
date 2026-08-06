@@ -94,31 +94,26 @@
      }"
      x-init="fetchChats(); setInterval(() => fetchChats(), 6000)">
 
-    <!-- Floating Chat Trigger Button (Bottom-Right Corner) -->
     <div class="fixed bottom-6 right-6 z-50">
         <button type="button" 
                 @click="toggleChat()"
                 class="relative w-14 h-14 bg-gradient-to-tr from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 text-white rounded-full shadow-2xl flex items-center justify-center cursor-pointer transition-all duration-300 transform hover:scale-105 active:scale-95 border-2 border-white/20 focus:outline-none focus:ring-4 focus:ring-indigo-300"
                 aria-label="Buka Diskusi Chat">
             
-            <!-- Chat Icon -->
             <svg x-show="!isOpen" class="w-6 h-6 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
             </svg>
 
-            <!-- Close Icon -->
             <svg x-show="isOpen" x-cloak class="w-6 h-6 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M6 18L18 6M6 6l12 12"/>
             </svg>
 
-            <!-- Unread Pulse Badge -->
             <template x-if="unreadCount > 0 && !isOpen">
                 <span class="absolute -top-1 -right-1 w-5 h-5 bg-emerald-500 text-white rounded-full ring-4 ring-white text-[10px] font-bold flex items-center justify-center animate-bounce" x-text="unreadCount"></span>
             </template>
         </button>
     </div>
 
-    <!-- Floating Chat Window Card -->
     <div x-show="isOpen" 
          x-cloak
          x-transition:enter="transition ease-out duration-250 transform"
@@ -132,7 +127,6 @@
          class="fixed bottom-24 right-6 z-50 w-96 sm:w-100 max-w-[calc(100vw-3rem)] bg-white rounded-3xl shadow-2xl border border-slate-200/80 overflow-hidden flex flex-col"
          style="display: none;">
 
-        <!-- Window Header -->
         <div class="bg-slate-900 text-white px-5 py-4 flex items-center justify-between shadow-xs">
             <div class="flex items-center gap-3">
                 <div class="relative">
@@ -160,7 +154,6 @@
             </button>
         </div>
 
-        <!-- Chat Stream Body -->
         <div x-ref="chatContainer" 
              aria-live="polite" 
              aria-relevant="additions" 
@@ -174,14 +167,12 @@
                         <span x-text="chat.created_at"></span>
                     </div>
 
-                    <!-- Message Bubble -->
                     <div class="max-w-[85%] rounded-2xl px-3.5 py-2.5 shadow-2xs leading-relaxed"
                          :class="chat.sender_role === '{{ $currentRole }}' 
                             ? 'bg-indigo-600 text-white rounded-tr-xs' 
                             : 'bg-white text-slate-800 border border-slate-200/90 rounded-tl-xs'">
                         <p class="whitespace-pre-line text-xs" x-text="chat.pesan"></p>
 
-                        <!-- Attachment File Chip -->
                         <template x-if="chat.attachment_url">
                             <div class="mt-2 pt-2 border-t" :class="chat.sender_role === '{{ $currentRole }}' ? 'border-white/20' : 'border-slate-100'">
                                 <a :href="chat.attachment_url" target="_blank" 
@@ -206,7 +197,6 @@
             </template>
         </div>
 
-        <!-- Selected File Attachment Chip Banner -->
         <template x-if="fileName">
             <div class="px-4 py-2 bg-indigo-50 border-t border-indigo-100 flex items-center justify-between text-xs text-indigo-900">
                 <div class="flex items-center gap-2 truncate">
@@ -217,7 +207,6 @@
             </div>
         </template>
 
-        <!-- Chat Input Footer Form -->
         <form @submit.prevent="send()" class="p-3 bg-white border-t border-slate-100 flex items-center gap-2">
             <input type="file" x-ref="fileRef" @change="handleFileSelect($event)" class="hidden" accept=".pdf">
 

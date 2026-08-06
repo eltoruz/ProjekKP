@@ -23,11 +23,26 @@
     showFinalisasi: false,
     showLanjut: false,
     openRiwayat: false,
+    showDetailModal: false,
+    detailData: null,
+    detailFilePath: null,
+    detailPeriodeTahun: '',
+
+    openDetailModal(reportId, filePath, periodeTahun) {
+        try {
+            const scriptEl = document.getElementById('report-json-' + reportId);
+            this.detailData = scriptEl ? JSON.parse(scriptEl.textContent) : null;
+        } catch (e) {
+            console.error('Error parsing report json:', e);
+            this.detailData = null;
+        }
+        this.detailFilePath = filePath;
+        this.detailPeriodeTahun = periodeTahun;
+        this.showDetailModal = true;
+    },
 }" class="space-y-4">
 
-    <!-- Informasi Kerja Sama (Status + Jadwal + Data Mitra + Data Final + Kontak dalam satu kartu) -->
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-4">
-        <!-- Sub: Status Dokumen -->
         <div class="px-5 py-3 border-b border-gray-100 flex items-center justify-between flex-wrap gap-2">
             <div class="flex items-center gap-2">
                 <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9"/></svg>
@@ -84,7 +99,6 @@
             @endif
         </div>
 
-        <!-- Sub: Rejection Alert -->
         @if($isRejected)
         <div class="px-5 py-4 border-b border-gray-100 bg-red-50/60 flex items-start gap-3">
             <svg class="w-5 h-5 text-red-500 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
@@ -95,7 +109,6 @@
         </div>
         @endif
 
-        <!-- Sub: Waiting Undangan -->
         @if($waitingUndangan)
         <div class="px-5 py-4 border-b border-gray-100 bg-green-50/60 flex items-start gap-2">
             <svg class="w-5 h-5 text-green-500 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
@@ -103,7 +116,6 @@
         </div>
         @endif
 
-        <!-- Sub: Jadwal Pembahasan -->
         @if($hasJadwal)
         <div class="px-5 py-4 border-b border-gray-100">
             <span class="text-xs text-gray-400">Jadwal Pembahasan</span>
@@ -111,7 +123,6 @@
         </div>
         @endif
 
-        <!-- Sub: Informasi Kerja Sama (Data Mitra + Data Final + Kontak menyatu) -->
         <div class="px-5 py-4 grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
             <div><span class="text-xs text-gray-400">Instansi</span><p class="text-sm">{{ $ks->nama_kl }}</p></div>
             <div><span class="text-xs text-gray-400">Jenis</span><p class="text-sm">{{ $ks->jenis->nama_jenis ?? '-' }}</p></div>
@@ -139,8 +150,6 @@
         </div>
     </div>
 
-
-    <!-- Dokumen -->
     @php
         $folderFiles = $ks->folder_ks_display;
         $hasDokumen = $folderFiles || $ks->dokumen_ks;
@@ -176,9 +185,8 @@
                 @endif
             </ul>
         </div>
-        <!-- Preview Modal -->
-        <div x-show="open" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4" style="background: rgba(0,0,0,0.6)">
-            <div class="bg-white rounded-xl shadow-2xl w-full max-w-4xl h-[85vh] flex flex-col" @click.outside="open = false">
+        <div x-show="open" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4" style="background: rgba(0,0,0,0.6)" @click.self="open = false">
+            <div class="bg-white rounded-xl shadow-2xl w-full max-w-4xl h-[85vh] flex flex-col">
                 <div class="flex justify-between items-center px-6 py-3 border-b">
                     <span class="font-semibold text-gray-700">Pratinjau Dokumen</span>
                     <button @click="open = false" class="text-gray-400 hover:text-gray-600 text-xl leading-none">&times;</button>
@@ -189,10 +197,8 @@
     </div>
     @endif
 
-    <!-- Widget Diskusi & Chat Interaktif Mitra ↔ Admin -->
     <x-chat-widget :kerjasamaId="$ks->kerjasama_id" currentRole="admin" senderName="Admin Pusdatin" />
 
-    <!-- Hasil Pemilihan Data oleh Mitra (Terstruktur per Database & Tabel) -->
     @if($status >= 5)
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-4">
         <div class="px-5 py-3 flex flex-wrap items-center justify-between gap-2">
@@ -248,9 +254,8 @@
                     </span>
                 @endif
             </div>
-        </div>
+            </div>
 
-        {{-- Body Section: Rincian Data Terpilih Mitra (read-only, per Database → Tabel → Kolom) --}}
         @if($ks->pemilihanData->isNotEmpty())
         @php
             $groupedSelection = $ks->pemilihanData
@@ -377,7 +382,6 @@
 
     </div>
     @endif
-    <!-- Riwayat Pelaporan Berkala Mitra -->
     @if($status >= 5 || $ks->reports->isNotEmpty())
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-4">
         <div class="px-5 py-3 border-b border-gray-100 flex items-center justify-between">
@@ -409,6 +413,16 @@
                         </thead>
                         <tbody class="divide-y divide-gray-100">
                             @foreach($ks->reports as $report)
+                            @php
+                                $catatanData = null;
+                                if (!empty($report->catatan)) {
+                                    $decoded = json_decode($report->catatan, true);
+                                    if (json_last_error() === JSON_ERROR_NONE && is_array($decoded) && !empty($decoded['is_questionnaire'])) {
+                                        $catatanData = $decoded;
+                                    }
+                                }
+                                $reportFileUrl = !empty($report->file_path) ? (Storage::disk('public')->exists($report->file_path) ? Storage::disk('public')->url($report->file_path) : asset('storage/' . $report->file_path)) : '';
+                            @endphp
                             <tr class="hover:bg-slate-50 transition-colors">
                                 <td class="py-2.5 px-3 font-semibold text-slate-800">{{ $report->tahun }}</td>
                                 <td class="py-2.5 px-3 font-medium text-indigo-700">
@@ -417,19 +431,32 @@
                                     </span>
                                 </td>
                                 <td class="py-2.5 px-3 font-mono text-gray-700">{{ $report->nama_file ?? 'File Laporan' }}</td>
-                                <td class="py-2.5 px-3 text-gray-600">{{ $report->catatan ?? '-' }}</td>
+                                <td class="py-2.5 px-3 text-gray-600">
+                                    @if($catatanData)
+                                        <script id="report-json-{{ $report->id }}" type="application/json">@json($catatanData)</script>
+                                        <button type="button" 
+                                                @click="openDetailModal('{{ $report->id }}', '{{ $reportFileUrl }}', '{{ $report->periode }} {{ $report->tahun }}')"
+                                                class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-semibold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 transition-colors cursor-pointer shadow-2xs">
+                                            <svg class="w-3.5 h-3.5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                            </svg>
+                                            Detail Form
+                                        </button>
+                                    @else
+                                        <span class="whitespace-pre-line">{{ $report->catatan ?? '-' }}</span>
+                                    @endif
+                                </td>
                                 <td class="py-2.5 px-3 text-gray-500">{{ $report->created_at ? $report->created_at->format('d M Y, H:i') : '-' }}</td>
                                 <td class="py-2.5 px-3 text-center">
-                                    @php
-                                        $fileUrl = Storage::disk('public')->exists($report->file_path)
-                                            ? Storage::disk('public')->url($report->file_path)
-                                            : asset('storage/' . $report->file_path);
-                                    @endphp
-                                    <a href="{{ $fileUrl }}" target="_blank"
-                                       class="inline-flex items-center gap-1 px-2.5 py-1 rounded text-xs font-medium text-indigo-600 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 transition-colors">
-                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-                                        Download / Lihat File
-                                    </a>
+                                    @if(!empty($report->file_path))
+                                        <a href="{{ $reportFileUrl }}" target="_blank"
+                                           class="inline-flex items-center gap-1 px-2.5 py-1 rounded text-xs font-medium text-indigo-600 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 transition-colors">
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                                            Download / Lihat File
+                                        </a>
+                                    @else
+                                        <span class="text-gray-400 font-mono text-[11px]">Form Terisi</span>
+                                    @endif
                                 </td>
                             </tr>
                             @endforeach
@@ -441,7 +468,6 @@
     </div>
     @endif
 
-    <!-- Riwayat -->
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-4">
         <div class="px-5 py-3 border-b border-gray-100 flex items-center justify-between cursor-pointer" @click="openRiwayat = !openRiwayat">
             <div class="flex items-center gap-2">
@@ -455,9 +481,8 @@
         </div>
     </div>
 
-    <!-- MODAL: Setujui & Jadwalkan -->
-    <div x-show="showSetujui" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-black/50" x-transition>
-        <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6" @click.outside="showSetujui = false">
+    <div x-show="showSetujui" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-black/50" x-transition @click.self="showSetujui = false">
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
             <h3 class="text-lg font-semibold text-green-600 mb-4">Setujui & Jadwalkan Pembahasan</h3>
             <form method="POST" action="{{ route('admin.kerjasama.setujui', $ks->kerjasama_id) }}" x-data="{ tgl: '{{ date('Y-m-d') }}', jam: '09:00' }" @submit="$refs.fullDate1.value = tgl + ' ' + jam">
                 @csrf
@@ -465,7 +490,7 @@
                 <div class="space-y-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Pembahasan <span class="text-red-500">*</span></label>
-                        <x-date-picker model="tgl" />
+                        <x-date-picker model="tgl" :value="date('Y-m-d')" />
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Jam Pembahasan (24 Jam) <span class="text-red-500">*</span></label>
@@ -483,9 +508,8 @@
         </div>
     </div>
 
-    <!-- MODAL: Tolak -->
-    <div x-show="showTolak" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-black/50" x-transition>
-        <div class="bg-white rounded-xl shadow-xl w-full max-w-lg p-6" @click.outside="showTolak = false">
+    <div x-show="showTolak" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-black/50" x-transition @click.self="showTolak = false">
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-lg p-6">
             <h3 class="text-lg font-semibold text-red-600 mb-4">Tolak Pengajuan</h3>
             <form method="POST" action="{{ route('admin.kerjasama.tolak', $ks->kerjasama_id) }}">
                 @csrf
@@ -501,9 +525,8 @@
         </div>
     </div>
 
-    <!-- MODAL: Jadwalkan -->
-    <div x-show="showJadwal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-black/50" x-transition>
-        <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6" @click.outside="showJadwal = false">
+    <div x-show="showJadwal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-black/50" x-transition @click.self="showJadwal = false">
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
             <h3 class="text-lg font-semibold text-amber-600 mb-4">{{ $hasJadwal ? 'Ubah Jadwal' : 'Jadwalkan Pembahasan' }}</h3>
             <form method="POST" action="{{ route('admin.kerjasama.jadwalkan', $ks->kerjasama_id) }}" x-data="{ tgl: '{{ $hasJadwal ? $ks->tanggal_pembahasan->format('Y-m-d') : date('Y-m-d') }}', jam: '{{ $hasJadwal ? $ks->tanggal_pembahasan->format('H:i') : '09:00' }}' }" @submit="$refs.fullDate2.value = tgl + ' ' + jam">
                 @csrf
@@ -511,7 +534,7 @@
                 <div class="space-y-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Pembahasan <span class="text-red-500">*</span></label>
-                        <x-date-picker model="tgl" />
+                        <x-date-picker model="tgl" :value="$hasJadwal ? $ks->tanggal_pembahasan->format('Y-m-d') : date('Y-m-d')" />
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Jam Pembahasan (24 Jam) <span class="text-red-500">*</span></label>
@@ -529,9 +552,8 @@
         </div>
     </div>
 
-    <!-- MODAL: Finalisasi -->
-    <div x-show="showFinalisasi" x-cloak class="fixed inset-0 z-50 flex items-start justify-center bg-black/50 overflow-y-auto py-10" x-transition>
-        <div class="bg-white rounded-xl shadow-xl w-full max-w-2xl p-6" @click.outside="showFinalisasi = false">
+    <div x-show="showFinalisasi" x-cloak class="fixed inset-0 z-50 flex items-start justify-center bg-black/50 overflow-y-auto py-10" x-transition @click.self="showFinalisasi = false">
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-2xl p-6">
             <h3 class="text-lg font-semibold text-green-600 mb-4">{{ $status >= 5 ? 'Edit Finalisasi' : 'Finalisasi Kerja Sama' }}</h3>
             <form method="POST" action="{{ $status >= 5 ? route('admin.kerjasama.updateFinalisasi', $ks->kerjasama_id) : route('admin.kerjasama.finalisasi', $ks->kerjasama_id) }}" enctype="multipart/form-data">
                 @csrf
@@ -627,9 +649,8 @@
         </div>
     </div>
 
-    <!-- MODAL: Lanjut ke Penandatanganan -->
-    <div x-show="showLanjut" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-black/50" x-transition>
-        <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6" @click.outside="showLanjut = false">
+    <div x-show="showLanjut" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-black/50" x-transition @click.self="showLanjut = false">
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
             <h3 class="text-lg font-semibold text-purple-600 mb-4">Lanjut ke Penandatanganan?</h3>
             <form method="POST" action="{{ route('admin.kerjasama.lanjutPembahasan', $ks->kerjasama_id) }}">
                 @csrf
@@ -640,5 +661,7 @@
             </form>
         </div>
     </div>
+
+    <x-laporan-detail-modal />
 </div>
 @endsection

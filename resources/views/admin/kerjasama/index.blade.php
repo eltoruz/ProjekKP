@@ -22,7 +22,6 @@
 }"
     x-init="$watch('selectAll', v => toggleAll())">
 
-    <!-- Filter Bar -->
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4">
         <form method="GET" class="flex flex-wrap gap-3 items-end">
             <div class="flex-1 min-w-[200px]">
@@ -56,7 +55,6 @@
         </form>
     </div>
 
-    <!-- Bulk Action Bar -->
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4" x-show="selectedIds.length > 0" x-cloak>
         <div class="flex items-center justify-between">
             <span class="text-sm text-gray-600"><span x-text="selectedIds.length"></span> item dipilih</span>
@@ -66,7 +64,6 @@
         </div>
     </div>
 
-    <!-- Table -->
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
         <div class="overflow-x-auto">
             <table class="w-full text-sm">
@@ -134,7 +131,6 @@
         </div>
     </div>
 
-    <!-- Bulk Delete Modal -->
     <div x-show="confirmBulkDelete" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-black/50" x-transition>
         <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6" @click.outside="confirmBulkDelete = false">
             <h3 class="text-lg font-semibold text-slate-800 mb-2">Hapus Terpilih</h3>

@@ -11,7 +11,6 @@
 
 <div x-data="{ detail: null }" class="space-y-4" @keydown.escape="detail = null">
 
-    <!-- Header Kalender + Navigasi Bulan -->
     <div class="bg-white rounded-lg shadow-sm border border-gray-200">
         <div class="px-5 py-4 flex flex-wrap items-center justify-between gap-3">
             <div>
@@ -38,7 +37,6 @@
             </div>
         </div>
 
-        <!-- Nama Hari -->
         <div class="grid grid-cols-7 border-t border-gray-200 bg-slate-50">
             @foreach($namaHari as $hari)
             <div class="px-2 py-2.5 text-center text-[11px] font-bold text-gray-500 uppercase tracking-wide border-r border-gray-200 last:border-r-0">
@@ -48,13 +46,11 @@
             @endforeach
         </div>
 
-        <!-- Grid Tanggal -->
         <div class="border-t border-gray-200">
             @foreach($mingguList as $minggu)
             <div class="grid grid-cols-7 border-b border-gray-200 last:border-b-0">
                 @foreach($minggu as $hari)
                 <div class="min-h-[7rem] border-r border-gray-200 last:border-r-0 p-1.5 {{ $hari['is_bulan_ini'] ? 'bg-white' : 'bg-slate-50/70' }}">
-                    <!-- Nomor Tanggal -->
                     <div class="flex items-center justify-between mb-1">
                         <span class="w-7 h-7 flex items-center justify-center rounded-full text-xs font-bold
                             {{ $hari['is_hari_ini']
@@ -67,7 +63,6 @@
                         @endif
                     </div>
 
-                    <!-- Event Kerja Sama -->
                     <div class="space-y-1">
                         @foreach($hari['events'] as $ks)
                         <button type="button"
@@ -93,7 +88,6 @@
         </div>
     </div>
 
-    <!-- Keterangan -->
     <div class="flex flex-wrap items-center gap-4 text-xs text-gray-500 px-1">
         <span class="flex items-center gap-1.5">
             <span class="w-3 h-3 rounded bg-orange-50 border border-orange-200"></span>
@@ -112,7 +106,6 @@
     </div>
     @endif
 
-    <!-- MODAL: Detail Ringkas Kerja Sama -->
     <div x-show="detail" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" x-transition>
         <div class="bg-white rounded-xl shadow-xl w-full max-w-md" @click.outside="detail = null">
             <div class="px-5 py-4 border-b border-gray-100 flex items-start justify-between gap-3">

@@ -28,7 +28,6 @@ class DashboardController extends Controller
             'berakhir' => $statusCounts[6] ?? 0,
         ];
 
-        // Early Warning MoU (H-90, H-60, H-30)
         $now = Carbon::now();
         $target90Days = Carbon::now()->addDays(90);
 
@@ -60,7 +59,6 @@ class DashboardController extends Controller
                 ];
             });
 
-        // Chart.js Status Distribution
         $statusDistribution = [
             'Draf' => $statusCounts[1] ?? 0,
             'Pembahasan' => $statusCounts[2] ?? 0,

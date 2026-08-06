@@ -62,17 +62,13 @@
             }
         }
 
-        // Nama bulan Bahasa Indonesia, dipakai date picker & kalender jadwal pembahasan
         window.KS_BULAN = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
 
-        /**
-         * State Alpine untuk components/date-picker.blade.php
-         * Nilai disimpan sebagai string Y-m-d agar cocok dengan validasi 'date' di server.
-         */
         function ksDatePicker(initial, minDate, maxDate) {
             return {
                 open: false,
                 value: initial || '',
+                inputRaw: initial || '',
                 viewY: null,
                 viewM: null,
                 dayNames: ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'],
@@ -82,38 +78,67 @@
                     if (this.open) this.resetView();
                 },
                 resetView() {
-                    const base = this.parse(this.value) || new Date();
+                    const base = this.parse(this.value) || this.parse(this.inputRaw) || new Date();
                     this.viewY = base.getFullYear();
                     this.viewM = base.getMonth();
                 },
-                parse(iso) {
-                    if (!iso) return null;
-                    const p = String(iso).slice(0, 10).split('-');
-                    if (p.length !== 3) return null;
-                    const d = new Date(+p[0], +p[1] - 1, +p[2]);
-                    return isNaN(d.getTime()) ? null : d;
+                parse(str) {
+                    if (!str) return null;
+                    str = String(str).trim().slice(0, 10);
+                    let m = str.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})$/);
+                    if (m) {
+                        const d = new Date(+m[1], +m[2] - 1, +m[3]);
+                        return isNaN(d.getTime()) ? null : d;
+                    }
+                    m = str.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})$/);
+                    if (m) {
+                        const d = new Date(+m[3], +m[2] - 1, +m[1]);
+                        return isNaN(d.getTime()) ? null : d;
+                    }
+                    return null;
                 },
                 iso(y, m, d) {
                     return y + '-' + String(m + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
                 },
                 init() {
                     this.resetView();
+                    this.inputRaw = this.value;
+                    this.$watch('value', (v) => {
+                        this.inputRaw = v || '';
+                        if (v) {
+                            const d = this.parse(v);
+                            if (d) {
+                                this.viewY = d.getFullYear();
+                                this.viewM = d.getMonth();
+                            }
+                        }
+                    });
+                },
+                onTypeInput() {
+                    const d = this.parse(this.inputRaw);
+                    if (d) {
+                        this.value = this.iso(d.getFullYear(), d.getMonth(), d.getDate());
+                        this.viewY = d.getFullYear();
+                        this.viewM = d.getMonth();
+                    } else if (!this.inputRaw) {
+                        this.value = '';
+                    }
+                },
+                onBlurInput() {
+                    const d = this.parse(this.inputRaw);
+                    if (d) {
+                        this.value = this.iso(d.getFullYear(), d.getMonth(), d.getDate());
+                        this.inputRaw = this.value;
+                    } else if (!this.inputRaw) {
+                        this.value = '';
+                        this.inputRaw = '';
+                    }
                 },
                 setYear(year) {
                     this.viewY = parseInt(year);
                 },
-                get yearRange() {
-                    const current = this.viewY || new Date().getFullYear();
-                    const start = current - 5;
-                    const end = current + 10;
-                    const years = [];
-                    for (let y = start; y <= end; y++) {
-                        years.push(y);
-                    }
-                    return years;
-                },
                 shiftMonth(delta) {
-                    let m = this.viewM + delta, y = this.viewY;
+                    let m = parseInt(this.viewM) + delta, y = parseInt(this.viewY);
                     if (m < 0) { m = 11; y--; }
                     if (m > 11) { m = 0; y++; }
                     this.viewM = m;
@@ -121,6 +146,7 @@
                 },
                 pick(iso) {
                     this.value = iso;
+                    this.inputRaw = iso;
                     this.open = false;
                 },
                 pickToday() {
@@ -140,17 +166,18 @@
                 },
                 get cells() {
                     if (this.viewY === null) this.resetView();
-                    const first = new Date(this.viewY, this.viewM, 1);
-                    // Senin sebagai kolom pertama (getDay: 0 = Minggu)
+                    const y = parseInt(this.viewY);
+                    const m = parseInt(this.viewM);
+                    const first = new Date(y, m, 1);
                     const lead = (first.getDay() + 6) % 7;
-                    const total = new Date(this.viewY, this.viewM + 1, 0).getDate();
+                    const total = new Date(y, m + 1, 0).getDate();
                     const today = new Date();
                     const todayIso = this.iso(today.getFullYear(), today.getMonth(), today.getDate());
                     const selected = String(this.value).slice(0, 10);
                     const out = [];
                     for (let i = 0; i < lead; i++) out.push(null);
                     for (let d = 1; d <= total; d++) {
-                        const iso = this.iso(this.viewY, this.viewM, d);
+                        const iso = this.iso(y, m, d);
                         out.push({
                             day: d,
                             iso: iso,
@@ -166,7 +193,6 @@
     </script>
 </head>
 <body class="bg-gray-50 text-gray-900 min-h-screen antialiased">
-    <!-- Skip to Main Content Link (WCAG 2.1 Keyboard Navigation) -->
     <a href="#main-content" 
        class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:px-4 focus:py-2 focus:bg-indigo-600 focus:text-white focus:rounded-lg focus:shadow-lg focus:outline-none">
        Lompat ke Konten Utama

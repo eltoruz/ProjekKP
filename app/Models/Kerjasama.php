@@ -65,9 +65,11 @@ class Kerjasama extends Model
 
     public function getIsReportingActiveAttribute(): bool
     {
-        // Must be status_implementasi == 3 (Aktif) AND have at least 1 approved data item
+        if ((int)$this->ks_status_dok >= 5) {
+            return true;
+        }
         $isAktif = (int)$this->ks_implementasi === 3;
-        $hasApprovedItem = $this->pemilihanData()->where('approval_status', 'approved')->exists();
+        $hasApprovedItem = $this->pemilihanData->where('approval_status', 'approved')->count() > 0;
         return $isAktif && $hasApprovedItem;
     }
 

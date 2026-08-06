@@ -24,7 +24,6 @@ class DashboardController extends Controller
         $upcoming = Kerjasama::notDeleted()->where('ks_status_dok', 2)->whereNotNull('tanggal_pembahasan')->orderBy('tanggal_pembahasan')->limit(5)->get();
         $recent = Kerjasama::notDeleted()->with(['jenis', 'tingkat'])->orderBy('last_update', 'desc')->limit(5)->get();
 
-        // Early Warning MoU (H-90, H-60, H-30) for Mitra
         $now = Carbon::now();
         $target90Days = Carbon::now()->addDays(90);
 

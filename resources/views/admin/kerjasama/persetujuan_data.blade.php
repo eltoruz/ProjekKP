@@ -19,9 +19,6 @@
     $groupedData = [];
     $initialOpen = [];
 
-    // Penanda apakah admin sudah pernah menyimpan keputusan sebelumnya
-    // (ada item yang sudah approved/rejected saat halaman dimuat). Dipakai untuk
-    // label tombol: "Simpan" saat pertama kali, "Perbarui" saat sudah pernah disimpan.
     $hasExistingDecision = $ks->pemilihanData->contains(
         fn($item) => in_array($item->approval_status, ['approved', 'rejected'], true)
     );
@@ -46,7 +43,7 @@
         ksort($tables);
         foreach($tables as $tblName => $itemsInTbl) {
             $key = $dbName . '::' . $tblName;
-            $initialOpen[$key] = false; // Default tertutup (collapsed)
+            $initialOpen[$key] = false;
         }
     }
 @endphp
@@ -113,9 +110,8 @@
     get pendingCount() {
         return Object.values(this.approval).filter(v => v === 'pending').length;
     }
-}">
+} shadow-sm">
 
-    <!-- Header & Navigation -->
     <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
             <div class="flex items-center gap-2 text-xs text-gray-500 mb-1">
@@ -138,11 +134,9 @@
         </div>
     </div>
 
-    <!-- Info Mitra & Form Persetujuan -->
     <form action="{{ route('admin.kerjasama.persetujuan-data', $ks->kerjasama_id) }}" method="POST" class="space-y-6">
         @csrf
 
-        <!-- Card Setting Pengaktifan & Metode Pertukaran Data -->
         <div class="bg-white p-6 rounded-xl border border-indigo-200 shadow-sm space-y-4">
             <div class="flex items-center justify-between pb-3 border-b border-gray-100">
                 <div class="flex items-center gap-2.5">
@@ -196,12 +190,9 @@
             </div>
         </div>
 
-        <!-- Section Persetujuan Item Data (Grouped by Database & Table Accordion) -->
         <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5 space-y-4">
             
-            <!-- Toolbar Filter & Pencarian -->
             <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
-                <!-- Row 1: Dropdown Database, Filter Status, Search Input -->
                 <div class="flex flex-col sm:flex-row gap-3">
                     @if(count($adminDatabaseList) > 0)
                     <div class="shrink-0">
@@ -233,7 +224,6 @@
                     </div>
                 </div>
 
-                <!-- Row 2: Action Toolbar, Accordion Control & Status Counters -->
                 <div class="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-slate-200/80 text-xs">
                     <div class="flex items-center gap-3 flex-wrap">
                         <div class="flex items-center gap-1.5">
@@ -291,12 +281,10 @@
                     <p>Mitra belum memilih data atau belum menekan tombol <strong>Ajukan Pemilihan Data</strong> di halaman detail.</p>
                 </div>
             @else
-                <!-- Loop Database Groups -->
                 <div class="space-y-6">
                     @foreach($groupedData as $dbName => $tables)
                     <div x-show="!selectedDb || selectedDb === '{{ $dbName }}'" class="space-y-3">
                         
-                        <!-- Header Database -->
                         <div class="flex items-center gap-2 py-2 px-3.5 bg-slate-100 border border-slate-200 rounded-lg text-slate-800 font-mono font-bold text-xs sticky top-0 z-10 shadow-2xs">
                             <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s-8-1.79-8-4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"/>
@@ -305,7 +293,6 @@
                             <span class="text-[11px] font-normal text-slate-500">({{ count($tables) }} tabel terpilih)</span>
                         </div>
 
-                        <!-- Loop Tables inside Database -->
                         <div class="space-y-3 pl-1 sm:pl-2">
                             @foreach($tables as $tblName => $itemsInTbl)
                             @php 
@@ -314,7 +301,6 @@
                             @endphp
                             <div class="border border-gray-200 rounded-xl overflow-hidden bg-white shadow-2xs transition-all">
                                 
-                                <!-- Header Accordion Tabel -->
                                 <div @click="toggleTable('{{ $accKey }}')" 
                                      class="px-4 py-3 bg-white hover:bg-slate-50 cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-100 select-none">
                                     
@@ -338,10 +324,8 @@
                                     </div>
                                 </div>
 
-                                <!-- Body Accordion Tabel -->
                                 <div x-show="openTables['{{ $accKey }}']">
                                     
-                                    <!-- Toolbar Aksi Cepat per Tabel -->
                                     <div class="px-4 py-2 bg-slate-50 border-b border-gray-200 flex flex-wrap items-center justify-between gap-2 text-xs">
                                         <span class="text-gray-500 font-medium">Aksi Cepat Tabel ini ({{ count($itemsInTbl) }} Kolom):</span>
                                         <div class="flex items-center gap-2">
@@ -398,7 +382,6 @@
 
                                                     <td class="py-3 px-4 text-center">
                                                         <div class="inline-flex items-center p-1 bg-gray-100 rounded-lg border border-gray-200 gap-1">
-                                                            <!-- Pending (Default) -->
                                                             <label class="cursor-pointer px-2.5 py-1.5 rounded-md text-[11px] font-bold transition-all flex items-center gap-1"
                                                                    :class="approval['{{ $item->id }}'] === 'pending' ? 'bg-amber-500 text-white shadow-2xs' : 'text-gray-600 hover:text-amber-600'">
                                                                 <input type="radio" name="approval_status[{{ $item->id }}]" value="pending" x-model="approval['{{ $item->id }}']" class="sr-only">
@@ -406,7 +389,6 @@
                                                                 Pending
                                                             </label>
 
-                                                            <!-- Approved -->
                                                             <label class="cursor-pointer px-2.5 py-1.5 rounded-md text-[11px] font-bold transition-all flex items-center gap-1"
                                                                    :class="approval['{{ $item->id }}'] === 'approved' ? 'bg-green-600 text-white shadow-2xs' : 'text-gray-600 hover:text-green-600'">
                                                                 <input type="radio" name="approval_status[{{ $item->id }}]" value="approved" x-model="approval['{{ $item->id }}']" class="sr-only">
@@ -414,7 +396,6 @@
                                                                 Setujui
                                                             </label>
 
-                                                            <!-- Rejected -->
                                                             <label class="cursor-pointer px-2.5 py-1.5 rounded-md text-[11px] font-bold transition-all flex items-center gap-1"
                                                                    :class="approval['{{ $item->id }}'] === 'rejected' ? 'bg-red-600 text-white shadow-2xs' : 'text-gray-600 hover:text-red-600'">
                                                                 <input type="radio" name="approval_status[{{ $item->id }}]" value="rejected" x-model="approval['{{ $item->id }}']" class="sr-only">
@@ -444,7 +425,6 @@
                 </div>
             @endif
 
-            <!-- Submit Bar -->
             <div class="pt-4 border-t border-gray-200 flex items-center justify-between">
                 <a href="{{ route('admin.kerjasama.review', $ks->kerjasama_id) }}" class="px-4 py-2 rounded-lg text-xs font-semibold text-gray-600 bg-white border border-gray-300 hover:bg-gray-50 transition-colors">
                     Batal

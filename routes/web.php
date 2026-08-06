@@ -16,7 +16,6 @@ Route::get('/admin/login', function () {
     return redirect('/');
 });
 
-// Mitra
 Route::middleware(['web'])
     ->prefix('mitra')->name('mitra.')->group(function () {
         Route::get('/', [MitraDashboard::class, 'index'])->name('dashboard');
@@ -43,7 +42,6 @@ Route::middleware(['web'])
         Route::get('/api/metadata/columns', [MitraKerjasama::class, 'getTableColumns'])->name('api.metadata.columns');
     });
 
-// Admin
 Route::middleware(['web', \App\Http\Middleware\AutoLoginAdmin::class])
     ->prefix('admin')->name('admin.')->group(function () {
         Route::get('/', [AdminDashboard::class, 'index'])->name('dashboard');
@@ -68,7 +66,6 @@ Route::middleware(['web', \App\Http\Middleware\AutoLoginAdmin::class])
         Route::get('/kerjasama/{id}/cetak-ringkasan', [AdminKerjasama::class, 'cetakRingkasan'])->name('kerjasama.cetak-ringkasan');
     });
 
-// Shared API Routes (Chat) - Throttled for Security
 Route::middleware(['web', 'throttle:30,1'])->group(function () {
     Route::get('/kerjasama/{id}/chat', [\App\Http\Controllers\ChatController::class, 'getMessages'])->name('kerjasama.chat.get');
     Route::post('/kerjasama/{id}/chat', [\App\Http\Controllers\ChatController::class, 'sendMessage'])->name('kerjasama.chat.send');

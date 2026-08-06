@@ -17,7 +17,6 @@
         $displaySteps = $stepKeys;
     @endphp
 
-    <!-- Card Petunjuk Langkah Selanjutnya (High Impact UX) -->
     <div class="mb-4 p-3.5 bg-indigo-50 border-l-4 border-indigo-600 rounded-r-xl flex items-center justify-between shadow-xs">
         <div class="flex items-center gap-3">
             <span class="p-2 bg-indigo-600 text-white rounded-lg shrink-0" aria-hidden="true">
@@ -30,7 +29,6 @@
         </div>
     </div>
 
-    <!-- Stepper Semantik dengan ARIA (WCAG 1.4.1 & 1.3.1) -->
     <ol class="flex items-center justify-between">
         @foreach($displaySteps as $index => $step)
             @php
@@ -42,7 +40,6 @@
             <li class="flex items-center {{ !$loop->last ? 'flex-1' : '' }}" 
                 @if($isActive) aria-current="step" @endif>
                 <div class="flex flex-col items-center">
-                    <!-- Lingkaran Indikator dengan Kontras & Ikon WCAG -->
                     <div class="w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold transition-all shadow-2xs
                         {{ $isRejected ? 'bg-red-600 text-white ring-4 ring-red-100' : ($isActive ? 'bg-indigo-600 text-white ring-4 ring-indigo-100 scale-110' : ($isPassed ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-700')) }}">
                         @if($isPassed)

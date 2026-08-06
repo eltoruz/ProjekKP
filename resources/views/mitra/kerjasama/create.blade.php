@@ -47,14 +47,12 @@
             </div>
         </div>
 
-        {{-- Non-NK fields --}}
         <div id="nonNkFields" class="hidden">
             <div class="p-4 bg-yellow-50 border border-yellow-200 rounded-lg text-sm text-yellow-800">
                 Fitur untuk jenis kerja sama ini belum tersedia. Saat ini hanya <strong>Nota Kesepakatan</strong> yang dapat diproses.
             </div>
         </div>
 
-        {{-- NK-only fields --}}
         <div id="nkFields" class="hidden">
             <div class="p-4 bg-blue-50 border border-blue-200 rounded-lg">
                 <h3 class="text-base font-semibold text-navy mb-1">Upload Dokumen Nota Kesepakatan</h3>

@@ -3,17 +3,14 @@
 @section('title', 'Admin — Pusdatin Kemendikdasmen')
 
 @section('content')
-<!-- Skip Link untuk Pengguna Keyboard (WCAG 2.4.1) -->
 <a href="#main-content" 
    class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 z-50 bg-indigo-600 text-white px-4 py-2 rounded-lg font-bold shadow-lg focus:outline-none focus:ring-4 focus:ring-indigo-300">
    Lompati ke Konten Utama
 </a>
 
 <div class="flex min-h-screen bg-slate-50">
-    <!-- Redesigned Executive Sidebar (Matching Target Interface) -->
     <aside class="w-64 bg-[#0A0F24] flex-shrink-0 sticky top-0 h-screen overflow-y-auto flex flex-col justify-between border-r border-slate-800/60" aria-label="Navigasi Utama Admin">
         <div>
-            <!-- Header Logo & Branding -->
             <div class="px-6 py-5 border-b border-slate-800/80 flex items-center gap-3.5">
                 <img src="https://pelayanan.data.kemendikdasmen.go.id/assets/imge/tutwuri.png" class="h-8 w-auto drop-shadow-md" alt="Logo Tutwuri Kemendikdasmen">
                 <div>
@@ -22,9 +19,7 @@
                 </div>
             </div>
 
-            <!-- Navigation Links -->
             <nav class="px-3.5 py-6 space-y-6">
-                <!-- Section MENU -->
                 <div>
                     <p class="px-3 text-[11px] font-extrabold text-slate-400 uppercase tracking-widest mb-2.5">MENU</p>
                     <a href="{{ route('admin.dashboard') }}"
@@ -36,7 +31,6 @@
                     </a>
                 </div>
 
-                <!-- Section KERJA SAMA -->
                 <div>
                     <p class="px-3 text-[11px] font-extrabold text-slate-400 uppercase tracking-widest mb-2.5">KERJA SAMA</p>
                     <div class="space-y-1">
@@ -66,7 +60,6 @@
             </nav>
         </div>
 
-        <!-- Footer Keluar Button -->
         <div class="p-4 border-t border-slate-800/80">
             <a href="/" class="flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-semibold text-slate-300 hover:bg-rose-500/20 hover:text-rose-200 transition-all w-full group">
                 <svg class="w-5 h-5 text-slate-400 group-hover:text-rose-300 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">

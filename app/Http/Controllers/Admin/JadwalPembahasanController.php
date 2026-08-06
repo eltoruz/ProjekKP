@@ -9,18 +9,11 @@ use Illuminate\Http\Request;
 
 class JadwalPembahasanController extends Controller
 {
-    /**
-     * Kalender bulanan jadwal pembahasan kerja sama.
-     *
-     * Event diambil dari kerja sama berstatus 3 (Dokumen dalam proses pembahasan),
-     * yaitu tahap setelah mitra mengunggah surat undangan jadwal pembahasan.
-     */
     public function index(Request $request)
     {
         $bulan = (int) $request->input('bulan', now()->month);
         $tahun = (int) $request->input('tahun', now()->year);
 
-        // Jaga agar bulan/tahun di luar rentang tidak membuat Carbon melempar error
         if ($bulan < 1 || $bulan > 12) {
             $bulan = now()->month;
         }
@@ -39,10 +32,8 @@ class JadwalPembahasanController extends Controller
             ->orderBy('tanggal_pembahasan')
             ->get();
 
-        // Kelompokkan per tanggal agar mudah dipetakan ke sel kalender
         $eventsByDate = $jadwalList->groupBy(fn ($ks) => $ks->tanggal_pembahasan->format('Y-m-d'));
 
-        // Grid kalender dimulai hari Senin, mencakup tanggal menggantung bulan sebelum/sesudah
         $mulaiGrid = (clone $awalBulan)->startOfWeek(Carbon::MONDAY);
         $selesaiGrid = (clone $akhirBulan)->endOfWeek(Carbon::SUNDAY);
 

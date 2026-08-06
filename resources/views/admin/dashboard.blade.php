@@ -4,10 +4,8 @@
 @section('page-title', 'Dashboard Executive Analytics')
 
 @section('page-content')
-<!-- Chart.js CDN -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-<!-- Stat Cards -->
 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-6">
     <div class="bg-white rounded-xl shadow-2xs border border-gray-200 p-5">
         <div class="flex items-center justify-between mb-2">
@@ -72,7 +70,6 @@
     </div>
 </div>
 
-<!-- Early Warning MoU Banner Section (H-90, H-60, H-30) -->
 @if(count($earlyWarningList) > 0)
 <div class="bg-gradient-to-r from-amber-500 to-orange-600 rounded-2xl shadow-md p-6 mb-6 text-white relative overflow-hidden">
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/20 pb-4 mb-4">
@@ -113,9 +110,7 @@
 </div>
 @endif
 
-<!-- Chart & Analytics Layout -->
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-    <!-- Chart Distribusi Status Kerja Sama -->
     <div class="bg-white rounded-2xl shadow-2xs border border-gray-200 p-6 lg:col-span-1 flex flex-col justify-between">
         <div>
             <h3 class="text-base font-bold text-slate-800">Distribusi Status Kerja Sama</h3>
@@ -129,7 +124,6 @@
         </div>
     </div>
 
-    <!-- Recent Submissions Table -->
     <div class="bg-white rounded-2xl shadow-2xs border border-gray-200 p-6 lg:col-span-2">
         <div class="flex items-center justify-between mb-4">
             <div>
@@ -199,11 +193,11 @@
                 datasets: [{
                     data: Object.values(statusData),
                     backgroundColor: [
-                        '#3b82f6', // Draf - Blue
-                        '#f59e0b', // Pembahasan - Amber
-                        '#8b5cf6', // Undangan - Purple
-                        '#ec4899', // Finalisasi - Pink
-                        '#10b981', // Selesai - Emerald
+                        '#3b82f6',
+                        '#f59e0b',
+                        '#8b5cf6',
+                        '#ec4899',
+                        '#10b981',
                     ],
                     borderWidth: 2,
                     borderColor: '#ffffff'

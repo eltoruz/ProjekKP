@@ -11,7 +11,7 @@ return new class extends Migration
         Schema::create('kerjasama_chats', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->string('kerjasama_id');
-            $table->string('sender_role'); // 'admin' or 'mitra'
+            $table->string('sender_role');
             $table->string('sender_name');
             $table->text('pesan');
             $table->string('attachment_path')->nullable();

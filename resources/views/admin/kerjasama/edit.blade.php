@@ -12,7 +12,6 @@
                 <h2 class="text-sm font-semibold text-slate-800">Form Edit Data</h2>
             </div>
             <div class="p-6 space-y-4">
-                <!-- Data Mitra -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
                         <label class="block text-xs font-medium text-gray-500 mb-1">Jenis <span class="text-red-500">*</span></label>
@@ -47,7 +46,6 @@
                     </div>
                 </div>
 
-                <!-- Pihak -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-xs font-medium text-gray-500 mb-1">Pihak 1</label>
@@ -64,7 +62,6 @@
                     <textarea name="tentang" rows="2" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">{{ $ks->tentang }}</textarea>
                 </div>
 
-                <!-- Tanggal -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
                         <label class="block text-xs font-medium text-gray-500 mb-1">Jangka (thn)</label>
@@ -80,7 +77,6 @@
                     </div>
                 </div>
 
-                <!-- Kontak -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-xs font-medium text-gray-500 mb-1">Narahubung Adm</label>
@@ -100,7 +96,6 @@
                     </div>
                 </div>
 
-                <!-- Status & Klasifikasi -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
                         <label class="block text-xs font-medium text-gray-500 mb-1">Status Dok</label>

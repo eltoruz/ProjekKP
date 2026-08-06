@@ -21,8 +21,6 @@
     }
     $initReasons = !empty($tableReasons) ? $tableReasons : new stdClass();
 
-    // Tabel yang sudah memiliki seleksi sebelumnya. Kolomnya di-preload saat init
-    // agar status tercentang langsung tampil tanpa perlu hover ke tabel dulu.
     $preselectedTables = $kerjasama->pemilihanData
         ->filter(fn($sel) => $sel->metadata)
         ->map(fn($sel) => ['db' => $sel->metadata->db_name, 'tbl' => $sel->metadata->tbl_name])
@@ -32,7 +30,6 @@
 
 <div class="space-y-6" x-data="pemilihanData()">
 
-    <!-- Action Bar & Header Page -->
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
         <div>
             <div class="flex items-center gap-2 text-xs text-gray-500 mb-1">
@@ -79,14 +76,12 @@
     </div>
     @endif
 
-    <!-- Container Utama Form Pemilihan Data -->
     <div class="bg-white rounded-xl shadow-sm border border-indigo-200 p-6 {{ $kerjasama->status_pemilihan_data === 'submitted' ? 'bg-gray-50/50 opacity-95' : '' }}">
         <form action="{{ route('mitra.kerjasama.pemilihan-data', $kerjasama->kerjasama_id) }}" method="POST" @submit="validateSubmit($event)">
             @csrf
-            
-            <!-- Toolbar Filter & Pencarian -->
+
             <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 mb-5 space-y-3">
-                <!-- Row 1: Database Dropdown + Selected Filter + Search Input -->
+                
                 <div class="flex flex-col sm:flex-row sm:items-center gap-3">
                     @if(isset($databaseList) && count($databaseList) > 0)
                     <div class="shrink-0">
@@ -116,7 +111,6 @@
                     </div>
                 </div>
 
-                <!-- Row 2: Quick Actions & Counters -->
                 <div class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-200/80 text-xs">
                     <div class="flex items-center gap-3">
                         <button type="button" @click="toggleAllAccordions()" class="inline-flex items-center gap-1.5 text-indigo-600 hover:text-indigo-800 font-medium hover:underline">
@@ -146,12 +140,10 @@
                 </div>
             </div>
 
-            <!-- Daftar Accordion Tabel per Database -->
             <div class="space-y-5 max-h-[65vh] overflow-y-auto pr-1">
                 @foreach($catalogByDb as $dbName => $tablesInDb)
                 <div x-show="dbHasVisibleTable('{{ $dbName }}')" class="space-y-2.5">
-                    
-                    <!-- Header Group Database -->
+
                     <div class="flex items-center gap-2 py-2 px-3.5 bg-slate-100 border border-slate-200 rounded-lg text-slate-800 font-mono font-bold text-xs sticky top-0 z-10 shadow-2xs">
                         <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s-8-1.79-8-4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"/>
@@ -165,8 +157,7 @@
                     <div x-show="matchesFilter('{{ $tbl->tbl_name }}', '{{ $dbName }}')"
                          class="rounded-xl border transition-all duration-200 overflow-hidden ml-2"
                          :class="checkedColCountInTable('{{ $dbName }}', '{{ $tbl->tbl_name }}') > 0 ? 'bg-indigo-50/20 border-indigo-300 shadow-xs' : 'bg-white border-gray-200 hover:border-indigo-200'">
-                        
-                        <!-- Table Card Header (Mouseenter pre-fetch for instant opening) -->
+
                         <div class="p-3.5 bg-gray-50/80 border-b border-gray-200/80 flex items-center justify-between cursor-pointer select-none"
                              @mouseenter="loadColumns('{{ $dbName }}', '{{ $tbl->tbl_name }}')"
                              @click="toggleAccordion('{{ $dbName }}', '{{ $tbl->tbl_name }}')">
@@ -186,8 +177,7 @@
                                         <span class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold"
                                               :class="checkedColCountInTable('{{ $dbName }}', '{{ $tbl->tbl_name }}') > 0 ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-200 text-gray-600'"
                                               x-text="checkedColCountInTable('{{ $dbName }}', '{{ $tbl->tbl_name }}') + ' / {{ $tbl->total_cols }} kolom terpilih'"></span>
-                                        
-                                        <!-- Warning Badge for missing reason -->
+
                                         <template x-if="isTableSelected('{{ $dbName }}', '{{ $tbl->tbl_name }}') && (!alasan['{{ $tbl->tbl_name }}'] || !alasan['{{ $tbl->tbl_name }}'].trim())">
                                             <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-red-100 text-red-700 border border-red-200 flex items-center gap-0.5 animate-pulse">
                                                 ⚠️ Alasan belum diisi
@@ -204,8 +194,7 @@
                                     <span x-text="isTableFullyChecked('{{ $dbName }}', '{{ $tbl->tbl_name }}') ? 'Batalkan Semua' : 'Pilih Semua'"></span>
                                 </button>
                                 @endif
-                                
-                                <!-- Loading Spinner -->
+
                                 <svg x-show="loadingTable['{{ $tblKey }}']" class="w-4 h-4 text-indigo-500 animate-spin" fill="none" viewBox="0 0 24 24">
                                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -219,10 +208,8 @@
                             </div>
                         </div>
 
-                        <!-- Accordion Body: List Columns (AJAX Loaded) -->
                         <div x-show="openTables['{{ $tblKey }}']" x-collapse class="p-4 bg-white border-t border-gray-100">
-                            
-                            <!-- Loading Indicator -->
+
                             <div x-show="loadingTable['{{ $tblKey }}'] && !loadedCols['{{ $tblKey }}']" class="text-center py-6 text-gray-400 text-xs">
                                 <svg class="w-6 h-6 mx-auto mb-2 animate-spin text-indigo-500" fill="none" viewBox="0 0 24 24">
                                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -231,7 +218,6 @@
                                 Memuat kolom...
                             </div>
 
-                            <!-- Table Columns Content -->
                             <template x-if="loadedCols['{{ $tblKey }}']">
                                 <div>
                                     <div class="mb-4 overflow-x-auto border border-gray-200 rounded-lg shadow-2xs">
@@ -270,7 +256,6 @@
                                         </table>
                                     </div>
 
-                                    <!-- Keterangan / Alasan Penggunaan Data (Tanpa Preset Buttons) -->
                                     <div x-show="checkedColCountInTable('{{ $dbName }}', '{{ $tbl->tbl_name }}') > 0" x-transition class="pt-3 border-t border-indigo-100">
                                         <label class="block text-xs font-semibold text-indigo-950 mb-1.5">
                                             Keterangan / Alasan Penggunaan Data untuk Tabel <span class="font-mono text-indigo-600">'{{ $tbl->tbl_name }}'</span> <span class="text-red-500">*</span>
@@ -297,7 +282,6 @@
                 @endforeach
             </div>
 
-            <!-- Footer Submit Bar -->
             <div class="mt-6 pt-4 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div class="flex items-center gap-2 text-xs text-gray-600">
                     <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-indigo-100 text-indigo-700 font-bold text-xs" x-text="totalCheckedCols"></span>
@@ -364,11 +348,8 @@ function pemilihanData() {
         ],
 
         init() {
-            // Default to showing all tables if no columns are checked yet (first time filling)
             this.showAllTables = (this.totalCheckedCols === 0);
 
-            // Preload kolom untuk tabel yang sudah dipilih sebelumnya, agar checkbox
-            // & badge "x / y kolom terpilih" langsung tampil tercentang tanpa hover.
             this.preselectedTables.forEach(t => this.loadColumns(t.db, t.tbl));
 
             this.updateFilters();

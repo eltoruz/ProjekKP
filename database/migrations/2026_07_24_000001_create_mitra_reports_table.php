@@ -12,7 +12,7 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->uuid('kerjasama_id');
             $table->integer('tahun');
-            $table->string('periode', 50); // e.g. "Semester 1", "Semester 2"
+            $table->string('periode', 50);
             $table->string('file_path', 500);
             $table->string('nama_file', 255);
             $table->text('catatan')->nullable();
